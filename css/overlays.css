@@ -31,3 +31,8 @@
 .celebrate .star{width:72px;height:72px;margin:0 auto 10px;display:block}
 .celebrate h2{font-size:2rem}
 .celebrate p{margin:.4rem 0 0;font-weight:600}
+
+/* Background stays still while a sheet is open (see lockScroll in js/ui/sheet.js). */
+body.scroll-locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
+.sheet,.scrim{overscroll-behavior:contain}
+.scrim{touch-action:none}
