@@ -9,7 +9,8 @@ import { stepper, wireSteppers, readNumber } from './fields.js';
 // activityId = null to log a new one.
 export function openActivityForm(activityId) {
   const L = t();
-  const a = activityId ? findActivity(activityId) : null;
+  const s = activityId ? findActivity(activityId) : null;   // an activity session
+  const a = s ? s.activity : null;
   const isNew = !a;
   const mins = a ? a.minutes : 60;
 
@@ -25,7 +26,7 @@ export function openActivityForm(activityId) {
       </div>
       <span class="err" hidden id="f-dur-err" style="display:block;margin:-8px 0 14px">${L.durationRequired}</span>
       <div class="field"><label for="f-date">${L.date}</label>
-        <input id="f-date" class="input" type="date" value="${a ? a.date : todayStr()}" max="${todayStr()}"></div>
+        <input id="f-date" class="input" type="date" value="${s ? s.date : todayStr()}" max="${todayStr()}"></div>
       <div class="field"><label for="f-note">${L.note}</label>
         <textarea id="f-note" class="input" maxlength="140" placeholder="${esc(L.notePh)}">${esc(a ? a.note : '')}</textarea></div>
       <div class="actions"><button class="btn" type="submit">${isNew ? L.saveActivity : L.save}</button></div>
@@ -42,7 +43,7 @@ export function openActivityForm(activityId) {
       if (minutes <= 0) return;
       const data = { sport, minutes, date: s.querySelector('#f-date').value || todayStr(), note: s.querySelector('#f-note').value.trim() };
       if (isNew) addActivity(data);
-      else updateActivity(a.id, data);
+      else updateActivity(s.id, data);
       closeSheet();
     };
   });

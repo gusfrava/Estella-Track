@@ -1,149 +1,181 @@
-// Sync layer: connects the store to device storage and to the cloud.
-// - Starts/ends a signed-in session (load data, migrate old local data, watch for changes from other devices).
-// - Saves every store change to this device, and 'local' changes to the cloud (500 ms after the last change).
-// - Local mode: no account, data only on this device.
+// Sync layer: connects the store to Firestore and to this device's storage.
+//
+// Signed in:
+//   - Listens to users/{uid} and its routines, sessions (last 120 days) and exerciseStats; every change lands in the store.
+//   - Every 'local' store change sends its document writes to Firestore (works offline: Firestore queues them).
+//   - Keeps a copy on the device so the app opens instantly next time.
+//   - First time on v2: moves the v1 data (account backup or pre-account device data) into the new structure.
+// Local mode (no account, only while Firebase isn't configured): everything lives on the device.
 
 import * as fb from './firebase.js';
 import { KEYS, lsGet, lsSet, lsDel, readJSON, writeJSON } from './storage.js';
-import { getState, loadState, clearState, subscribe } from '../state/store.js';
-import { normalizeState } from '../state/model.js';
+import { convertV1, hasV1Data, writesFor } from './migrate.js';
+import {
+  getState, loadState, clearState, subscribe, applyRemoteCollection, applyRemoteDoc, applyRemoteProfile,
+} from '../state/store.js';
+import { SCHEMA_VERSION, DEFAULT_SHARING } from '../state/model.js';
 import { getSession, setSession } from '../state/session.js';
-import { stable } from '../utils/data.js';
+import { daysAgo } from '../utils/dates.js';
 import { logger } from '../utils/log.js';
 
 const log = logger('sync');
-const SAVE_DELAY_MS = 500;
+const SESSION_WINDOW_DAYS = 120;   // sessions kept live in memory; older ones load on demand
+const LOADING_TIMEOUT_MS = 10000;  // offline on a brand-new device: show the app anyway after this
 
-let cloudReady = false;   // false until we know what the server has (prevents an empty device overwriting cloud data)
-let cloudTimer = null;
-let unwatch = null;
-let pendingRemote = null; // remote data that arrived while a form was open
-let canApplyRemote = () => true;
-
-// main.js tells us when it's safe to swap data under the user (not while a form is open).
-export function setRemoteGate(fn) { canApplyRemote = fn; }
+let unsubs = [];
+let migrating = false;
+let requested = new Set();         // current sessions fetched individually (older than the window)
+let saveTimer = null;
 
 // ---------- saving ----------
 function deviceKey() {
   const s = getSession();
-  if (s.localMode) return KEYS.local;
-  return s.user ? KEYS.user(s.user.uid) : null;
+  if (s.localMode) return KEYS.localV2;
+  return s.user ? KEYS.userV2(s.user.uid) : null;
 }
 
-function saveToDevice() {
-  const k = deviceKey();
-  if (k) writeJSON(k, getState());
+function saveToDeviceSoon() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const k = deviceKey();
+    if (k) writeJSON(k, getState());
+  }, 300);
 }
 
-function scheduleCloudSave() {
-  if (!cloudReady || !getSession().user) return;
-  clearTimeout(cloudTimer);
-  cloudTimer = setTimeout(flushCloudSave, SAVE_DELAY_MS);
-}
-
-export async function flushCloudSave() {
-  clearTimeout(cloudTimer);
-  cloudTimer = null;
-  const user = getSession().user;
-  if (!user) return;
-  try {
-    await fb.saveUserState(user.uid, getState());
-    log.debug('saved to cloud');
-  } catch (err) {
-    log.warn('cloud save failed', err);
-  }
-}
-
-subscribe((state, { source }) => {
+subscribe((state, { source, writes }) => {
   const s = getSession();
-  if (s.mode !== 'app') return;
-  saveToDevice();
-  if (source === 'local' && !s.localMode) scheduleCloudSave();
+  if (source === 'reset' || (!s.user && !s.localMode)) return;
+  saveToDeviceSoon();
+  if (source === 'local' && s.user && writes.length) {
+    fb.applyWrites(s.user.uid, writes).then(
+      () => log.debug('saved', writes.length, 'doc(s)'),
+      err => log.warn('save failed', err)
+    );
+  }
 });
 
 // ---------- signed-in session ----------
-// Data saved on this device before accounts existed moves into the first account that signs in here.
+export function startUserSession(user) {
+  log.debug('session start', user.uid);
+  stopListeners();
+  migrating = false;
+  requested = new Set();
+
+  const cached = readJSON(KEYS.userV2(user.uid));
+  setSession({ user, localMode: false, mode: cached ? 'app' : 'loading' });
+  if (cached) loadState(cached, 'load');            // instant start from this device's copy
+
+  listen(user);
+  setTimeout(() => {
+    const s = getSession();
+    if (s.user === user && s.mode === 'loading') { log.warn('still no answer from the server — showing the app'); setSession({ mode: 'app' }); }
+  }, LOADING_TIMEOUT_MS);
+}
+
+function listen(user) {
+  const uid = user.uid;
+  const mine = () => getSession().user === user;
+  const onErr = what => err => log.warn(`${what} listener error`, err);
+
+  unsubs.push(fb.watchProfile(uid, ({ exists, data, fromCache }) => {
+    if (!mine()) return;
+    if (exists && data.schemaVersion >= SCHEMA_VERSION) {
+      applyRemoteProfile(data);
+      if (getSession().mode !== 'app') setSession({ mode: 'app' });
+      return;
+    }
+    if (fromCache || migrating) return;              // decide only on the server's answer, and only once
+    migrating = true;
+    migrate(user, exists ? data : null).catch(err => { log.error('migration failed — will retry on next open', err); migrating = false; });
+  }, onErr('profile')));
+
+  unsubs.push(fb.watchCollection(uid, 'routines', ({ docs, fromCache }) => {
+    if (!mine() || (fromCache && !Object.keys(docs).length)) return;
+    applyRemoteCollection('routines', docs);
+    fetchMissingCurrentSessions(user);
+  }, onErr('routines')));
+
+  const since = daysAgo(SESSION_WINDOW_DAYS);
+  unsubs.push(fb.watchCollection(uid, 'sessions', ({ docs, fromCache }) => {
+    if (!mine() || (fromCache && !Object.keys(docs).length)) return;
+    applyRemoteCollection('sessions', docs, s => s.date >= since && !requested.has(s.id));
+  }, onErr('sessions'), { sinceDate: since }));
+
+  unsubs.push(fb.watchCollection(uid, 'stats', ({ docs, fromCache }) => {
+    if (!mine() || (fromCache && !Object.keys(docs).length)) return;
+    applyRemoteCollection('stats', docs);
+  }, onErr('exerciseStats')));
+}
+
+// A routine that doesn't repeat can point at a session older than the 120-day window: load it on its own.
+function fetchMissingCurrentSessions(user) {
+  const { routines, sessions } = getState();
+  for (const r of Object.values(routines)) {
+    const id = r.current && r.current.sessionId;
+    if (!id || sessions[id] || requested.has(id)) continue;
+    requested.add(id);
+    fb.getSubDoc(user.uid, 'sessions', id).then(
+      data => { if (getSession().user === user && data) applyRemoteDoc('sessions', id, data); },
+      err => { requested.delete(id); log.warn('could not load session', id, err); }
+    );
+  }
+}
+
+// ---------- v1 → v2 ----------
+// Data saved on this device before accounts existed moves into the first account that signs in here (only once).
 function takePreAccountData(uid) {
   const legacy = readJSON(KEYS.local);
-  const hasData = legacy && ((legacy.routines || []).length || (legacy.activities || []).length);
-  if (!hasData || lsGet(KEYS.migrated)) return null;
+  if (!hasV1Data(legacy) || lsGet(KEYS.migrated)) return null;
   lsSet(KEYS.migrated, uid);
-  log.debug('moving pre-account data into', uid);
   return legacy;
 }
 
-export async function startUserSession(user) {
-  log.debug('session start', user.uid);
-  cloudReady = false;
-  const cached = readJSON(KEYS.user(user.uid));
-  if (cached) {
-    setSession({ user, localMode: false, mode: 'app' });
-    loadState(cached, 'load');                  // instant start from this device's copy
-  } else {
-    setSession({ user, localMode: false, mode: 'loading' });
+async function migrate(user, profileData) {
+  let v1 = profileData && profileData.state;
+  let from = hasV1Data(v1) ? 'account' : null;
+  if (!from) {
+    const local = takePreAccountData(user.uid);
+    if (local) { v1 = local; from = 'device'; }
   }
-
-  try {
-    const remote = await fb.loadUserState(user.uid);
-    if (getSession().user !== user) return;     // signed out meanwhile
-    if (remote) {
-      loadState(remote, 'remote');
-    } else {
-      loadState(takePreAccountData(user.uid) || cached || {}, 'load');
-      cloudReady = true;
-      await flushCloudSave();                    // create the user's document
-    }
-    cloudReady = true;
-  } catch (err) {
-    log.warn('could not load from cloud (offline?) — using this device’s copy', err);
-    if (!cached) loadState({}, 'load');
-  }
-
-  if (getSession().user !== user) return;
-  if (getSession().mode !== 'app') setSession({ mode: 'app' });
-  saveToDevice();
-  watch(user);
+  const v2 = convertV1(from ? v1 : null);
+  log.debug('migrating to v2 from', from || 'nothing (new account)', {
+    routines: Object.keys(v2.routines).length, sessions: Object.keys(v2.sessions).length, stats: Object.keys(v2.stats).length,
+  });
+  loadState(v2, 'load');                              // show it right away
+  const writes = writesFor(v2);
+  // The profile goes last: if anything above fails, the next open simply runs the migration again (same ids).
+  // The v1 `state` field is left untouched as a backup.
+  writes.push({ op: 'profile', data: {
+    schemaVersion: SCHEMA_VERSION,
+    displayName: user.displayName || '',
+    sharing: DEFAULT_SHARING,
+    createdAt: (profileData && profileData.createdAt) || Date.now(),
+    migratedAt: Date.now(),
+    migratedFrom: from,
+  } });
+  await fb.applyWrites(user.uid, writes);
+  log.debug('migration saved');
 }
 
-function watch(user) {
-  if (unwatch) unwatch();
-  unwatch = fb.watchUserState(user.uid, ({ exists, state, fromCache }) => {
-    if (!exists) {
-      if (!cloudReady && !fromCache) { cloudReady = true; flushCloudSave(); }
-      return;
-    }
-    if (fromCache && !cloudReady) return;
-    cloudReady = true;
-    if (stable(normalizeState(state)) === stable(getState())) return;
-    if (cloudTimer) { log.debug('remote change skipped: a local save is about to go out'); return; }
-    if (!canApplyRemote()) { log.debug('remote change waiting for the form to close'); pendingRemote = state; return; }
-    log.debug('applying change from another device');
-    loadState(state, 'remote');
-  }, err => log.warn('watch error', err));
-}
-
-export function flushPendingRemote() {
-  if (!pendingRemote || !canApplyRemote() || cloudTimer) return;
-  const s = pendingRemote;
-  pendingRemote = null;
-  loadState(s, 'remote');
+// ---------- ending ----------
+function stopListeners() {
+  unsubs.forEach(u => { try { u(); } catch (e) {} });
+  unsubs = [];
 }
 
 export function endUserSession() {
   log.debug('session end');
-  if (unwatch) { unwatch(); unwatch = null; }
-  clearTimeout(cloudTimer); cloudTimer = null;
-  cloudReady = false;
-  pendingRemote = null;
+  stopListeners();
+  clearTimeout(saveTimer);
+  migrating = false;
   setSession({ user: null, localMode: false, mode: 'auth' });
   clearState();
 }
 
 export async function signOutUser() {
   const user = getSession().user;
-  if (cloudTimer) await flushCloudSave();
-  await fb.signOut();                          // triggers endUserSession via onAuthChange
-  if (user) lsDel(KEYS.user(user.uid));         // don't leave someone's data on a shared phone
+  await fb.signOut();                                 // triggers endUserSession via onAuthChange
+  if (user) { lsDel(KEYS.userV2(user.uid)); lsDel(KEYS.user(user.uid)); }   // don't leave someone's data on a shared phone
 }
 
 // ---------- local mode (no account) ----------
@@ -153,7 +185,12 @@ export function enterLocalMode() {
   log.debug('local mode on');
   lsSet(KEYS.localMode, '1');
   setSession({ localMode: true, user: null, mode: 'app' });
-  loadState(readJSON(KEYS.local) || {}, 'load');
+  let data = readJSON(KEYS.localV2);
+  if (!data) {
+    const v1 = readJSON(KEYS.local);
+    data = hasV1Data(v1) ? convertV1(v1) : {};
+  }
+  loadState(data, 'load');
 }
 
 export function exitLocalMode() {

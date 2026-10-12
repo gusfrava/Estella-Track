@@ -36,15 +36,16 @@ js/
   utils/                Dates, formatting, ids, logging. No app logic.
 
   state/
-    model.js            What a routine / exercise / activity looks like (read this first).
-    store.js            The ONLY place data changes: add, edit, delete, check, weekly reset.
+    model.js            What a routine / session / exercise history looks like (read this first; full design in docs/DATA-MODEL.md).
+    store.js            The ONLY place data changes: add, edit, delete, check. Each change lists the documents it writes.
     selectors.js        Read-only math: progress, ordering, weekly summary, weight change.
     session.js          Who's signed in and which top-level screen (loading / sign-in / app).
 
   services/
     storage.js          Everything saved on the phone (localStorage keys listed at the top).
     firebase.js         The ONLY file that talks to Firebase (sign-in + the user's document).
-    sync.js             Connects store ↔ phone storage ↔ Firebase. Sign-in session start/end.
+    sync.js             Connects store ↔ phone storage ↔ Firebase: listeners, saving each change, sign-in start/end.
+    migrate.js          One-time move of old (v1) data into the v2 structure. Pure function, easy to test.
 
   controllers/
     auth.js             Sign-in logic: login, create account, reset password, Google.
@@ -65,12 +66,13 @@ js/
 ## Where to look when something breaks
 - **Wrong text or a missing translation:** `js/i18n/es.js` / `en.js`
 - **A button does nothing:** turn on debug mode (below). It logs `[ui] action <name>`, or `no handler for data-action = <name>` if the action isn't in `ACTIONS` in `main.js`.
-- **Data is wrong after a tap** (checking, deleting, weekly reset): `js/state/store.js`
+- **Data is wrong after a tap** (checking, deleting, "done this week"): `js/state/store.js`, then `selectors.js`
 - **Numbers on screen are wrong** (progress, "1/3", "↑ +2.5 kg"): `js/state/selectors.js`
 - **Looks wrong but the data is right:** the screen's file in `js/views/`, then `css/`
 - **A form saves the wrong thing:** its file in `js/sheets/`
 - **Sign-in errors:** `js/controllers/auth.js`. Error wording is under `errors` in the i18n files.
-- **Data isn't saving or syncing between phones:** `js/services/sync.js`, then `firebase.js`. Also check the Firestore rules.
+- **Data isn't saving or syncing between phones:** `js/services/sync.js`, then `firebase.js`. Also check the Firestore rules. With `?debug`, every save logs `[sync] saved N doc(s)`.
+- **Old data looks wrong after updating:** `js/services/migrate.js`. The original data is still in `users/{uid}.state` in the Firebase console.
 - **The installed app shows old code:** `sw.js`. Change `CACHE` to the next number and push.
 
 ## Debug mode

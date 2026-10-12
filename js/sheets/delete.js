@@ -24,5 +24,5 @@ export function confirmDeleteExercise(routineId, exId) {
 export function confirmDeleteActivity(id) {
   const L = t(), a = findActivity(id);
   if (!a) return;
-  confirmSheet(L.confirmDelete(a.sport), L.confirmDeleteAct, () => deleteActivity(id));
+  confirmSheet(L.confirmDelete(a.activity.sport), L.confirmDeleteAct, () => deleteActivity(id));
 }

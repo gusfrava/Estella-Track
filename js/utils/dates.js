@@ -32,3 +32,16 @@ export function nextMonday() {
   x.setDate(x.getDate() + 7);
   return x;
 }
+
+// Week of a given 'YYYY-MM-DD' date (that week's Monday).
+export const weekKeyOf = dateStr => ymd(weekStart(parseYmd(dateStr)));
+
+// 'YYYY-MM-DD' of a timestamp (ms).
+export const ymdOf = ms => ymd(new Date(ms));
+
+// 'YYYY-MM-DD' of N days ago.
+export function daysAgo(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return ymd(d);
+}

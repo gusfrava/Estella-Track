@@ -14,7 +14,7 @@ import * as store from './state/store.js';
 import { getSession, setSession, onSessionChange } from './state/session.js';
 import * as auth from './controllers/auth.js';
 import { getView, onRouteChange, openRoutine, goHome, resetRoute, initRouter } from './ui/router.js';
-import { isSheetOpen, onSheetClose, closeSheet } from './ui/sheet.js';
+import { closeSheet } from './ui/sheet.js';
 import { capturePositions, animateMoves, celebrate } from './ui/motion.js';
 import { splashView } from './views/splash.js';
 import { authView } from './views/auth.js';
@@ -43,7 +43,7 @@ function render() {
   const view = getView();
   const routine = view.name === 'routine' ? store.findRoutine(view.id) : null;
   app.innerHTML = routine
-    ? routineView(routine)
+    ? routineView(store.getState(), routine)
     : homeView(store.getState(), { user: s.user, localMode: s.localMode, highlightId, showOlder });
 }
 
@@ -135,8 +135,6 @@ function registerServiceWorker() {
 // ---------- start ----------
 async function boot() {
   initRouter({ onBack: () => closeSheet(true) });
-  sync.setRemoteGate(() => !isSheetOpen());
-  onSheetClose(sync.flushPendingRemote);
   registerServiceWorker();
 
   if (DEBUG) {

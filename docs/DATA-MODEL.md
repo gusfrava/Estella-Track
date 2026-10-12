@@ -1,6 +1,8 @@
 # Estella: data model v2
 
-**Status: approved design, built in phases.** The live app still uses v1, where all of a user's data sits in one document (`users/{uid}.state`). It switches to v2 in the migration PR, and the new `firestore.rules` ship with that same PR so nothing breaks in between.
+**Status: approved design, built in phases.**
+- **Built:** `users/{uid}` profile and sharing defaults, `routines`, `sessions`, `exerciseStats`, the automatic v1 → v2 migration, and the matching `firestore.rules`. The code is in `js/state/` and `js/services/sync.js` + `migrate.js`.
+- **Not built yet:** everything else (usernames, friends, groups, trainers, mascot, leaderboards). Each piece arrives with its feature.
 
 ## Principles
 1. **Data lives under its owner. Sharing is a setting.** Nothing is locked away for good. Each kind of data has a "who can see this" level that the owner chooses.
@@ -42,21 +44,22 @@ users/{uid}                         PRIVATE settings (owner only)
     exercises: [{ id, exerciseId, name, type, restSec, note,
                   target: { sets, reps, weight, unit, seconds } }],
     source: { type: 'self'|'group'|'trainer'|'post', id, version },
-    assignedBy                       // trainer uid when assigned
+    assignedBy,                      // trainer uid when assigned
+    current: { sessionId, weekKey }  // the session holding this week's check marks (latest one if not recurring)
 
   sessions/{sessionId}              the log: one per workout or activity
     kind: 'gym'|'activity', status: 'in_progress'|'done',
     date 'YYYY-MM-DD', weekKey, startedAt, finishedAt,
     routineId, routineName,
-    exercises: [{ exerciseId, name, type, note,
+    exercises: [{ id /* routine exercise id */, exerciseId, name, type, note, doneAt,
                   sets: [{ kind: 'normal'|'drop'|'warmup', side: null|'L'|'R',
                            reps, weight, unit, seconds }] }],
     activity: { sport, minutes, note },
     totals: { sets, volume, minutes }
 
   exerciseStats/{exerciseId}        summary per exercise (prefill + charts)
-    lastSets[], best: { weight, e1rm, volume, date },
-    points: [{ d, e1rm, volume }]    // capped at 500
+    name, points: [{ d, s, r, w, u }]   // one point per day it was done (sets, reps, weight, unit), capped at 500
+    (later: lastSets[], best: { weight, e1rm, volume, date })
 
   body/{date}                       weight, measurements
   friends/{friendUid}               since
