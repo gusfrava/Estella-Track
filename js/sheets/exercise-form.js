@@ -4,7 +4,7 @@ import { t } from '../i18n/index.js';
 import { esc, fmtDay, fmtNum } from '../utils/format.js';
 import { parseYmd } from '../utils/dates.js';
 import { getState, findRoutine, addExercise, updateExercise } from '../state/store.js';
-import { lastUsedUnit } from '../state/selectors.js';
+import { lastUsedUnit, exerciseHistory } from '../state/selectors.js';
 import { stepper, wireSteppers, readNumber } from './fields.js';
 
 // exerciseId = null to add a new one.
@@ -14,7 +14,8 @@ export function openExerciseForm(routineId, exerciseId) {
   if (!routine) return;
   const ex = exerciseId ? routine.exercises.find(e => e.id === exerciseId) : null;
   const isNew = !ex;
-  let unit = ex ? ex.unit : lastUsedUnit(getState());
+  const tg = ex ? ex.target : null;
+  let unit = tg ? tg.unit : lastUsedUnit(getState());
 
   openSheet(`<h2>${isNew ? L.newExercise : L.editExercise}</h2>
     <form id="f-ex" novalidate>
@@ -22,18 +23,18 @@ export function openExerciseForm(routineId, exerciseId) {
         <input id="f-exname" class="input" maxlength="60" autocomplete="off" placeholder="${esc(L.exPh)}" value="${esc(ex ? ex.name : '')}" ${isNew ? 'autofocus' : ''}>
         <span class="err" hidden id="f-exname-err">${L.nameRequired}</span></div>
       <div class="row">
-        <div class="field"><label for="f-sets">${L.sets}</label>${stepper('f-sets', ex ? ex.sets : 3, 1, 1)}</div>
-        <div class="field"><label for="f-reps">${L.reps}</label>${stepper('f-reps', ex ? ex.reps : 10, 1, 1)}</div>
+        <div class="field"><label for="f-sets">${L.sets}</label>${stepper('f-sets', tg ? tg.sets : 3, 1, 1)}</div>
+        <div class="field"><label for="f-reps">${L.reps}</label>${stepper('f-reps', tg ? tg.reps : 10, 1, 1)}</div>
       </div>
       <div class="row">
-        <div class="field"><label for="f-weight">${L.weight}</label>${stepper('f-weight', ex ? ex.weight : 0, 2.5, 0)}</div>
+        <div class="field"><label for="f-weight">${L.weight}</label>${stepper('f-weight', tg ? tg.weight : 0, 2.5, 0)}</div>
         <div class="field"><span class="flabel">${L.unit}</span>
           <div class="seg" role="group" aria-label="${L.unit}">
             <button type="button" data-unit="kg" aria-pressed="${unit === 'kg'}">kg</button>
             <button type="button" data-unit="lb" aria-pressed="${unit === 'lb'}">lb</button>
           </div></div>
       </div>
-      ${isNew ? '' : historyBlock(ex)}
+      ${isNew ? '' : historyBlock(exerciseHistory(getState(), ex.id))}
       <div class="actions"><button class="btn" type="submit">${isNew ? L.addExercise : L.save}</button></div>
     </form>`,
   s => {
@@ -60,9 +61,9 @@ export function openExerciseForm(routineId, exerciseId) {
   });
 }
 
-function historyBlock(ex) {
+function historyBlock(points) {
   const L = t();
-  const entries = ex.history.slice(-8).reverse();
+  const entries = points.slice(-8).reverse();
   const list = entries.length
     ? `<ul class="hist">${entries.map(h => `<li>
         <span>${esc(fmtDay(parseYmd(h.d), { weekday: 'short', day: 'numeric', month: 'short' }))}</span>

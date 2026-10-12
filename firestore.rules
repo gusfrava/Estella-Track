@@ -1,9 +1,47 @@
 rules_version = '2';
+
+// Estella security rules — data model v2 (see docs/DATA-MODEL.md).
+// Paste into Firebase console → Firestore Database → Rules → Publish.
+// Friends, groups, trainers and leaderboards get their read rules when those features ship;
+// until then everything outside a user's own data is closed.
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Each person can only read and write their own document: users/{their uid}
+
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // sharing = { profile, routines, workouts, body }, each 'private' | 'friends' | 'public'
+    function validSharing(data) {
+      return !('sharing' in data)
+        || (data.sharing.keys().hasOnly(['profile', 'routines', 'workouts', 'body'])
+            && data.sharing.values().hasOnly(['private', 'friends', 'public']));
+    }
+
+    // Once an account is on v2, an old copy of the app can't overwrite the profile (it would drop schemaVersion).
+    function keepsSchemaVersion() {
+      return !('schemaVersion' in resource.data)
+        || ('schemaVersion' in request.resource.data && request.resource.data.schemaVersion >= resource.data.schemaVersion);
+    }
+
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      // Profile + settings. The v1 `state` field stays here as a backup until it's cleaned up.
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && validSharing(request.resource.data);
+      allow update: if isOwner(uid) && validSharing(request.resource.data) && keepsSchemaVersion();
+      allow delete: if false;   // account deletion runs on the server
+
+      // The person's own data.
+      match /routines/{id}        { allow read, write: if isOwner(uid); }
+      match /sessions/{id}        { allow read, write: if isOwner(uid); }
+      match /exerciseStats/{id}   { allow read, write: if isOwner(uid); }
+      match /body/{id}            { allow read, write: if isOwner(uid); }
+      match /customExercises/{id} { allow read, write: if isOwner(uid); }
+      match /friends/{id}         { allow read, write: if isOwner(uid); }
+
+      // Written only by Estella's server functions (points and mascot growth can't be edited from a phone).
+      match /mascot/{id} { allow read: if isOwner(uid); allow write: if false; }
+      match /wallet/{id} { allow read: if isOwner(uid); allow write: if false; }
     }
   }
 }

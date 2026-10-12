@@ -71,26 +71,47 @@ export async function signInWithGoogle() {
 export const consumeRedirectResult = () => FB.a.getRedirectResult(FB.auth);
 export const signOut = () => FB.a.signOut(FB.auth);
 
-// ---------- user data ----------
+// ---------- user data (v2: one document per routine / session / exercise history) ----------
+// Firestore collection names for the store's collections.
+export const COLLECTIONS = { routines: 'routines', sessions: 'sessions', stats: 'exerciseStats' };
+const MAX_BATCH = 450;   // Firestore allows 500 writes per batch
+
 const userDoc = uid => FB.f.doc(FB.db, 'users', uid);
+const subDoc = (uid, col, id) => FB.f.doc(FB.db, 'users', uid, COLLECTIONS[col], id);
 
-// Returns the saved state, or null if this user has never saved anything.
-export async function loadUserState(uid) {
-  const snap = await FB.f.getDoc(userDoc(uid));
-  const data = snap.exists() ? snap.data() : null;
-  return data && data.state ? data.state : null;
-}
-
-export function saveUserState(uid, state) {
-  return FB.f.setDoc(userDoc(uid), { state: clone(state), updatedAt: FB.f.serverTimestamp() });
-}
-
-// Calls onData({ exists, state, fromCache }) whenever the document changes on the server
-// (e.g. edited from another phone). Our own unsent writes are skipped. Returns an unsubscribe function.
-export function watchUserState(uid, onData, onError) {
-  return FB.f.onSnapshot(userDoc(uid), snap => {
-    if (snap.metadata.hasPendingWrites) return;
-    const data = snap.exists() ? snap.data() : null;
-    onData({ exists: !!(data && data.state), state: data ? data.state : null, fromCache: snap.metadata.fromCache });
+// Calls cb({ exists, data, fromCache }) whenever users/{uid} changes. Returns an unsubscribe function.
+export function watchProfile(uid, cb, onError) {
+  return FB.f.onSnapshot(userDoc(uid), { includeMetadataChanges: true }, snap => {
+    cb({ exists: snap.exists(), data: snap.exists() ? snap.data() : null, fromCache: snap.metadata.fromCache });
   }, onError);
+}
+
+// Calls cb({ docs: { id: data }, fromCache }) with the full contents of a collection (or of `since` onwards for sessions).
+export function watchCollection(uid, col, cb, onError, { sinceDate } = {}) {
+  let ref = FB.f.collection(FB.db, 'users', uid, COLLECTIONS[col]);
+  if (sinceDate) ref = FB.f.query(ref, FB.f.where('date', '>=', sinceDate));
+  return FB.f.onSnapshot(ref, snap => {
+    const docs = {};
+    snap.docs.forEach(d => { docs[d.id] = d.data(); });
+    cb({ docs, fromCache: snap.metadata.fromCache });
+  }, onError);
+}
+
+export async function getSubDoc(uid, col, id) {
+  const snap = await FB.f.getDoc(subDoc(uid, col, id));
+  return snap.exists() ? snap.data() : null;
+}
+
+// Applies the store's writes: [{ op: 'set'|'delete', col, id, data }] and { op: 'profile', data } (merged into users/{uid}).
+// Split into batches of up to 450. Resolves when Firestore accepted them (or queued them while offline).
+export async function applyWrites(uid, writes) {
+  for (let i = 0; i < writes.length; i += MAX_BATCH) {
+    const batch = FB.f.writeBatch(FB.db);
+    for (const w of writes.slice(i, i + MAX_BATCH)) {
+      if (w.op === 'profile') batch.set(userDoc(uid), clone(w.data), { merge: true });
+      else if (w.op === 'delete') batch.delete(subDoc(uid, w.col, w.id));
+      else batch.set(subDoc(uid, w.col, w.id), clone(w.data));
+    }
+    await batch.commit();
+  }
 }
