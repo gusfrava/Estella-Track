@@ -9,6 +9,23 @@ const closeListeners = new Set();
 
 let sheetEl = null, scrimEl = null, lastFocus = null;
 
+// ---------- background scroll lock ----------
+// While a sheet is open the page behind it must not move. iPhone Safari ignores
+// overflow:hidden on <body>, so we pin the body in place and restore the scroll position on close.
+let lockedY = 0;
+function lockScroll() {
+  if (document.body.classList.contains('scroll-locked')) return;
+  lockedY = window.scrollY;
+  document.body.classList.add('scroll-locked');
+  document.body.style.top = `-${lockedY}px`;
+}
+function unlockScroll() {
+  if (!document.body.classList.contains('scroll-locked')) return;
+  document.body.classList.remove('scroll-locked');
+  document.body.style.top = '';
+  window.scrollTo(0, lockedY);
+}
+
 export const isSheetOpen = () => !!sheetEl;
 export function onSheetClose(fn) { closeListeners.add(fn); }
 
@@ -23,6 +40,7 @@ export function openSheet(html, mount) {
   sheetEl.setAttribute('aria-modal', 'true');
   sheetEl.innerHTML = `<div class="grab" aria-hidden="true"></div>${html}`;
   layer.append(scrimEl, sheetEl);
+  lockScroll();
   scrimEl.addEventListener('click', () => closeSheet());
   requestAnimationFrame(() => { scrimEl && scrimEl.classList.add('open'); sheetEl && sheetEl.classList.add('open'); });
   if (mount) mount(sheetEl);
@@ -35,6 +53,7 @@ export function closeSheet(instant) {
   if (!sheetEl) return;
   const s = sheetEl, sc = scrimEl;
   sheetEl = scrimEl = null;
+  unlockScroll();
   if (instant || reduced()) { s.remove(); sc.remove(); }
   else {
     s.classList.remove('open'); sc.classList.remove('open');
