@@ -1,10 +1,10 @@
 // Service worker: lets the installed app open without internet.
-// - App files (same site): network first, so a new deploy shows up on the next online open; cached copy when offline.
+// - App files (same site): network first and always revalidated, so a new deploy shows up on the next reload; cached copy when offline.
 // - Firebase SDK + Google Fonts: cached after the first load (their URLs include the version, so they never change).
 // Firebase sign-in and database traffic is NOT touched here; Firestore has its own offline cache.
 // If a deploy ever looks stuck, bump CACHE to 'estella-v2' and push.
 
-const CACHE = 'estella-v1';
+const CACHE = 'estella-v2';
 const CDN = [/^https:\/\/www\.gstatic\.com\/firebasejs\//, /^https:\/\/fonts\.googleapis\.com\//, /^https:\/\/fonts\.gstatic\.com\//];
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -28,7 +28,8 @@ self.addEventListener('fetch', event => {
 async function networkFirst(req) {
   const cache = await caches.open(CACHE);
   try {
-    const res = await fetch(req);
+    // 'no-cache' = always ask GitHub if the file changed (skips the browser's 10-minute cache).
+    const res = await fetch(req, { cache: 'no-cache' });
     if (res.ok) cache.put(req, res.clone());
     return res;
   } catch (err) {
