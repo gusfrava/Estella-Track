@@ -1,0 +1,140 @@
+# Estella: data model v2
+
+**Status: approved design, built in phases.** The live app still uses v1, where all of a user's data sits in one document (`users/{uid}.state`). It switches to v2 in the migration PR, and the new `firestore.rules` ship with that same PR so nothing breaks in between.
+
+## Principles
+1. **Data lives under its owner. Sharing is a setting.** Nothing is locked away for good. Each kind of data has a "who can see this" level that the owner chooses.
+2. **Plans are separate from logs.** A *routine* is the plan. A *session* is what actually happened on a given day: a gym workout or another activity. "Done this week" is calculated from this week's sessions, so nothing needs to be reset every Monday.
+3. **Summaries keep screens fast.** Per-exercise stats, weekly cards and leaderboards are pre-built, so each screen opens with one read.
+4. **The server writes anything that gives rewards or rankings:** points, mascot growth, streaks, weekly cards and leaderboards. Nobody can edit these from their phone.
+5. **Shares and posts are snapshots.** Sharing a routine in a post copies it as it was at that moment. It never opens a door into private data.
+
+## Visibility
+There are three levels:
+- **private:** only the owner.
+- **friends:** people the owner accepted.
+- **public:** any signed-in Estella user.
+
+| What | Default |
+|---|---|
+| Profile card (name, username, mascot, level, streak, weekly card) | friends |
+| Routines | friends |
+| Workouts (sessions, weights, PRs, charts) | friends |
+| Body data (weight, measurements) | private |
+
+Trainers don't use these levels. Each trainer gets their own permission from the client (see `coaching`).
+
+## Usernames
+- Every user picks a unique username during onboarding: 3–20 characters, using `a–z 0–9 _ .`, saved in lowercase. Some names are reserved (admin, estella, support…).
+- Uniqueness comes from `usernames/{username} → { uid }`. The rules only allow creating that document if it doesn't exist yet and the uid belongs to the signed-in user.
+- **Finding people:**
+  - Anyone can be found by their **exact** username, which is how you add a friend.
+  - Only **public** profiles show up in search, browsing and charts. Users can also turn off "show me in search".
+
+## Collections
+```
+users/{uid}                         PRIVATE settings (owner only)
+  username, displayName, lang, units, goal, createdAt, discoverable,
+  sharing: { profile, routines, workouts, body }        // 'private' | 'friends' | 'public'
+
+  routines/{routineId}              the plan
+    name, order, days[0-6], recurring, archived, updatedAt,
+    exercises: [{ id, exerciseId, name, type, restSec, note,
+                  target: { sets, reps, weight, unit, seconds } }],
+    source: { type: 'self'|'group'|'trainer'|'post', id, version },
+    assignedBy                       // trainer uid when assigned
+
+  sessions/{sessionId}              the log: one per workout or activity
+    kind: 'gym'|'activity', status: 'in_progress'|'done',
+    date 'YYYY-MM-DD', weekKey, startedAt, finishedAt,
+    routineId, routineName,
+    exercises: [{ exerciseId, name, type, note,
+                  sets: [{ kind: 'normal'|'drop'|'warmup', side: null|'L'|'R',
+                           reps, weight, unit, seconds }] }],
+    activity: { sport, minutes, note },
+    totals: { sets, volume, minutes }
+
+  exerciseStats/{exerciseId}        summary per exercise (prefill + charts)
+    lastSets[], best: { weight, e1rm, volume, date },
+    points: [{ d, e1rm, volume }]    // capped at 500
+
+  body/{date}                       weight, measurements
+  friends/{friendUid}               since
+  customExercises/{id}              exercises not in the library
+  mascot/state                      SERVER ONLY: level, xp, energy, muscles{…}, shape
+  wallet/main                       SERVER ONLY: points, inventory[]
+
+publicProfiles/{uid}                profile card (follows sharing.profile)
+  username, displayName, mascot: { look, equipped, level }, streak
+  weeks/{weekKey}                   SERVER ONLY: routinesDone, routinesPlanned, sessions[], activities[], minutes
+  cheers/{id}                       from, sessionId, createdAt
+
+usernames/{username}                { uid }
+friendRequests/{fromUid_toUid}      from, to, status: 'pending'|'accepted'|'declined', createdAt
+
+groups/{groupId}                    name, inviteCode, createdBy
+  members/{uid}                     role: 'member'|'trainer'|'admin'
+  routines/{id}                     written by trainers, read by members, versioned
+
+coaching/{clientUid_trainerUid}     the client's permission slip for one trainer
+  status, permissions: { routines: 'none'|'read'|'assign', workouts: bool, body: bool }
+
+leaderboards/{metric_period}        SERVER ONLY: top entries { uid, username, value }
+
+(future) posts/{id}, posts/{id}/comments, posts/{id}/reactions, reports/{id}
+```
+
+**The exercise library (359 exercises)** ships as a static file, `js/data/exercises.json`, not as database documents. That makes it free, available offline and instant.
+
+## Who can read what
+- **Owner:** everything of their own.
+- **Friend:** a friend is someone listed in `users/{owner}/friends/`. Friends can see the categories the owner set to `friends` or `public`.
+- **Any signed-in user:** categories set to `public`, plus username lookup.
+- **Trainer:** only what the `coaching/{client_trainer}` document allows. A trainer can write routines into the client's list only with `routines: 'assign'`. Seeing body data needs its own explicit yes, because the EU treats health data as special.
+- **Group members** read the group's routines. Trainers and admins write them.
+- **Server only:** mascot state, wallet, weekly cards, streaks and leaderboards.
+- Removing a friend or a trainer cuts their access immediately.
+
+## Assigned routines
+- **Group:** the trainer writes the routine once in `groups/{id}/routines`. Each member gets a linked copy, marked with `source: { type: 'group', id, version }`. When the trainer publishes a new version, members see "Tu entrenador actualizó la rutina" and choose whether to update. Their history stays intact either way.
+- **One-on-one:** with `routines: 'assign'`, the trainer writes straight into `users/{client}/routines`, with `assignedBy` set.
+
+## Charts and leaderboards
+- Leaderboards are calculated by the server and include public profiles only.
+- They start with consistency metrics: workouts per week, streak, active minutes. These are fair for every level and body type.
+- Strength rankings come later and would need categories (bodyweight, experience).
+
+## Mascot progression
+There are two separate things:
+
+**1. Points (currency).** You earn them and spend them in the store on gym wear and hairstyles. They're awarded by the server after each session. The amounts below are placeholders to tune later:
+- Workout: +10
+- Activity of 20 minutes or more: +5
+- New personal record: +20
+- Weekly plan met: +15
+- Streak bonuses
+
+**2. Growth (how the mascot looks).** The server recalculates it after every session:
+- **Muscle definition per body region** (chest, back, shoulders, arms, core, legs), on a level from 0 to 5. A level goes up when the person's estimated strength on exercises for that region improves compared with *their own starting point*. The exercise library says which muscles each exercise works. Because it measures improvement and not absolute strength, a beginner progresses just as visibly as an advanced lifter.
+- **Energy** comes from consistency. Training according to the plan keeps the mascot energetic. Weeks off make it look tired. Muscle levels only fade slowly, after about 4 weeks without training.
+- **Level and XP** come from total effort over time.
+- **Body shape** is only used if the person turns on body tracking. It's based on their own logged weight and stays private.
+
+**Art needed:** every body region drawn at 6 definition levels as separate layers, about 3 energy expressions, a handful of body-shape presets, and clothing and hair layers that fit every shape.
+
+## Server functions (needs the Blaze plan)
+- `onSessionDone`: updates points, mascot growth, streak, the weekly card and leaderboards.
+- `onUserDeleted`: deletes all of the user's data and frees their username.
+- Later: push notifications, AI features, moderation.
+
+## Migration from v1
+On the first launch of the new version:
+- Routines from `users/{uid}.state` become `routines/` documents.
+- Each exercise's check-off history becomes `sessions/`, grouped by date and routine.
+- Activities become sessions with `kind: 'activity'`.
+- `exerciseStats` are built from those sessions.
+
+The old `state` field stays as a backup for 30 days.
+
+## Cost
+An active user makes roughly 50 reads and 20 writes a day. Firebase's free daily quota is 50,000 reads and 20,000 writes, and Cloud Functions are free up to 2 million calls a month. Hundreds of daily users stay at about $0. Set a budget alert anyway.
