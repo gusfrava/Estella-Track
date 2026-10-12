@@ -63,3 +63,8 @@ textarea.input{min-height:84px;resize:vertical}
 .err-box{background:#FDE7E1;color:#8E2414}
 .ok-box{background:#E3F7F3;color:var(--ink)}
 .btn:disabled{opacity:.6;cursor:default;transform:none;box-shadow:4px 5px 0 var(--ink)}
+
+/* iPhone Safari gives date inputs a fixed minimum width, which pushed the field off-screen. */
+input.input[type="date"]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;text-align:left}
+input.input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0}
+input.input[type="date"]::-webkit-calendar-picker-indicator{opacity:.6}
