@@ -1,0 +1,17 @@
+/* Design tokens: every color and font lives here. Single warm light theme by choice. */
+:root{
+  --safe-top:env(safe-area-inset-top,0px);
+  --bg:#FFF1E1;
+  --card:#FFFFFF;
+  --ink:#2B1B12;
+  --muted:#6E5B4E;
+  --orange:#FF6A2B;
+  --teal:#3DC4B3;
+  --teal-ink:#127F73;
+  --yellow:#FFC94D;
+  --danger:#C8371F;
+  --line:2.5px;
+  --display:"Baloo 2", "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif;
+  --body:"Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}

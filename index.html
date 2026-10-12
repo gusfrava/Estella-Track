@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estella Track</title>
+
+<!-- Installable app (home screen icon, full screen, splash color) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#FFF1E1">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Estella">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap">
+
+<!-- Styles: tokens → base → components → screens → overlays -->
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/screens.css">
+<link rel="stylesheet" href="css/overlays.css">
+
+<!-- App (see README.md for the folder map) -->
+<script type="module" src="js/main.js"></script>
+</head>
+<body>
+<div id="app" class="wrap"></div>
+<div id="layer"></div>
+<noscript>Estella Track necesita JavaScript.</noscript>
+</body>
+</html>
