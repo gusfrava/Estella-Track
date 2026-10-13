@@ -237,8 +237,11 @@ export function endUserSession() {
 
 export async function signOutUser() {
   const user = getSession().user;
+  await fb.flushWrites();                             // last changes to the server first (waits at most 3 s)
   await fb.signOut();                                 // triggers endUserSession via onAuthChange
   if (user) { lsDel(KEYS.userV2(user.uid)); lsDel(KEYS.user(user.uid)); }   // don't leave someone's data on a shared phone
+  // Also erase Firestore's offline copy on this phone, then start fresh (Firestore can't be reused after that).
+  if (await fb.clearOfflineCache()) location.reload();
 }
 
 // ---------- local mode (no account) ----------

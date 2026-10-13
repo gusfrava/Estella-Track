@@ -75,7 +75,9 @@ export function indexLibrary(list, videos = {}) {
 // Only for tests: use an in-memory library.
 export function setLibraryForTests(list, videos) { lib = list ? indexLibrary(list, videos) : null; }
 
-export const libraryExercise = id => (lib && id && lib.byId[id]) || null;
+// Own-property lookups only: an id like "__proto__" (e.g. in a copied routine) must find nothing.
+const own = (obj, id) => (obj && typeof id === 'string' && Object.prototype.hasOwnProperty.call(obj, id) ? obj[id] : null);
+export const libraryExercise = id => (lib && own(lib.byId, id)) || null;
 
 // The name to show for a routine exercise: a library exercise still called by its library name (Spanish or
 // English) shows in the current language; a name the person changed is shown as they wrote it.
@@ -89,7 +91,7 @@ export function exerciseName(ex) {
 
 // The library's technique video for an exercise id → YouTube id, or ''.
 export function libraryVideoId(id) {
-  const v = lib && id && lib.videos[id];
+  const v = lib && own(lib.videos, id);
   return v ? youTubeId(v.video) : '';
 }
 
@@ -99,7 +101,7 @@ export function techniqueVideo(ex) {
   if (!ex) return null;
   const own = youTubeId(ex.video);
   if (own) return { id: own, short: isShort(ex.video) };
-  const v = lib && ex.exerciseId && lib.videos[ex.exerciseId];
+  const v = lib && own(lib.videos, ex.exerciseId);
   const libId = v ? youTubeId(v.video) : '';
   return libId ? { id: libId, short: isShort(v.video) } : null;
 }

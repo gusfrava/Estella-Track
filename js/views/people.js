@@ -3,10 +3,12 @@
 import { t } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
 
-export const personName = p => (p.displayName || '').trim() || `@${p.username}`;
+// Names come from other people's documents: never assume they're text.
+const text = v => (typeof v === 'string' ? v : '').trim();
+export const personName = p => text(p.displayName) || `@${text(p.username) || '?'}`;
 
 export function avatarHTML(p, size = '') {
-  const s = (p.displayName || p.username || '?').trim()[0].toUpperCase();
+  const s = ([...(text(p.displayName) || text(p.username))][0] || '?').toUpperCase();
   return `<span class="pav${size ? ' ' + size : ''}" aria-hidden="true">${esc(s)}</span>`;
 }
 

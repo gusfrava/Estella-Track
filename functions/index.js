@@ -50,6 +50,7 @@ async function rebuild(uid, profile) {
     db.collection('users').doc(uid).collection('exerciseStats').get(),
   ]);
   const c = card.buildCard(profile, sessions.docs.map(d => d.data()), stats.docs.map(d => d.data()));
+  c.builtAt = Date.now();   // when the whole card was last rebuilt (rebuilds on request are limited to one an hour)
   await cardRef(uid).set(c);
   const r = await rebuildShared(uid, profile);
   logger.info('card built', { uid, weeks: Object.keys(c.weeks).length, routines: r.routines.length });
@@ -101,7 +102,11 @@ exports.cardOnProfile = onDocumentWritten('users/{uid}', async event => {
 
   const cardSnap = await cardRef(uid).get();
   const current = dataOf(cardSnap);
-  const asked = after.cardRefreshAt && (!before || before.cardRefreshAt !== after.cardRefreshAt);
+  // The app asks for a rebuild (cardRefreshAt) when its card is missing or outdated. A rebuild reads all of a person's
+  // data, so an up-to-date card is rebuilt on request at most once an hour (someone writing cardRefreshAt in a loop
+  // can't run up the bill).
+  const asked = after.cardRefreshAt && (!before || before.cardRefreshAt !== after.cardRefreshAt)
+    && !(current && Date.now() - (current.builtAt || 0) < 3600000);
   if (!current || current.v !== card.CARD_VERSION || asked) {
     await rebuild(uid, after);
     return;

@@ -18,7 +18,7 @@ const listeners = new Set();
 
 export const getSocial = () => social;
 export function onSocialChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
-const changed = () => listeners.forEach(fn => fn(social));
+const changed = () => listeners.forEach(fn => { try { fn(social); } catch (err) { console.error('[social] listener failed', err); } });
 
 export function setFriends(friends) { social = { ...social, friends, ready: true }; changed(); }
 export function setRequests({ incoming, outgoing }) { social = { ...social, incoming, outgoing }; changed(); }
@@ -31,8 +31,9 @@ export function clearSocial() { social = blank(); changed(); }
 // ---------- reading ----------
 export const pendingIncoming = () => social.incoming.filter(r => r.status === 'pending').sort((a, b) => b.createdAt - a.createdAt);
 export const pendingOutgoing = () => social.outgoing.filter(r => r.status === 'pending').sort((a, b) => b.createdAt - a.createdAt);
+const sortName = f => String(f.displayName || f.username || '');
 export const friendList = () => Object.entries(social.friends).map(([uid, f]) => ({ uid, ...f }))
-  .sort((a, b) => (a.displayName || a.username).localeCompare(b.displayName || b.username));
+  .sort((a, b) => sortName(a).localeCompare(sortName(b)));
 
 // How I'm related to someone: 'me' | 'friend' | 'sent' (I asked) | 'received' (they asked) | 'none'
 export function relation(myUid, uid) {

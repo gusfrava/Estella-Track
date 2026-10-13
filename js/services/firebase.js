@@ -95,6 +95,24 @@ export const deleteAuthUser = user => FB.a.deleteUser(user);
 export const consumeRedirectResult = () => FB.a.getRedirectResult(FB.auth);
 export const signOut = () => FB.a.signOut(FB.auth);
 
+// Give unsaved changes up to `ms` to reach the server (resolves either way; offline it just waits ms).
+export const flushWrites = (ms = 3000) => Promise.race([
+  FB.f.waitForPendingWrites(FB.db).catch(() => {}), new Promise(r => setTimeout(r, ms))]);
+
+// Erases the offline copy of the database on this device (shared phones: the next person can't dig up your data).
+// Firestore must be stopped first, so the page has to reload afterwards. Returns false if it couldn't (e.g. the app is
+// open in another tab, which still uses the copy).
+export async function clearOfflineCache() {
+  try {
+    await FB.f.terminate(FB.db);
+    await FB.f.clearIndexedDbPersistence(FB.db);
+    return true;
+  } catch (err) {
+    log.warn('could not clear the offline cache', err);
+    return false;
+  }
+}
+
 // ---------- user data (v2: one document per routine / session / exercise history) ----------
 // Firestore collection names for the store's collections.
 export const COLLECTIONS = { routines: 'routines', sessions: 'sessions', stats: 'exerciseStats', body: 'body' };
