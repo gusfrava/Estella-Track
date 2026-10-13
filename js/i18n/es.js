@@ -67,6 +67,7 @@ export default {
   videoHint:'Si lo dejas vacío, usamos el video de la biblioteca o una búsqueda en YouTube.', videoSearch:'Buscar en YouTube',
   videoBad:'Ese enlace no parece un video de YouTube.', watchTechnique:'Ver técnica', openInYouTube:'Abrir en YouTube',
   videoNote:'El video se carga desde YouTube.', close:'Cerrar',
+  videoAdd:'Añadir video', videoChange:'Cambiar video',
   setN:n=>`Serie ${n}`, addSet:'Añadir serie', removeSet:'Quitar', lastTime:'La última vez',
   setsDoneOf:(d,n)=>`${d} de ${n} series hechas`,
   today:'Hoy',

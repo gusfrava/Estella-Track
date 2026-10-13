@@ -67,6 +67,7 @@ export default {
   videoHint:'Leave it empty to use the library’s video or a YouTube search.', videoSearch:'Search YouTube',
   videoBad:'That link doesn’t look like a YouTube video.', watchTechnique:'Watch technique', openInYouTube:'Open in YouTube',
   videoNote:'The video loads from YouTube.', close:'Close',
+  videoAdd:'Add video', videoChange:'Change video',
   setN:n=>`Set ${n}`, addSet:'Add set', removeSet:'Remove', lastTime:'Last time',
   setsDoneOf:(d,n)=>`${d} of ${n} sets done`,
   today:'Today',
