@@ -4,7 +4,7 @@ import { t } from '../i18n/index.js';
 import { esc, fmtDay, fmtDuration } from '../utils/format.js';
 import { nextMonday, parseYmd, todayStr } from '../utils/dates.js';
 import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities } from '../state/selectors.js';
-import { brand, langToggle, editDeleteButtons, progressBar } from './partials.js';
+import { brand, langToggle, editDeleteButtons, progressBar, tabBar } from './partials.js';
 
 // opts = { user, localMode, highlightId, showOlder, verify: { needed, ui } }
 export function homeView(state, opts) {
@@ -13,11 +13,7 @@ export function homeView(state, opts) {
   const name = firstName(displayNameOf(state.profile, opts.user));
 
   let h = `
-  <header class="top">${brand()}
-    <div class="top-right">${langToggle()}
-      <button class="avatar" data-action="account" aria-label="${L.account}">${esc(initial({ ...opts, profile: state.profile }))}</button>
-    </div>
-  </header>
+  ${appHeader(state, opts)}
   ${name ? `<p class="hello">${esc(L.hello(name))}</p>` : ''}
   ${opts.verify && opts.verify.needed ? verifyBanner(opts.user, opts.verify.ui) : ''}
   <h1>${L.yourRoutines}</h1>
@@ -31,7 +27,18 @@ export function homeView(state, opts) {
     : `<div class="empty"><h3>${L.emptyTitle}</h3><p>${L.emptyBody}</p></div>`;
   if (hasActivities) h += activitiesSection(week, opts.showOlder);
   h += `<button class="fab" data-action="plus" aria-label="${L.add}">${ICONS.plus}</button>`;
+  h += tabBar('home');
   return h;
+}
+
+// Logo, language and account button: the top of both tabs.
+export function appHeader(state, opts) {
+  const L = t();
+  return `<header class="top">${brand()}
+    <div class="top-right">${langToggle()}
+      <button class="avatar" data-action="account" aria-label="${L.account}">${esc(initial({ ...opts, profile: state.profile }))}</button>
+    </div>
+  </header>`;
 }
 
 // "Verify your email" reminder for email + password accounts.

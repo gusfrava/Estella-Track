@@ -108,3 +108,40 @@ export function lastUsedUnit(state) {
   for (const r of routinesList(state)) for (const e of r.exercises) if (e.target && e.target.unit) return e.target.unit;
   return 'kg';
 }
+
+// ---------- personal records (from the history points in exerciseStats) ----------
+// What a point is worth for this exercise type, as a comparable list ([weight in kg, reps] / [reps] / [seconds]),
+// or null when the point is of another type (e.g. from before the exercise's type was changed).
+const LB = 0.45359237;
+function pointScore(p, type) {
+  if (type === 'time') return p.t != null ? [p.t] : null;
+  if (p.t != null) return null;
+  if (type === 'reps') return [p.r];
+  return [p.u === 'lb' ? p.w * LB : p.w, p.r];
+}
+const beats = (a, b) => { for (let i = 0; i < a.length; i++) { if (a[i] !== b[i]) return a[i] > b[i]; } return false; };
+
+// The best point ever for this exercise: { point, prev } – prev = the best before it (null if it was the first).
+// The record is the first day the best was reached. null when there's no history yet.
+export function personalRecord(state, ex) {
+  let best = null, prev = null;
+  for (const p of exerciseHistory(state, ex.id)) {
+    const score = pointScore(p, ex.type);
+    if (!score) continue;
+    if (!best || beats(score, best.score)) { prev = best; best = { point: p, score }; }
+  }
+  return best ? { point: best.point, prev: prev && prev.point } : null;
+}
+
+// Every exercise with a record, grouped by routine (in routine order). [{ routine, items: [{ ex, record }] }]
+export function recordsByRoutine(state) {
+  return routinesList(state)
+    .map(r => ({ routine: r, items: r.exercises.map(ex => ({ ex, record: personalRecord(state, ex) })).filter(i => i.record) }))
+    .filter(g => g.items.length);
+}
+
+// True when record `after` is strictly better than `before` (both from personalRecord) for this exercise.
+export function beatsRecord(ex, after, before) {
+  if (!after || !before) return false;
+  return beats(pointScore(after.point, ex.type), pointScore(before.point, ex.type));
+}

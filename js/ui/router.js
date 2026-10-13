@@ -1,4 +1,5 @@
-// Which screen inside the app is showing: { name: 'home' } or { name: 'routine', id }.
+// Which screen inside the app is showing: { name: 'home' }, { name: 'progress' } (the two bottom tabs)
+// or { name: 'routine', id }.
 // Uses browser history so the phone's back button/gesture returns to the home screen.
 import { logger } from '../utils/log.js';
 
@@ -27,6 +28,14 @@ export function openRoutine(id) {
   window.scrollTo(0, 0);
 }
 
+// Bottom tabs. Switching tabs replaces the history entry, so the back gesture doesn't walk through tabs.
+export function showTab(name) {
+  if (view.name === name) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  try { history.replaceState({ v: name }, ''); } catch (e) {}
+  setView({ name });
+  window.scrollTo(0, 0);
+}
+
 export function goHome() {
   const pushed = historyHasRoutine();
   setView({ name: 'home' });
@@ -44,6 +53,6 @@ export function initRouter({ onBack } = {}) {
   window.addEventListener('popstate', e => {
     if (onBack) onBack();
     const st = e.state;
-    setView(st && st.v === 'r' ? { name: 'routine', id: st.id } : { name: 'home' });
+    setView(st && st.v === 'r' ? { name: 'routine', id: st.id } : st && st.v === 'progress' ? { name: 'progress' } : { name: 'home' });
   });
 }
