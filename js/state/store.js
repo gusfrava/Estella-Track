@@ -9,7 +9,7 @@
 
 import {
   blankState, normalizeState, normalizeRoutine, normalizeSession, normalizeStat, normalizeProfile,
-  makeRoutine, makeRoutineExercise, makeGymSession, makeActivitySession, normalizeTarget, normalizeSet, setsFromTarget,
+  makeRoutine, makeRoutineExercise, makeGymSession, makeActivitySession, normalizeTarget, normalizeSet, normalizeType, planSets,
   entryDone, pointFromSets, MAX_POINTS, MAX_SETS,
 } from './model.js';
 import { weekKey, weekKeyOf, ymdOf } from '../utils/dates.js';
@@ -61,7 +61,7 @@ function statFor(ex) {
   return st;
 }
 
-// point = { d, s, r, w, u } (see pointFromSets). Replaces that day's point.
+// point = { d, s, r, w, u, t? } (see pointFromSets). Replaces that day's point.
 function setPoint(ex, point) {
   const st = statFor(ex);
   st.points = st.points.filter(p => p.d !== point.d);
@@ -190,17 +190,21 @@ export function addExercise(routineId, data) {
 export function updateExercise(routineId, exId, data) {
   const r = findRoutine(routineId);
   const ex = r && r.exercises.find(e => e.id === exId); if (!ex) return;
-  const oldTarget = ex.target;
+  const old = { target: ex.target, type: ex.type, perSide: ex.perSide };
   ex.name = data.name;
+  ex.type = normalizeType(data.type || ex.type);
+  ex.perSide = !!data.perSide && ex.type !== 'time';
   ex.target = normalizeTarget(data);
   const writes = [setW('routines', touch(r))];
   const s = currentSession(r);
   const e = s && s.exercises.find(x => x.id === exId);
   if (e) {
     e.name = ex.name;
-    if (matchesPlan(e, oldTarget)) {
+    if (matchesPlan(e, old)) {
       const all = entryDone(e);
-      e.sets = setsFromTarget(ex.target, false).map((x, i) => ({ ...x, done: all || !!(e.sets[i] && e.sets[i].done) }));
+      e.sets = planSets(ex, false).map((x, i) => ({ ...x, done: all || !!(e.sets[i] && e.sets[i].done) }));
+    } else if (old.perSide !== ex.perSide) {    // per side switched: right side starts as a copy of the left
+      e.sets.forEach(x => { x.repsR = ex.perSide ? x.reps : null; });
     }
     settle(r, ex, s, e, writes);
   }
@@ -224,9 +228,25 @@ export function deleteExercise(routineId, exId) {
 // Entry = { id, name, doneAt, sets: [{ reps, weight, unit, done, kind }] }. It's done when every set is done.
 
 // True when the entry's sets are exactly the plan (nothing typed or added by hand).
-function matchesPlan(e, t) {
-  return e.sets.length === Math.min(MAX_SETS, t.sets)
-    && e.sets.every(x => x.kind === 'normal' && x.reps === t.reps && x.weight === t.weight && x.unit === t.unit);
+// ex = the routine exercise (or its old { target, type, perSide } before an edit).
+function matchesPlan(e, ex) {
+  const plan = planSets(ex, false);
+  return e.sets.length === plan.length
+    && e.sets.every((x, i) => x.kind === 'normal' && x.reps === plan[i].reps && x.repsR === plan[i].repsR
+      && x.weight === plan[i].weight && x.seconds === plan[i].seconds && x.unit === plan[i].unit);
+}
+
+// A set and the drops right after it: indexes [start, end) in entry.sets.
+function groupAt(sets, i) {
+  let start = i; while (start > 0 && sets[start].kind === 'drop') start--;
+  let end = start + 1; while (end < sets.length && sets[end].kind === 'drop') end++;
+  return { start, end };
+}
+
+// Drop weight: about 20% less, rounded down to 2.5 kg / 5 lb.
+function dropWeight(w, unit) {
+  const step = unit === 'lb' ? 5 : 2.5;
+  return Math.max(0, Math.floor((w * 0.8) / step) * step);
 }
 
 // This exercise's entry in the current session. With create, makes the session and/or entry (sets from the plan, unchecked).
@@ -241,7 +261,7 @@ function entryFor(r, ex, create, writes) {
     writes.push(setW('routines', touch(r)));
   }
   s.routineName = r.name;
-  e = { id: ex.id, name: ex.name, doneAt: null, sets: setsFromTarget(ex.target, false) };
+  e = { id: ex.id, name: ex.name, doneAt: null, sets: planSets(ex, false) };
   s.exercises.push(e);
   return { s, e };
 }
@@ -258,7 +278,7 @@ function updateStatus(r, s) {
 function settle(r, ex, s, e, writes) {
   if (entryDone(e)) {
     if (!e.doneAt) e.doneAt = Date.now();
-    writes.push(setW('stats', setPoint(ex, pointFromSets(ymdOf(e.doneAt), e.sets))));
+    writes.push(setW('stats', setPoint(ex, pointFromSets(ymdOf(e.doneAt), e.sets, ex.type))));
   } else if (e.doneAt) {
     const st = removePoint(ex.id, ymdOf(e.doneAt));
     if (st) writes.push(setW('stats', st));
@@ -297,7 +317,7 @@ export function toggleExercise(routineId, exId) {
   const found = entryFor(r, ex, false, writes);
 
   if (entryDone(found.e)) {
-    if (matchesPlan(found.e, ex.target)) dropEntry(r, found.s, found.e, writes);
+    if (matchesPlan(found.e, ex)) dropEntry(r, found.s, found.e, writes);
     else { found.e.sets.forEach(x => { x.done = false; }); settle(r, ex, found.s, found.e, writes); }
     emit('local', 'uncheck-exercise', writes);
     return NOTHING;
@@ -338,25 +358,40 @@ export const toggleSet = (routineId, exId, i) => changeSets(routineId, exId, 'to
   return x.done ? 'set-done' : true;
 });
 
-// "+ Añadir serie": a copy of the last set, unchecked.
+// "+ Serie": a copy of the last normal set (not its drops), unchecked.
 export const addSet = (routineId, exId) => changeSets(routineId, exId, 'add-set', (e, ex) => {
   if (e.sets.length >= MAX_SETS) return false;
-  const last = e.sets[e.sets.length - 1] || { kind: 'normal', reps: ex.target.reps, weight: ex.target.weight, unit: ex.target.unit };
+  const last = [...e.sets].reverse().find(x => x.kind !== 'drop') || planSets(ex, false)[0];
   e.sets.push({ ...last, kind: 'normal', done: false });
 });
 
-// × on a set (an exercise always keeps at least one).
-export const removeSet = (routineId, exId, i) => changeSets(routineId, exId, 'remove-set', e => {
-  if (e.sets.length <= 1 || !e.sets[i]) return false;
-  e.sets.splice(i, 1);
+// "↓ Drop": a lighter set added to the set you just did (the last checked one, or the last set if none is checked
+// yet), after any drops it already has. Same reps, about 20% less weight.
+export const addDrop = (routineId, exId) => changeSets(routineId, exId, 'add-drop', e => {
+  if (e.sets.length >= MAX_SETS) return false;
+  let i = -1;
+  e.sets.forEach((x, k) => { if (x.done && x.kind !== 'drop') i = k; });
+  if (i < 0) i = e.sets.length - 1;
+  const { end } = groupAt(e.sets, i);
+  const prev = e.sets[end - 1];
+  e.sets.splice(end, 0, { ...prev, kind: 'drop', weight: dropWeight(prev.weight, prev.unit), done: false });
 });
 
-// Typed reps/weight for one set. patch = { reps } | { weight }.
+// × on a row. A drop just goes; a set goes with its drops (an exercise always keeps at least one set).
+export const removeSet = (routineId, exId, i) => changeSets(routineId, exId, 'remove-set', e => {
+  const x = e.sets[i]; if (!x) return false;
+  if (x.kind === 'drop') { e.sets.splice(i, 1); return; }
+  if (e.sets.filter(y => y.kind !== 'drop').length <= 1) return false;
+  const { start, end } = groupAt(e.sets, i);
+  e.sets.splice(start, end - start);
+});
+
+// Typed values for one set. patch = { reps } | { repsR } | { weight } | { seconds }.
 // Action 'edit-set': the screen already shows the typed value, so main.js waits until you leave the field to re-render.
 export const updateSet = (routineId, exId, i, patch) => changeSets(routineId, exId, 'edit-set', e => {
   const x = e.sets[i]; if (!x) return false;
   const next = normalizeSet({ ...x, ...patch });
-  if (next.reps === x.reps && next.weight === x.weight) return false;
+  if (next.reps === x.reps && next.repsR === x.repsR && next.weight === x.weight && next.seconds === x.seconds) return false;
   e.sets[i] = next;
 });
 

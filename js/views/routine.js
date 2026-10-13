@@ -2,9 +2,9 @@
 // Tapping an exercise opens it in place with one row per set (reps × weight, ✓). ui.openId = the open one.
 import { ICONS } from '../ui/icons.js';
 import { t, getLang } from '../i18n/index.js';
-import { esc, fmtDay, fmtNum } from '../utils/format.js';
+import { esc, fmtDay, fmtNum, fmtClock } from '../utils/format.js';
 import { nextMonday, pad2 } from '../utils/dates.js';
-import { orderedExercises, routineProgress, weightChange, isRoutineDone, setsToShow, lastTime } from '../state/selectors.js';
+import { orderedExercises, routineProgress, planChange, isRoutineDone, setsToShow, lastTime } from '../state/selectors.js';
 import { editDeleteButtons, progressBar } from './partials.js';
 
 export function routineView(state, r, ui = {}) {
@@ -41,20 +41,17 @@ export function routineView(state, r, ui = {}) {
 function exerciseItem(state, r, item, open) {
   const L = t();
   const { ex, logged, done } = item;
-  const tg = ex.target;
   const sets = setsToShow(item);
   const nDone = sets.filter(x => x.done).length;
   const partial = !done && nDone > 0;
-  const diff = weightChange(state, ex);
-  const delta = diff ? `<span class="delta${diff < 0 ? ' down' : ''}">${diff > 0 ? '↑ +' : '↓ '}${fmtNum(diff)} ${tg.unit}</span>` : '';
-  const stats = done ? setsSummary(logged.sets) : setsSummary(setsFromPlan(tg));
+  const stats = setsSummary(done ? logged.sets : setsToShow({ ex, logged: null }), ex.type);
   const checkLabel = done ? L.markUndone : partial ? L.setsDoneOf(nDone, sets.length) + '. ' + L.markDone : L.markDone;
   return `<li class="ex${done ? ' done' : ''}${open ? ' open' : ''}${partial ? ' partial' : ''}" data-flip="${ex.id}">
     <div class="ex-row">
       <button class="check" data-action="toggle" data-id="${ex.id}" aria-pressed="${done}" aria-label="${checkLabel}: ${esc(ex.name)}">${partial ? `<span class="check-n num">${nDone}/${sets.length}</span>` : ICONS.check}</button>
       <button class="ex-body" data-action="expand" data-id="${ex.id}" aria-expanded="${open}" aria-controls="sets-${ex.id}">
         <span class="ex-name">${esc(ex.name)}</span>
-        <span class="stats">${stats}${delta}</span>
+        <span class="stats">${stats}${deltaHTML(planChange(state, ex), ex.target.unit)}</span>
       </button>
       ${editDeleteButtons('ex', ex.id, ex.name)}
     </div>
@@ -62,53 +59,117 @@ function exerciseItem(state, r, item, open) {
   </li>`;
 }
 
-// Number for an input box: no thousands separator; decimal comma in Spanish (both are accepted when reading).
-const inputNum = n => String(n).replace('.', getLang() === 'es' ? ',' : '.');
+// "↑ +2.5 kg" / "↑ +2 reps" / "↑ +0:15"
+function deltaHTML({ diff, kind }, unit) {
+  if (!diff) return '';
+  const L = t();
+  const amount = kind === 'time' ? fmtClock(Math.abs(diff)) : `${fmtNum(Math.abs(diff))} ${kind === 'reps' ? L.repsU : unit}`;
+  return `<span class="delta${diff < 0 ? ' down' : ''}">${diff > 0 ? '↑ +' : '↓ −'}${amount}</span>`;
+}
 
-const setsFromPlan = tg => Array.from({ length: tg.sets }, () => ({ reps: tg.reps, weight: tg.weight, unit: tg.unit }));
+// One set as short text: "10×60" (weight × reps), "12" (reps only), "1:30" (time), "10/8×12" (per side),
+// "↓8×47,5" (drop).
+function setText(x, type) {
+  const drop = x.kind === 'drop' ? '↓' : '';
+  if (type === 'time') return drop + fmtClock(x.seconds);
+  const reps = x.repsR == null ? String(x.reps) : `${x.reps}/${x.repsR}`;
+  if (type === 'reps') return drop + reps;
+  return `${drop}${reps}×${x.weight > 0 ? fmtNum(x.weight) : '–'}`;
+}
+const setsUnit = (sets, type) => (type === 'time' ? '' : type === 'reps' ? ` ${t().repsU}` : ` ${sets[0].unit}`);
 
 // "3 series · 10 reps · 60 kg" when all sets are the same, otherwise "10×60 · 10×62,5 · 8×62,5 kg".
-function setsSummary(sets) {
+function setsSummary(sets, type) {
   const L = t();
   if (!sets.length) return '';
   const a = sets[0];
-  const same = sets.every(x => x.reps === a.reps && x.weight === a.weight && x.unit === a.unit);
+  const same = sets.every(x => x.kind === 'normal' && x.reps === a.reps && x.repsR === a.repsR && x.weight === a.weight
+    && x.unit === a.unit && x.seconds === a.seconds);
   if (same) {
-    const weight = a.weight > 0 ? `<span><b>${fmtNum(a.weight)}</b> ${a.unit}</span>` : `<span>${L.bodyweight}</span>`;
-    return `<span><b>${sets.length}</b> ${L.setsU(sets.length)}</span><span><b>${a.reps}</b> ${L.repsU}</span>${weight}`;
+    const n = `<span><b>${sets.length}</b> ${L.setsU(sets.length)}</span>`;
+    if (type === 'time') return `${n}<span><b>${fmtClock(a.seconds)}</b></span>`;
+    // per side: "10 reps por lado", or "10/8 reps" when the sides differ
+    const reps = a.repsR == null ? `<span><b>${a.reps}</b> ${L.repsU}</span>`
+      : a.repsR === a.reps ? `<span><b>${a.reps}</b> ${L.repsU} ${L.eachSide}</span>`
+      : `<span><b>${a.reps}/${a.repsR}</b> ${L.repsU}</span>`;
+    if (type === 'reps') return n + reps;
+    return n + reps + (a.weight > 0 ? `<span><b>${fmtNum(a.weight)}</b> ${a.unit}</span>` : `<span>${L.bodyweight}</span>`);
   }
-  return `<span class="setline">${sets.map(x => `<b>${x.reps}</b>×${x.weight > 0 ? fmtNum(x.weight) : '–'}`).join(' · ')} ${a.unit}</span>`;
+  return `<span class="setline">${sets.map(x => `<b>${setText(x, type)}</b>`).join(' · ')}${setsUnit(sets, type)}</span>`;
 }
 
-function lastTimeLine(last) {
+// History points are formatted by what they hold, so older points still read right after a type change.
+function pointText(p) {
+  if (p.t != null) return `${p.s}× ${fmtClock(p.t)}`;
+  return `${p.s}×${p.r}${p.w > 0 ? ` · ${fmtNum(p.w)} ${p.u}` : ''}`;
+}
+
+function lastTimeLine(last, type) {
   const L = t();
   if (!last) return '';
   const when = fmtDay(new Date(last.date + 'T12:00:00'));
-  const what = last.sets
-    ? last.sets.map(x => `${x.reps}×${x.weight > 0 ? fmtNum(x.weight) : '–'}`).join(' · ') + ` ${last.sets[0].unit}`
-    : `${last.point.s}×${last.point.r} · ${fmtNum(last.point.w)} ${last.point.u}`;
+  const what = last.sets ? last.sets.map(x => setText(x, type)).join(' · ') + setsUnit(last.sets, type) : pointText(last.point);
   return `<p class="last"><b>${L.lastTime}</b> (${esc(when)}): <span class="num">${esc(what)}</span></p>`;
 }
 
-// The open exercise: one row per set. Inputs save when you leave them (change event, see main.js).
+// Number for an input box: no thousands separator; decimal comma in Spanish (both are accepted when reading).
+const inputNum = n => String(n).replace('.', getLang() === 'es' ? ',' : '.');
+
+// A box in a set row. field = 'reps' | 'repsR' | 'weight' | 'min' | 'sec' (min + sec are saved together as seconds).
+function setInput(ex, i, field, value, label) {
+  const mode = field === 'weight' ? 'decimal' : 'numeric';
+  return `<input class="set-in num" type="text" inputmode="${mode}" enterkeyhint="done" autocomplete="off" data-set="${field}" data-id="${ex.id}" data-i="${i}" value="${value}" aria-label="${label}">`;
+}
+
+// The open exercise: one row per set (drops indented under their set). The row's boxes depend on the exercise:
+//   weight × reps  # [reps] × [weight] kg ✓ ×      per side: # [L] [R] [weight] ✓ ×
+//   reps only      # [reps] reps ✓ ×               per side: # [L] [R] ✓ ×
+//   time           # [min] : [sec] ✓ ×
+// Inputs save when you leave them (change event, see main.js).
 function setsPanel(state, r, ex, sets) {
   const L = t();
+  const { type, perSide } = ex;
+  const normals = sets.filter(x => x.kind !== 'drop').length;
+  let n = 0;
   const rows = sets.map((x, i) => {
-    const n = i + 1;
-    return `<li class="set${x.done ? ' done' : ''}">
-      <span class="set-n num" aria-hidden="true">${n}</span>
-      <input class="set-in num" type="text" inputmode="numeric" enterkeyhint="done" autocomplete="off" data-set="reps" data-id="${ex.id}" data-i="${i}" value="${x.reps}" aria-label="${L.setN(n)}: ${L.repsU}">
-      <span class="set-x" aria-hidden="true">×</span>
-      <input class="set-in num" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" data-set="weight" data-id="${ex.id}" data-i="${i}" value="${inputNum(x.weight)}" aria-label="${L.setN(n)}: ${L.weight} (${x.unit})">
-      <span class="set-u">${x.unit}</span>
-      <button class="set-check" data-action="set-tick" data-id="${ex.id}" data-i="${i}" aria-pressed="${!!x.done}" aria-label="${L.setN(n)}: ${x.done ? L.markUndone : L.markDone}">${ICONS.check}</button>
-      ${sets.length > 1 ? `<button class="set-del" data-action="set-del" data-id="${ex.id}" data-i="${i}" aria-label="${L.removeSet}: ${L.setN(n)}">×</button>` : '<span></span>'}
+    const drop = x.kind === 'drop';
+    if (!drop) n++;
+    const name = drop ? L.dropOf(n) : L.setN(n);
+    const right = x.repsR == null ? x.reps : x.repsR;
+    let boxes;
+    if (type === 'time') {
+      boxes = `${setInput(ex, i, 'min', Math.floor(x.seconds / 60), `${name}: ${L.minutes}`)}<span class="set-x" aria-hidden="true">:</span>`
+        + `${setInput(ex, i, 'sec', pad2(x.seconds % 60), `${name}: ${L.seconds}`)}<span></span>`;
+    } else if (perSide) {
+      boxes = setInput(ex, i, 'reps', x.reps, `${name}: ${L.repsU} ${L.left}`) + setInput(ex, i, 'repsR', right, `${name}: ${L.repsU} ${L.right}`)
+        + (type === 'weight_reps' ? setInput(ex, i, 'weight', inputNum(x.weight), `${name}: ${L.weight} (${x.unit})`) : '');
+    } else if (type === 'reps') {
+      boxes = `${setInput(ex, i, 'reps', x.reps, `${name}: ${L.repsU}`)}<span class="set-u left">${L.repsU}</span>`;
+    } else {
+      boxes = `${setInput(ex, i, 'reps', x.reps, `${name}: ${L.repsU}`)}<span class="set-x" aria-hidden="true">×</span>`
+        + `${setInput(ex, i, 'weight', inputNum(x.weight), `${name}: ${L.weight} (${x.unit})`)}<span class="set-u">${x.unit}</span>`;
+    }
+    const canDelete = drop || normals > 1;
+    return `<li class="set${x.done ? ' done' : ''}${drop ? ' drop' : ''}">
+      <span class="set-n num" aria-hidden="true">${drop ? '↓' : n}</span>
+      ${boxes}
+      <button class="set-check" data-action="set-tick" data-id="${ex.id}" data-i="${i}" aria-pressed="${!!x.done}" aria-label="${name}: ${x.done ? L.markUndone : L.markDone}">${ICONS.check}</button>
+      ${canDelete ? `<button class="set-del" data-action="set-del" data-id="${ex.id}" data-i="${i}" aria-label="${L.removeSet}: ${name}">×</button>` : '<span></span>'}
     </li>`;
   }).join('');
-  return `<div class="sets" id="sets-${ex.id}">
-    ${lastTimeLine(lastTime(state, r, ex.id))}
-    <div class="set-head" aria-hidden="true"><span>#</span><span>${L.repsU}</span><span></span><span>${L.weight}</span><span></span><span></span><span></span></div>
+  const unit = sets[0] ? sets[0].unit : ex.target.unit;
+  const head = type === 'time' ? [L.minShort, '', L.secShort, '']
+    : perSide ? [L.leftShort, L.rightShort, ...(type === 'weight_reps' ? [unit] : [])]
+    : type === 'reps' ? [L.repsU, ''] : [L.repsU, '', L.weight, ''];
+  const layout = type === 'time' ? 't-time' : perSide ? (type === 'reps' ? 't-side-reps' : 't-side') : `t-${type}`;
+  const canDrop = type === 'weight_reps' && sets.length < 50;
+  return `<div class="sets ${layout}" id="sets-${ex.id}">
+    ${lastTimeLine(lastTime(state, r, ex.id), type)}
+    <div class="set-head" aria-hidden="true"><span>#</span>${head.map(h => `<span>${h}</span>`).join('')}<span></span><span></span></div>
     <ol class="setlist">${rows}</ol>
-    ${sets.length < 50 ? `<button class="add-set" data-action="set-add" data-id="${ex.id}">${ICONS.plus}<span>${L.addSet}</span></button>` : ''}
+    ${sets.length < 50 ? `<div class="set-actions${canDrop ? ' two' : ''}">
+      <button class="add-set" data-action="set-add" data-id="${ex.id}" aria-label="${L.addSet}">${ICONS.plus}<span>${canDrop ? L.addSetShort : L.addSet}</span></button>
+      ${canDrop ? `<button class="add-set drop" data-action="set-drop" data-id="${ex.id}" aria-label="${L.addDropLong}"><span aria-hidden="true">↓</span><span>${L.addDrop}</span></button>` : ''}
+    </div>` : ''}
   </div>`;
 }

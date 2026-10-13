@@ -155,6 +155,7 @@ const ACTIONS = {
   expand: d => { openId = openId === d.id ? null : d.id; render(); },
   'set-tick': d => logChange(d.id, rid => store.toggleSet(rid, d.id, Number(d.i))),
   'set-add': d => logChange(d.id, rid => store.addSet(rid, d.id)),
+  'set-drop': d => logChange(d.id, rid => store.addDrop(rid, d.id)),
   'set-del': d => logChange(d.id, rid => store.removeSet(rid, d.id, Number(d.i))),
   'new-ex': () => openExerciseForm(routineId(), null),
   'edit-ex': d => openExerciseForm(routineId(), d.id),
@@ -183,10 +184,20 @@ app.addEventListener('change', e => {
 
 // ---------- set rows (reps × weight boxes) ----------
 // Reads a box ("62,5" or "62.5"); an empty or invalid box goes back to its saved value on the next re-render.
+// Time rows have two boxes (min : sec) that are saved together as seconds.
+const readBox = el => parseFloat(String(el.value).replace(',', '.'));
 function saveSetInput(input) {
   const { id, i, set } = input.dataset;
-  const value = parseFloat(String(input.value).replace(',', '.'));
+  const value = readBox(input);
   if (!Number.isFinite(value) || value < 0) { renderLater = true; return; }
+  if (set === 'min' || set === 'sec') {
+    const row = input.closest('.set');
+    const min = readBox(row.querySelector('[data-set=min]')) || 0;
+    const sec = readBox(row.querySelector('[data-set=sec]')) || 0;
+    store.updateSet(routineId(), id, Number(i), { seconds: Math.round(min * 60 + sec) });
+    renderLater = true;               // re-draw later so "75" seconds shows as 1:15
+    return;
+  }
   store.updateSet(routineId(), id, Number(i), { [set]: value });
 }
 app.addEventListener('focusin', e => { if (e.target.classList.contains('set-in')) e.target.select(); });
