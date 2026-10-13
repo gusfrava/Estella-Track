@@ -10,12 +10,12 @@ import { brand, langToggle, editDeleteButtons, progressBar } from './partials.js
 export function homeView(state, opts) {
   const L = t();
   const week = weekSummary(state);
-  const name = firstName(opts.user);
+  const name = firstName(displayNameOf(state.profile, opts.user));
 
   let h = `
   <header class="top">${brand()}
     <div class="top-right">${langToggle()}
-      <button class="avatar" data-action="account" aria-label="${L.account}">${esc(initial(opts))}</button>
+      <button class="avatar" data-action="account" aria-label="${L.account}">${esc(initial({ ...opts, profile: state.profile }))}</button>
     </div>
   </header>
   ${name ? `<p class="hello">${esc(L.hello(name))}</p>` : ''}
@@ -90,14 +90,17 @@ function activityItem(s) {
   </li>`;
 }
 
-function firstName(user) {
-  const n = user && user.displayName ? user.displayName.trim() : '';
-  return n ? n.split(/\s+/)[0] : '';
+// The name to show: the profile's (editable in the app), else the one from sign-up / Google.
+export function displayNameOf(profile, user) {
+  return ((profile && profile.displayName) || (user && user.displayName) || '').trim();
 }
 
-function initial({ user, localMode }) {
+function firstName(name) {
+  return name ? name.split(/\s+/)[0] : '';
+}
+
+export function initial({ user, profile, localMode }) {
   if (localMode) return '·';
-  const s = (user && (user.displayName || user.email)) || '?';
+  const s = displayNameOf(profile, user) || (profile && profile.username) || (user && user.email) || '?';
   return s.trim()[0].toUpperCase();
 }
-export { initial };

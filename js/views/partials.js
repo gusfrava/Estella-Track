@@ -4,7 +4,7 @@ import { ICONS } from '../ui/icons.js';
 import { t, getLang } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
 
-export const brand = () => `<div class="brand">${ICONS.star}<span>Estella Track</span></div>`;
+export const brand = () => `<div class="brand">${ICONS.star}<span>Estella</span></div>`;
 
 export function langToggle() {
   const lang = getLang();

@@ -6,13 +6,14 @@
 // - ACTIONS maps every data-action="..." in the HTML to one function. Unknown actions log a warning.
 
 import { isFirebaseConfigured } from './config.js';
-import { getLang, setLang, onLangChange } from './i18n/index.js';
+import { t, getLang, setLang, onLangChange } from './i18n/index.js';
 import { logger, DEBUG } from './utils/log.js';
 import * as fb from './services/firebase.js';
 import * as sync from './services/sync.js';
 import * as store from './state/store.js';
 import { getSession, setSession, onSessionChange } from './state/session.js';
 import * as auth from './controllers/auth.js';
+import * as profileForm from './controllers/profile.js';
 import { getView, onRouteChange, openRoutine, goHome, resetRoute, initRouter } from './ui/router.js';
 import { closeSheet } from './ui/sheet.js';
 import { capturePositions, animateMoves, celebrate } from './ui/motion.js';
@@ -20,6 +21,7 @@ import { splashView } from './views/splash.js';
 import { authView } from './views/auth.js';
 import { homeView } from './views/home.js';
 import { routineView } from './views/routine.js';
+import { usernameView, statusHTML, errorHTML } from './views/username.js';
 import { openPlusMenu } from './sheets/plus-menu.js';
 import { openRoutineForm } from './sheets/routine-form.js';
 import { openExerciseForm } from './sheets/exercise-form.js';
@@ -40,6 +42,12 @@ function render() {
   const s = getSession();
   if (s.mode === 'loading') { app.innerHTML = splashView(); return; }
   if (s.mode === 'auth') { app.innerHTML = authView(auth.getAuthUI(), { configured: isFirebaseConfigured(), fatal: s.fatal }); return; }
+  // One-time gate: signed-in accounts need a username before using the app.
+  const profile = store.getState().profile;
+  if (!s.localMode && s.user && profile && !profile.username) {
+    app.innerHTML = usernameView(profileForm.ensureProfileForm());
+    return;
+  }
   const view = getView();
   const routine = view.name === 'routine' ? store.findRoutine(view.id) : null;
   app.innerHTML = routine
@@ -48,10 +56,21 @@ function render() {
 }
 
 store.subscribe(render);
+// The name/username form updates its status line in place (a full re-render would move the cursor).
+profileForm.onProfileFormChange((form, kind) => {
+  const status = document.getElementById('u-status');
+  if (!status) return;
+  status.innerHTML = statusHTML(form);
+  document.getElementById('u-error').innerHTML = errorHTML(form);
+  const btn = document.getElementById('u-submit');
+  btn.disabled = form.busy;
+  btn.textContent = form.busy ? t().saving : (form.editing ? t().save : t().continue);
+});
 onRouteChange(render);
 auth.onAuthUIChange(render);
 onLangChange(lang => { fb.setAuthLanguage(lang); render(); });
 onSessionChange((s, prev) => {
+  if (s.user !== prev.user) profileForm.resetProfileForm();
   if (s.mode === 'app' && prev.mode !== 'app') resetRoute();
   if (s.mode !== 'app') closeSheet(true);
   render();
@@ -110,10 +129,18 @@ app.addEventListener('click', e => {
 });
 
 app.addEventListener('input', e => auth.rememberInput(e.target.id, e.target.value));
+// Name/username fields live on the gate screen (#app) or in the Edit profile sheet (#layer).
+document.addEventListener('input', e => {
+  if (e.target.id === 'u-display' || e.target.id === 'u-name') profileForm.onProfileInput(e.target.id, e.target.value, e.target);
+});
 
 app.addEventListener('submit', e => {
   if (e.target.id === 'f-auth') { e.preventDefault(); auth.submitLogin(); }
   else if (e.target.id === 'f-reset') { e.preventDefault(); auth.submitReset(); }
+  else if (e.target.id === 'f-username') {
+    e.preventDefault();
+    profileForm.submitProfileForm().then(ok => { if (ok) profileForm.resetProfileForm(); });
+  }
 });
 
 // A new week can start while the app sits open in the background.

@@ -1,4 +1,4 @@
-# Estella Track
+# Estella
 
 A gym routine tracker. It's plain HTML, CSS and JavaScript modules, with no build step. It's hosted on GitHub Pages and uses Firebase for accounts and data.
 
@@ -33,7 +33,7 @@ js/
   config.js             Firebase keys. The only file you edit to connect Firebase.
 
   i18n/                 All text. es.js and en.js must have the same keys.
-  utils/                Dates, formatting, ids, logging. No app logic.
+  utils/                Dates, formatting, ids, logging, username rules. No app logic.
 
   state/
     model.js            What a routine / session / exercise history looks like (read this first; full design in docs/DATA-MODEL.md).
@@ -49,12 +49,14 @@ js/
 
   controllers/
     auth.js             Sign-in logic: login, create account, reset password, Google.
+    profile.js          Name + username form: live "is it free?" check and saving (claims the name atomically).
 
   views/                Build the HTML for each screen. No logic, no data changes.
-    home.js  routine.js  auth.js  splash.js  partials.js
+    home.js  routine.js  auth.js  username.js  splash.js  partials.js
 
   sheets/               The pop-up panels and what their Save buttons do.
     routine-form.js  exercise-form.js  activity-form.js  plus-menu.js  account.js  delete.js  fields.js
+    profile-form.js  privacy.js
 
   ui/
     router.js           Home vs routine screen, and the phone's back button.
@@ -71,6 +73,7 @@ js/
 - **Looks wrong but the data is right:** the screen's file in `js/views/`, then `css/`
 - **A form saves the wrong thing:** its file in `js/sheets/`
 - **Sign-in errors:** `js/controllers/auth.js`. Error wording is under `errors` in the i18n files.
+- **Username won't save / says taken:** `js/controllers/profile.js` and the `usernames` rules. Each taken name is a document in `usernames/` in the Firebase console.
 - **Data isn't saving or syncing between phones:** `js/services/sync.js`, then `firebase.js`. Also check the Firestore rules. With `?debug`, every save logs `[sync] saved N doc(s)`.
 - **Old data looks wrong after updating:** `js/services/migrate.js`. The original data is still in `users/{uid}.state` in the Firebase console.
 - **The installed app shows old code:** `sw.js`. Change `CACHE` to the next number and push.

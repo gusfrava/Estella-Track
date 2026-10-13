@@ -1,4 +1,4 @@
-# Connect Estella Track to Firebase
+# Connect Estella to Firebase
 
 This takes about 10 minutes. You only do it once.
 

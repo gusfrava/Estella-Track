@@ -115,6 +115,13 @@ export function applyRemoteProfile(raw) {
   if (stable(next) !== stable(state.profile)) { state.profile = next; emit('remote', 'remote-profile'); }
 }
 
+// ---------- profile & settings (users/{uid}) ----------
+// patch = { sharing: {...} } | { discoverable: bool } | … – merged into the profile document.
+export function updateProfile(patch) {
+  state.profile = { ...(state.profile || {}), ...patch };
+  emit('local', 'update-profile', [{ op: 'profile', data: patch }]);
+}
+
 // A new week started while the app was open: nothing to change, the screens just need to recalculate.
 export const checkNewWeek = () => emit('local', 'tick');
 
