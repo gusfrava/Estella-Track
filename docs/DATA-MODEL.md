@@ -54,12 +54,16 @@ users/{uid}                         PRIVATE settings (owner only)
     routineId, routineName,
     exercises: [{ id /* routine exercise id */, exerciseId, name, type, note, doneAt,
                   sets: [{ kind: 'normal'|'drop'|'warmup', side: null|'L'|'R',
-                           reps, weight, unit, seconds }] }],
+                           reps, weight, unit, seconds, done }] }],
+    // Per-set logging: an exercise entry is done when every set has done: true (older data without the
+    // flag counts as done). Unchecked sets hold the values typed so far, while the workout is in progress.
+    // doneAt is set when the last set is checked.
     activity: { sport, minutes, note },
     totals: { sets, volume, minutes }
 
   exerciseStats/{exerciseId}        summary per exercise (prefill + charts)
-    name, points: [{ d, s, r, w, u }]   // one point per day it was done (sets, reps, weight, unit), capped at 500
+    name, points: [{ d, s, r, w, u }]   // one point per day it was done, capped at 500:
+                                        // s = sets done, w = heaviest weight, r = best reps at that weight
     (later: lastSets[], best: { weight, e1rm, volume, date })
 
   body/{date}                       weight, measurements

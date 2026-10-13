@@ -43,6 +43,8 @@ export default {
   nameRequired:'Add a name to continue.', durationRequired:'Add how long it lasted.',
   back:'Back', add:'Add', edit:'Edit', del:'Delete',
   markDone:'Mark as done', markUndone:'Uncheck',
+  setN:n=>`Set ${n}`, addSet:'Add set', removeSet:'Remove', lastTime:'Last time',
+  setsDoneOf:(d,n)=>`${d} of ${n} sets done`,
   today:'Today',
   signInTitle:'Sign in', signUpTitle:'Create your account',
   authSub:'Your routines and progress, saved in the cloud and on all your devices.',

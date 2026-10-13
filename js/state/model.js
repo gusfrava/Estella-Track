@@ -15,8 +15,10 @@
 // Session (gym)      = { id, kind: 'gym', routineId, routineName, date, weekKey, status: 'in_progress'|'done',
 //                        startedAt, finishedAt, updatedAt,
 //                        exercises: [{ id /* routine exercise id */, name, doneAt, sets: Set[] }] }
+//                      An exercise entry is "done" when it has sets and every set is done (see entryDone).
+//                      An entry with unchecked sets is in progress: the values typed so far, kept while you train.
 // Session (activity) = { id, kind: 'activity', date, weekKey, status: 'done', activity: { sport, minutes, note }, createdAt, updatedAt }
-// Set = { kind: 'normal'|'drop'|'warmup', reps, weight, unit }
+// Set = { kind: 'normal'|'drop'|'warmup', reps, weight, unit, done }   // done missing in older data = true
 //
 // ExerciseStat = { id /* routine exercise id */, name, points: [{ d: 'YYYY-MM-DD', s: sets, r: reps, w: weight, u: unit }] }
 //
@@ -50,6 +52,11 @@ export function normalizeRoutine(id, d = {}) {
   };
 }
 
+export const MAX_SETS = 50;
+export const normalizeSet = (s = {}) => ({
+  kind: s.kind || 'normal', reps: Math.max(0, Math.round(num(s.reps))), weight: Math.max(0, num(s.weight)), unit: s.unit === 'lb' ? 'lb' : 'kg', done: s.done !== false,
+});
+
 export function normalizeSession(id, d = {}) {
   const date = d.date || todayStr();
   const base = { id, kind: d.kind === 'activity' ? 'activity' : 'gym', date, weekKey: d.weekKey || weekKeyOf(date), status: d.status === 'in_progress' ? 'in_progress' : 'done', updatedAt: num(d.updatedAt, 0) };
@@ -62,7 +69,7 @@ export function normalizeSession(id, d = {}) {
     startedAt: num(d.startedAt, 0), finishedAt: d.finishedAt ? num(d.finishedAt) : null,
     exercises: (Array.isArray(d.exercises) ? d.exercises : []).map(e => ({
       id: e.id, name: e.name || '', doneAt: e.doneAt ? num(e.doneAt) : null,
-      sets: (Array.isArray(e.sets) ? e.sets : []).map(s => ({ kind: s.kind || 'normal', reps: num(s.reps), weight: num(s.weight), unit: s.unit === 'lb' ? 'lb' : 'kg' })),
+      sets: (Array.isArray(e.sets) ? e.sets : []).map(normalizeSet),
     })),
   };
 }
@@ -95,8 +102,20 @@ export const makeActivitySession = ({ sport, minutes, date, note }) => ({
   id: uid(), kind: 'activity', date, weekKey: weekKeyOf(date), status: 'done', createdAt: Date.now(), updatedAt: Date.now(), activity: { sport, minutes, note },
 });
 
-// The sets that a check-off logs: the routine's target, one entry per set.
-export const setsFromTarget = t => Array.from({ length: Math.min(50, t.sets) }, () => ({ kind: 'normal', reps: t.reps, weight: t.weight, unit: t.unit }));
+// The sets an exercise starts with: the routine's target, one entry per set. done = checked off already.
+export const setsFromTarget = (t, done = true) =>
+  Array.from({ length: Math.min(MAX_SETS, t.sets) }, () => ({ kind: 'normal', reps: t.reps, weight: t.weight, unit: t.unit, done }));
+
+// A logged exercise counts as done when every one of its sets is checked.
+export const entryDone = e => !!(e && e.sets.length && e.sets.every(s => s.done));
+
+// The history point an exercise's sets produce: heaviest weight, best reps at that weight, number of sets done.
+export function pointFromSets(date, sets) {
+  const done = sets.filter(s => s.done);
+  if (!done.length) return null;
+  const top = done.reduce((a, b) => (b.weight > a.weight || (b.weight === a.weight && b.reps > a.reps) ? b : a));
+  return { d: date, s: done.length, r: top.reps, w: top.weight, u: top.unit };
+}
 
 // ---------- whole state from plain data (device cache, local mode) ----------
 export function normalizeState(d) {

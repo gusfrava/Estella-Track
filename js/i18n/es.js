@@ -43,6 +43,8 @@ export default {
   nameRequired:'Escribe un nombre para continuar.', durationRequired:'Pon cuánto tiempo duró.',
   back:'Volver', add:'Añadir', edit:'Editar', del:'Eliminar',
   markDone:'Marcar como hecho', markUndone:'Desmarcar',
+  setN:n=>`Serie ${n}`, addSet:'Añadir serie', removeSet:'Quitar', lastTime:'La última vez',
+  setsDoneOf:(d,n)=>`${d} de ${n} series hechas`,
   today:'Hoy',
   signInTitle:'Entra a tu cuenta', signUpTitle:'Crea tu cuenta',
   authSub:'Tus rutinas y tu progreso, guardados en la nube y en todos tus dispositivos.',
