@@ -45,3 +45,10 @@ export function daysAgo(n) {
   d.setDate(d.getDate() - n);
   return ymd(d);
 }
+
+// The Monday `n` weeks before the week of weekKeyStr (n = 1 → the week before).
+export function weeksBefore(weekKeyStr, n = 1) {
+  const d = parseYmd(weekKeyStr);
+  d.setDate(d.getDate() - 7 * n);
+  return ymd(d);
+}

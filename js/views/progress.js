@@ -3,15 +3,13 @@
 import { ICONS } from '../ui/icons.js';
 import { t } from '../i18n/index.js';
 import { esc, fmtDay, fmtNum, fmtClock } from '../utils/format.js';
-import { parseYmd, ymd } from '../utils/dates.js';
-import { recordsByRoutine } from '../state/selectors.js';
+import { parseYmd, daysAgo } from '../utils/dates.js';
+import { recordsByRoutine, weeklyStreak } from '../state/selectors.js';
 import { tabBar } from './partials.js';
 import { appHeader } from './home.js';
 
 const NEW_DAYS = 7;      // a record shows "Nuevo" for a week
 const MONTH_DAYS = 30;   // "N récords nuevos este mes"
-
-const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return ymd(d); };
 
 // opts = same as the home screen (user, localMode) for the header.
 export function progressView(state, opts) {
@@ -22,7 +20,8 @@ export function progressView(state, opts) {
 
   let h = `${appHeader(state, opts)}
   <h1>${L.progressTitle}</h1>
-  <p class="sub">${L.recordsSub}</p>`;
+  <p class="sub">${L.recordsSub}</p>
+  ${streakCard(weeklyStreak(state))}`;
 
   if (!groups.length) {
     h += `<div class="empty" style="margin-top:26px">${ICONS.trophy}<h3>${L.noRecordsTitle}</h3><p>${L.noRecordsBody}</p></div>`;
@@ -35,6 +34,23 @@ export function progressView(state, opts) {
   }
   h += tabBar('progress');
   return h;
+}
+
+// "5 semanas seguidas" + the last 8 weeks as dots. s = selectors.weeklyStreak().
+function streakCard(s) {
+  const L = t();
+  const msg = !s.current ? L.streakStart : s.thisWeek ? L.streakKept : L.streakKeepIt;
+  const dots = s.recent.map((w, i) => {
+    const now = i === s.recent.length - 1;
+    return `<span class="sdot${w.done ? ' on' : ''}${now ? ' now' : ''}" title="${esc(fmtDay(parseYmd(w.key)))}"></span>`;
+  }).join('');
+  return `<section class="streak" aria-label="${L.streakLabel}">
+    <div class="streak-top">${ICONS.flame}
+      <div><b class="num">${esc(s.current ? L.streakWeeks(s.current) : L.streakZero)}</b><span>${esc(msg)}</span></div>
+    </div>
+    <div class="sdots" role="img" aria-label="${esc(L.streakDotsLabel(s.recent.filter(w => w.done).length))}">${dots}</div>
+    ${s.best > s.current ? `<p class="streak-best">${esc(L.streakBest(s.best))}</p>` : ''}
+  </section>`;
 }
 
 // One record: name, date and gain on the left, the record value on the right.

@@ -1,6 +1,6 @@
 // Read-only calculations on the data (no changes here). Views use these.
 // "Done this week" is never stored: it comes from the routine's current session.
-import { ymd, weekRange, todayStr } from '../utils/dates.js';
+import { ymd, weekRange, todayStr, weekKey, weekKeyOf, weeksBefore } from '../utils/dates.js';
 import { currentSession } from './store.js';
 import { entryDone, planSets } from './model.js';
 
@@ -144,4 +144,39 @@ export function recordsByRoutine(state) {
 export function beatsRecord(ex, after, before) {
   if (!after || !before) return false;
   return beats(pointScore(after.point, ex.type), pointScore(before.point, ex.type));
+}
+
+// ---------- weekly streak ----------
+// A week counts when you trained in it: a gym session with at least one checked set, or an activity.
+// Sessions are only loaded for the last 120 days, so older weeks also count from the exercise history points
+// (one per day an exercise was finished). Rest days never break a streak; only a whole week without training does.
+export function trainedWeeks(state) {
+  const weeks = new Set();
+  for (const s of Object.values(state.sessions)) {
+    const trained = s.kind === 'activity' || s.exercises.some(e => e.sets.some(x => x.done));
+    if (trained) weeks.add(weekKeyOf(s.date));
+  }
+  for (const st of Object.values(state.stats)) for (const p of st.points) weeks.add(weekKeyOf(p.d));
+  return weeks;
+}
+
+// { current, best, thisWeek, recent }
+//   current   – weeks in a row up to now. This week only adds once you train in it; until then the streak
+//               from last week is still alive (thisWeek = false → "train this week to keep it").
+//   best      – longest run ever (from what's loaded).
+//   recent    – the last 8 weeks, oldest first: [{ key, done }] (the last one is this week).
+export function weeklyStreak(state) {
+  const weeks = trainedWeeks(state);
+  const now = weekKey();
+  const thisWeek = weeks.has(now);
+  let current = 0;
+  for (let k = thisWeek ? now : weeksBefore(now); weeks.has(k); k = weeksBefore(k)) current++;
+  let best = 0, run = 0, prev = null;
+  for (const k of [...weeks].sort()) {
+    run = prev && weeksBefore(k) === prev ? run + 1 : 1;
+    best = Math.max(best, run);
+    prev = k;
+  }
+  const recent = Array.from({ length: 8 }, (_, i) => { const key = weeksBefore(now, 7 - i); return { key, done: weeks.has(key) }; });
+  return { current, best: Math.max(best, current), thisWeek, recent };
 }
