@@ -36,3 +36,10 @@
 body.scroll-locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 .sheet,.scrim{overscroll-behavior:contain}
 .scrim{touch-action:none}
+
+/* Account + privacy sheets */
+.acct .handle-text{color:var(--teal-ink);font-family:var(--display);font-weight:700}
+.share-list{display:flex;flex-direction:column;gap:12px}
+.share-row{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border:var(--line) solid var(--ink);border-radius:18px;background:var(--card)}
+.share-row b{display:block;font-family:var(--display);font-weight:800;font-size:1.05rem}
+.share-row span{display:block;color:var(--muted);font-size:.9rem}

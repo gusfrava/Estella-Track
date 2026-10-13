@@ -3,7 +3,7 @@ rules_version = '2';
 // Estella security rules — data model v2 (see docs/DATA-MODEL.md).
 // Paste into Firebase console → Firestore Database → Rules → Publish.
 // Friends, groups, trainers and leaderboards get their read rules when those features ship;
-// until then everything outside a user's own data is closed.
+// until then everything outside a user's own data (and username lookups) is closed.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -18,6 +18,23 @@ service cloud.firestore {
             && data.sharing.values().hasOnly(['private', 'friends', 'public']));
     }
 
+    // Usernames: 3–20 chars, a–z 0–9 _ . — not starting/ending with "." — no ".." — not reserved (same list as js/utils/username.js).
+    function validUsername(name) {
+      return name.matches('^[a-z0-9_][a-z0-9_.]{1,18}[a-z0-9_]$')
+        && !name.matches('.*[.][.].*')
+        && !(name in ['admin', 'administrator', 'estella', 'support', 'soporte', 'help', 'ayuda', 'root', 'system', 'moderator', 'mod',
+                      'staff', 'team', 'official', 'oficial', 'null', 'undefined', 'me', 'api', 'www', 'app', 'settings', 'trainer', 'entrenador']);
+    }
+
+    // A profile may only point at a username this person owns (claimed in the same batch).
+    function ownsUsername(data) {
+      return !('username' in data)
+        || getAfter(/databases/$(database)/documents/usernames/$(data.username)).data.uid == request.auth.uid;
+    }
+    function usernameUnchanged() {
+      return request.resource.data.get('username', null) == resource.data.get('username', null);
+    }
+
     // Once an account is on v2, an old copy of the app can't overwrite the profile (it would drop schemaVersion).
     function keepsSchemaVersion() {
       return !('schemaVersion' in resource.data)
@@ -27,8 +44,9 @@ service cloud.firestore {
     match /users/{uid} {
       // Profile + settings. The v1 `state` field stays here as a backup until it's cleaned up.
       allow read: if isOwner(uid);
-      allow create: if isOwner(uid) && validSharing(request.resource.data);
-      allow update: if isOwner(uid) && validSharing(request.resource.data) && keepsSchemaVersion();
+      allow create: if isOwner(uid) && validSharing(request.resource.data) && ownsUsername(request.resource.data);
+      allow update: if isOwner(uid) && validSharing(request.resource.data) && keepsSchemaVersion()
+                    && (usernameUnchanged() || ownsUsername(request.resource.data));
       allow delete: if false;   // account deletion runs on the server
 
       // The person's own data.
@@ -42,6 +60,21 @@ service cloud.firestore {
       // Written only by Estella's server functions (points and mascot growth can't be edited from a phone).
       match /mascot/{id} { allow read: if isOwner(uid); allow write: if false; }
       match /wallet/{id} { allow read: if isOwner(uid); allow write: if false; }
+    }
+
+    // usernames/{name} → { uid, createdAt }: one document per taken name keeps names unique.
+    // Anyone signed in can look up one exact name (to add a friend); nobody can list them all.
+    match /usernames/{name} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn() && validUsername(name)
+                    && request.resource.data.keys().hasOnly(['uid', 'createdAt'])
+                    && request.resource.data.uid == request.auth.uid
+                    && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('username', null) == name;
+      allow update: if false;
+      // Freed only by its owner, and only when their profile no longer uses it (changing username).
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid
+                    && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('username', null) != name;
     }
   }
 }

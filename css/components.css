@@ -68,3 +68,16 @@ textarea.input{min-height:84px;resize:vertical}
 input.input[type="date"]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;text-align:left}
 input.input[type="date"]::-webkit-date-and-time-value{text-align:left;margin:0}
 input.input[type="date"]::-webkit-calendar-picker-indicator{opacity:.6}
+
+/* Username field with a fixed "@" in front, and its live status line. */
+.handle{position:relative}
+.handle>span{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-family:var(--display);font-weight:800;font-size:1.1rem;color:var(--muted);pointer-events:none}
+.handle .input{padding-left:40px}
+.u-status{display:block;font-size:.92rem;font-weight:600;min-height:1.4em}
+.u-status.hint{color:var(--muted);font-weight:500}
+.u-status.ok{color:var(--teal-ink)}
+.u-status.bad{color:var(--danger)}
+
+/* Three-option segmented control that fills the row (privacy levels). */
+.seg.seg-3{display:grid;grid-template-columns:repeat(3,1fr);align-self:stretch}
+.seg.seg-3 button{padding:8px 6px;font-size:.92rem}

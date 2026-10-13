@@ -1,8 +1,8 @@
 # Estella: data model v2
 
 **Status: approved design, built in phases.**
-- **Built:** `users/{uid}` profile and sharing defaults, `routines`, `sessions`, `exerciseStats`, the automatic v1 → v2 migration, and the matching `firestore.rules`. The code is in `js/state/` and `js/services/sync.js` + `migrate.js`.
-- **Not built yet:** everything else (usernames, friends, groups, trainers, mascot, leaderboards). Each piece arrives with its feature.
+- **Built:** `users/{uid}` profile and sharing settings, `routines`, `sessions`, `exerciseStats`, the automatic v1 → v2 migration, usernames (`usernames/{name}`, claimed in one batch with the profile) and the privacy settings screen, with matching `firestore.rules`.
+- **Not built yet:** friends, groups, trainers, mascot and leaderboards. Each piece arrives with its feature. Until friends ship, sharing settings are saved but nobody else can read anything.
 
 ## Principles
 1. **Data lives under its owner. Sharing is a setting.** Nothing is locked away for good. Each kind of data has a "who can see this" level that the owner chooses.

@@ -115,3 +115,22 @@ export async function applyWrites(uid, writes) {
     await batch.commit();
   }
 }
+
+// ---------- usernames ----------
+// usernames/{name} → { uid, createdAt }. One document per taken name is what makes names unique.
+
+// The uid that owns this username, or null if it's free.
+export async function usernameOwner(name) {
+  const snap = await FB.f.getDoc(FB.f.doc(FB.db, 'usernames', name));
+  return snap.exists() ? snap.data().uid : null;
+}
+
+// Takes a username (and frees the previous one) in one atomic step together with the profile.
+// Firestore rules reject it if the name is already someone else's.
+export async function claimUsername(uid, { username, displayName, previous }) {
+  const batch = FB.f.writeBatch(FB.db);
+  if (username !== previous) batch.set(FB.f.doc(FB.db, 'usernames', username), { uid, createdAt: Date.now() });
+  batch.set(userDoc(uid), { username, displayName }, { merge: true });
+  if (previous && previous !== username) batch.delete(FB.f.doc(FB.db, 'usernames', previous));
+  await batch.commit();
+}
