@@ -26,6 +26,11 @@ import { authView, pwRulesHTML } from './views/auth.js';
 import { homeView } from './views/home.js';
 import { routineView } from './views/routine.js';
 import { progressView } from './views/progress.js';
+import { friendsView } from './views/friends.js';
+import * as friends from './controllers/friends.js';
+import { onSocialChange, pendingIncoming } from './state/social.js';
+import { openFriendSearch } from './sheets/friend-search.js';
+import { openFriendCard, runFriendAction } from './sheets/friend-card.js';
 import { orderedExercises, personalRecord, beatsRecord } from './state/selectors.js';
 import { todayStr } from './utils/dates.js';
 import { usernameView, statusHTML, errorHTML } from './views/username.js';
@@ -88,8 +93,19 @@ function render() {
   const routine = view.name === 'routine' ? store.findRoutine(view.id) : null;
   if (routine) app.innerHTML = routineView(store.getState(), routine, { openId });
   else if (view.name === 'progress') app.innerHTML = progressView(store.getState(), { user: s.user, localMode: s.localMode });
+  else if (view.name === 'friends') app.innerHTML = friendsView(store.getState(), { user: s.user, localMode: s.localMode });
   else app.innerHTML = homeView(store.getState(), { user: s.user, localMode: s.localMode, highlightId, showOlder,
     verify: { needed: account.needsVerification(), ui: account.getVerifyUI() } });
+  openInviteOnce();
+}
+
+// Opened from an invite link (?add=username): once the app is showing, go to Amigos and show that person.
+function openInviteOnce() {
+  const u = getSession().user && friends.takePendingInvite();
+  if (!u) return;
+  showTab('friends');
+  friends.findByUsername(u).then(p => { if (p) openFriendCard(p); else toast(`<span><b>${esc(t().fr.inviteNotFound)}</b></span>`); },
+    () => toast(`<span><b>${esc(t().fr.failed)}</b></span>`));
 }
 
 store.subscribe((state, { action }) => {
@@ -99,6 +115,7 @@ store.subscribe((state, { action }) => {
   render();
 });
 account.onVerifyChange(render);
+onSocialChange(() => { const v = getView().name; if (v === 'friends' || v === 'home' || v === 'progress') render(); });
 onboarding.onOnboardingChange(render);
 // The name/username form updates its status line in place (a full re-render would move the cursor).
 profileForm.onProfileFormChange((form, kind) => {
@@ -119,6 +136,26 @@ onSessionChange((s, prev) => {
   if (s.mode !== 'app') closeSheet(true);
   render();
 });
+
+// ---------- friends helpers ----------
+// The Amigos list buttons reuse the sheets' action runner (it shows errors and disables the button meanwhile).
+function friendButton(el, kind, uid) {
+  const r = [...pendingIncoming(), ...friends.outgoingRequests()].find(x => x.from === uid || x.to === uid);
+  const p = !r ? { uid } : r.from === uid ? { uid, username: r.fromUsername, displayName: r.fromName } : { uid, username: r.toUsername, displayName: r.toName };
+  el.dataset.fr = kind; el.dataset.uid = uid; el.dataset.username = p.username || ''; el.dataset.name = p.displayName || '';
+  runFriendAction(el);
+}
+
+// "Invitar amigos": the phone's share menu when there is one, otherwise copy the link.
+async function shareInvite() {
+  const L = t().fr, url = friends.inviteLink();
+  if (!url) return;
+  try {
+    if (navigator.share) { await navigator.share({ title: 'Estella', text: L.inviteText, url }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(url); toast(`${ICONS.check}<span><b>${esc(L.linkCopied)}</b></span>`); }
+  catch (e) { toast(`<span><b>${esc(L.copyThis)}</b>${esc(url)}</span>`, 8000); }
+}
 
 // ---------- actions ----------
 const routineId = () => getView().id;
@@ -164,6 +201,13 @@ const ACTIONS = {
   lang: d => setLang(d.lang),
   account: () => openAccountSheet(),
   'weekly-goal': () => openWeeklyGoalSheet(),
+  // friends tab
+  'fr-search': () => openFriendSearch(),
+  'fr-invite': () => shareInvite(),
+  'fr-card': d => { const f = friends.friendPerson(d.uid); if (f) openFriendCard(f); },
+  'fr-accept': (d, el) => friendButton(el, 'accept', d.uid),
+  'fr-decline': (d, el) => friendButton(el, 'decline', d.uid),
+  'fr-cancel': (d, el) => friendButton(el, 'cancel', d.uid),
   plus: () => openPlusMenu(),
   // sign-in screens
   'auth-screen': d => auth.showScreen(d.screen),
@@ -308,6 +352,7 @@ function registerServiceWorker() {
 // ---------- start ----------
 async function boot() {
   initRouter({ onBack: () => closeSheet(true) });
+  friends.readInviteFromUrl();   // opened from an invite link (?add=username): remembered until the app shows
   // The exercise library loads in the background; once it's there, screens can show exercise names in the
   // current language and the technique videos.
   loadLibrary().then(() => { const f = document.activeElement; if (!f || !f.matches('input, textarea')) render(); }, () => {});

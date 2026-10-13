@@ -4,6 +4,7 @@ import { ICONS } from '../ui/icons.js';
 import { t, getLang } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
 import { LEGAL } from '../config.js';
+import { pendingIncoming } from '../state/social.js';
 
 export const brand = () => `<div class="brand">${ICONS.star}<span>Estella</span></div>`;
 
@@ -34,11 +35,13 @@ export function legalLinks() {
   return `<p class="legal-links"><a href="${LEGAL.privacyUrl}" target="_blank" rel="noopener">${L.privacyPolicy}</a> · <a href="${LEGAL.termsUrl}" target="_blank" rel="noopener">${L.terms}</a></p>`;
 }
 
-// Bottom tabs on the two main screens. active = 'home' | 'progress'.
+// Bottom tabs on the main screens. active = 'home' | 'progress' | 'friends'.
+// Amigos shows a count when friend requests are waiting.
 export function tabBar(active) {
   const L = t();
-  const tab = (name, icon, label) => `<button class="tab" data-action="tab" data-tab="${name}" ${active === name ? 'aria-current="page"' : ''}>${icon}<span>${label}</span></button>`;
+  const waiting = pendingIncoming().length;
+  const tab = (name, icon, label, badge = 0) => `<button class="tab" data-action="tab" data-tab="${name}" ${active === name ? 'aria-current="page"' : ''}>${icon}<span>${label}</span>${badge ? `<em class="tab-badge num" aria-label="${esc(L.fr.requestsWaiting(badge))}">${badge}</em>` : ''}</button>`;
   return `<nav class="tabbar" aria-label="${L.tabsLabel}">
-    ${tab('home', ICONS.dumbbellTab, L.tabRoutines)}${tab('progress', ICONS.trophy, L.tabProgress)}
+    ${tab('home', ICONS.dumbbellTab, L.tabRoutines)}${tab('progress', ICONS.trophy, L.tabProgress)}${tab('friends', ICONS.users, L.tabFriends, waiting)}
   </nav>`;
 }

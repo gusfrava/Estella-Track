@@ -1,4 +1,4 @@
-// Which screen inside the app is showing: { name: 'home' }, { name: 'progress' } (the two bottom tabs)
+// Which screen inside the app is showing: { name: 'home' }, { name: 'progress' }, { name: 'friends' } (the bottom tabs)
 // or { name: 'routine', id }.
 // Uses browser history so the phone's back button/gesture returns to the home screen.
 import { logger } from '../utils/log.js';
@@ -53,6 +53,6 @@ export function initRouter({ onBack } = {}) {
   window.addEventListener('popstate', e => {
     if (onBack) onBack();
     const st = e.state;
-    setView(st && st.v === 'r' ? { name: 'routine', id: st.id } : st && st.v === 'progress' ? { name: 'progress' } : { name: 'home' });
+    setView(st && st.v === 'r' ? { name: 'routine', id: st.id } : st && (st.v === 'progress' || st.v === 'friends') ? { name: st.v } : { name: 'home' });
   });
 }

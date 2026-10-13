@@ -46,6 +46,7 @@ js/
     model.js            What a routine / session / exercise history looks like (read this first; full design in docs/DATA-MODEL.md).
     store.js            The ONLY place data changes: add, edit, delete, check. Each change lists the documents it writes.
     selectors.js        Read-only math: progress, ordering, weekly summary, weight change.
+    social.js           Friends and friend requests (filled by sync.js; separate from the training data).
     session.js          Who's signed in and which top-level screen (loading / sign-in / app).
 
   services/
@@ -60,16 +61,17 @@ js/
     auth.js             Sign-in logic: login, create account, reset password, Google.
     profile.js          Name + username form: live "is it free?" check and saving (claims the name atomically).
     account.js          Accepting policy/terms, email verification, "Download my data", "Delete account".
+    friends.js          Friends: search, requests (send / accept / decline / cancel), remove, invite links, search directory.
     onboarding.js       The welcome questions for new accounts: which screen, saving each answer, weight/height,
                         and the starter plan on the last screen (save / skip).
 
   views/                Build the HTML for each screen. No logic, no data changes.
-    home.js  routine.js  progress.js  auth.js  username.js  consent.js  splash.js  partials.js  onboarding.js
+    home.js  routine.js  progress.js  friends.js  people.js  auth.js  username.js  consent.js  splash.js  partials.js  onboarding.js
     (onboarding.js = the first language screen + the welcome questions)
     (progress.js = the Progreso tab: personal records; the bottom tab bar is tabBar() in partials.js)
 
   sheets/               The pop-up panels and what their Save buttons do.
-    routine-form.js  exercise-form.js  activity-form.js  plus-menu.js  account.js  delete.js  fields.js  weekly-goal.js
+    routine-form.js  exercise-form.js  activity-form.js  plus-menu.js  account.js  delete.js  fields.js  weekly-goal.js  friend-search.js  friend-card.js
     profile-form.js  privacy.js  delete-account.js
     exercise-picker.js  "Añadir ejercicio" step 1: search the library or browse by muscle group.
     video.js            "Ver técnica": plays the YouTube video in a sheet (loads only on tap).
@@ -91,6 +93,7 @@ js/
 - **Data is wrong after a tap** (checking, deleting, "done this week"): `js/state/store.js`, then `selectors.js`
 - **Numbers on screen are wrong** (progress, "1/3", "↑ +2.5 kg"): `js/state/selectors.js`
 - **Looks wrong but the data is right:** the screen's file in `js/views/`, then `css/`
+- **Friends: search doesn't find someone, or a request fails:** `js/controllers/friends.js`, the friends section of `js/services/firebase.js`, and the friends rules in `firestore.rules` (remember to publish them in the Firebase console). With `?debug`, failures log `[friends] …`.
 - **A form saves the wrong thing:** its file in `js/sheets/`
 - **The starter plan picks a wrong exercise, or the wrong sets × reps:** the tables at the top of `js/services/starter-plan.js` (SPLITS, ROUTINES, SLOTS, DOSE; FOCUS and the weekly-volume targets TARGET / SHARE)
 - **An exercise is missing from search, or found under the wrong group/type:** `data/exercises.json` (data) or `searchLibrary()` in `js/services/library.js` (matching)

@@ -1,8 +1,8 @@
 # Estella: data model v2
 
 **Status: approved design, built in phases.**
-- **Built:** `users/{uid}` profile and sharing settings, `routines`, `sessions`, `exerciseStats`, the automatic v1 → v2 migration, usernames (`usernames/{name}`, claimed in one batch with the profile) and the privacy settings screen, with matching `firestore.rules`.
-- **Not built yet:** friends, groups, trainers, mascot and leaderboards. Each piece arrives with its feature. Until friends ship, sharing settings are saved but nobody else can read anything.
+- **Built:** `users/{uid}` profile and sharing settings, `routines`, `sessions`, `exerciseStats`, the automatic v1 → v2 migration, usernames (`usernames/{name}`, claimed in one batch with the profile) and the privacy settings screen, with matching `firestore.rules`. Friends part 1: search directory, friend requests and friend lists (see Friends below).
+- **Not built yet:** friends seeing each other's data (part 2), groups, trainers, mascot and leaderboards. Each piece arrives with its feature. Until then, sharing settings are saved but nobody else can read anything.
 
 ## Principles
 1. **Data lives under its owner. Sharing is a setting.** Nothing is locked away for good. Each kind of data has a "who can see this" level that the owner chooses.
@@ -86,7 +86,7 @@ users/{uid}                         PRIVATE settings (owner only)
 
   body/{date}                       { date, weight, weightUnit: 'kg'|'lb', heightCm, source: 'onboarding'|'manual', updatedAt }
                                     // health data: private, only if the person enters it; height always stored in cm
-  friends/{friendUid}               since
+  friends/{friendUid}               { since, username, displayName }   // written for both people when a request is accepted
   customExercises/{id}              exercises not in the library
   mascot/state                      SERVER ONLY: level, xp, energy, muscles{…}, shape
   wallet/main                       SERVER ONLY: points, inventory[]
@@ -97,7 +97,10 @@ publicProfiles/{uid}                profile card (follows sharing.profile)
   cheers/{id}                       from, sessionId, createdAt
 
 usernames/{username}                { uid }
-friendRequests/{fromUid_toUid}      from, to, status: 'pending'|'accepted'|'declined', createdAt
+directory/{uid}                     { username, displayName, nameKey, lastKey, character, updatedAt }   // friend search; only while
+                                    // "Aparecer en búsquedas" is on; nameKey/lastKey = name / name from its 2nd word, lowercase, no accents
+friendRequests/{fromUid_toUid}      { from, to, fromUsername, fromName, toUsername, toName, status: 'pending'|'accepted', createdAt, respondedAt }
+                                    // declining or cancelling deletes it; removing a friend deletes both lists' entries and the requests
 
 groups/{groupId}                    name, inviteCode, createdBy
   members/{uid}                     role: 'member'|'trainer'|'admin'
@@ -116,7 +119,7 @@ leaderboards/{metric_period}        SERVER ONLY: top entries { uid, username, va
 ## Who can read what
 - **Owner:** everything of their own.
 - **Friend:** a friend is someone listed in `users/{owner}/friends/`. Friends can see the categories the owner set to `friends` or `public`.
-- **Any signed-in user:** categories set to `public`, plus username lookup.
+- **Any signed-in user:** categories set to `public`, plus username lookup and friend search (`directory`: name, @username, character only).
 - **Trainer:** only what the `coaching/{client_trainer}` document allows. A trainer can write routines into the client's list only with `routines: 'assign'`. Seeing body data needs its own explicit yes, because the EU treats health data as special.
 - **Group members** read the group's routines. Trainers and admins write them.
 - **Server only:** mascot state, wallet, weekly cards, streaks and leaderboards.
