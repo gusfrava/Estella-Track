@@ -2,6 +2,7 @@
 // "Done this week" is never stored: it comes from the routine's current session.
 import { ymd, weekRange, todayStr } from '../utils/dates.js';
 import { currentSession } from './store.js';
+import { entryDone, setsFromTarget } from './model.js';
 
 export const routinesList = state =>
   Object.values(state.routines).filter(r => !r.archived).sort((a, b) => a.order - b.order || a.createdAt - b.createdAt);
@@ -11,7 +12,7 @@ export function isRoutineDone(r) {
   return !!(s && s.status === 'done');
 }
 
-// The logged entry for one exercise in the routine's current session, or null.
+// The logged entry for one exercise in the routine's current session (done or still in progress), or null.
 export function loggedEntry(r, exId) {
   const s = currentSession(r);
   return (s && s.exercises.find(e => e.id === exId)) || null;
@@ -20,7 +21,7 @@ export function loggedEntry(r, exId) {
 export function routineProgress(r) {
   const s = currentSession(r);
   const total = r.exercises.length;
-  const done = s ? r.exercises.filter(e => s.exercises.some(x => x.id === e.id)).length : 0;
+  const done = s ? r.exercises.filter(e => entryDone(s.exercises.find(x => x.id === e.id))).length : 0;
   return { done, total, pct: total ? Math.round((done / total) * 100) : 0 };
 }
 
@@ -30,14 +31,36 @@ export function orderedRoutines(state) {
   return [...list.filter(r => !isRoutineDone(r)), ...list.filter(r => isRoutineDone(r))];
 }
 
-// Unchecked exercises in their order, then checked ones in the order they were checked.
-// Each item: { ex, logged } where logged is the session entry (or null).
+// Unfinished exercises in their order, then finished ones in the order they were finished.
+// Each item: { ex, logged, done } – logged is the session entry (or null), done = all its sets checked.
 export function orderedExercises(r) {
-  const items = r.exercises.map(ex => ({ ex, logged: loggedEntry(r, ex.id) }));
+  const items = r.exercises.map(ex => { const logged = loggedEntry(r, ex.id); return { ex, logged, done: entryDone(logged) }; });
   return {
-    pending: items.filter(i => !i.logged),
-    done: items.filter(i => i.logged).sort((a, b) => (a.logged.doneAt || 0) - (b.logged.doneAt || 0)),
+    pending: items.filter(i => !i.done),
+    done: items.filter(i => i.done).sort((a, b) => (a.logged.doneAt || 0) - (b.logged.doneAt || 0)),
   };
+}
+
+// The sets shown when an exercise is opened: what's logged this session, or the plan (nothing checked yet).
+export const setsToShow = item => (item.logged ? item.logged.sets : setsFromTarget(item.ex.target, false));
+
+// What you did last time (before this session): { date, sets } from the newest earlier session,
+// or { date, point } from the history if that session is older than what's loaded. null if never done.
+export function lastTime(state, r, exId) {
+  const cur = currentSession(r);
+  let best = null;
+  for (const s of Object.values(state.sessions)) {
+    if (s.kind !== 'gym' || s === cur) continue;
+    const e = s.exercises.find(x => x.id === exId);
+    const sets = e ? e.sets.filter(x => x.done) : [];
+    if (!sets.length) continue;
+    const when = s.date + String(e.doneAt || s.finishedAt || s.startedAt || 0).padStart(14, '0');
+    if (!best || when > best.when) best = { when, date: s.date, sets };
+  }
+  if (best) return { date: best.date, sets: best.sets };
+  const before = cur ? cur.date : todayStr();
+  const p = exerciseHistory(state, exId).filter(x => x.d < before).pop();
+  return p ? { date: p.d, point: p } : null;
 }
 
 const byNewest = (a, b) => (b.date + (b.createdAt || 0)).localeCompare(a.date + (a.createdAt || 0));

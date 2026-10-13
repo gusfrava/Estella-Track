@@ -22,6 +22,7 @@ import { splashView } from './views/splash.js';
 import { authView, pwRulesHTML } from './views/auth.js';
 import { homeView } from './views/home.js';
 import { routineView } from './views/routine.js';
+import { orderedExercises } from './state/selectors.js';
 import { usernameView, statusHTML, errorHTML } from './views/username.js';
 import { consentView } from './views/consent.js';
 import { openPlusMenu } from './sheets/plus-menu.js';
@@ -38,9 +39,12 @@ const app = document.getElementById('app');
 let highlightId = null;   // routine card that "pops" after completing it
 let showOlder = false;    // older activities expanded
 let consentError = '';    // "tick the box" message on the consent screen
+let openId = null;        // exercise opened to log its sets (routine screen)
+let renderLater = false;  // a set value changed while typing → re-render once you leave the field
 
 // ---------- render ----------
 function render() {
+  renderLater = false;
   document.documentElement.lang = getLang();
   const s = getSession();
   if (s.mode === 'loading') { app.innerHTML = splashView(); return; }
@@ -58,12 +62,17 @@ function render() {
   const view = getView();
   const routine = view.name === 'routine' ? store.findRoutine(view.id) : null;
   app.innerHTML = routine
-    ? routineView(store.getState(), routine)
+    ? routineView(store.getState(), routine, { openId })
     : homeView(store.getState(), { user: s.user, localMode: s.localMode, highlightId, showOlder,
         verify: { needed: account.needsVerification(), ui: account.getVerifyUI() } });
 }
 
-store.subscribe(() => { account.recordPendingConsent(); render(); });
+store.subscribe((state, { action }) => {
+  account.recordPendingConsent();
+  // Typing a set's reps/weight: the box already shows the value, and re-drawing now would close the keyboard.
+  if (action === 'edit-set') { renderLater = true; return; }
+  render();
+});
 account.onVerifyChange(render);
 // The name/username form updates its status line in place (a full re-render would move the cursor).
 profileForm.onProfileFormChange((form, kind) => {
@@ -75,7 +84,7 @@ profileForm.onProfileFormChange((form, kind) => {
   btn.disabled = form.busy;
   btn.textContent = form.busy ? t().saving : (form.editing ? t().save : t().continue);
 });
-onRouteChange(render);
+onRouteChange(() => { openId = null; render(); });
 auth.onAuthUIChange(render);
 onLangChange(lang => { fb.setAuthLanguage(lang); render(); });
 onSessionChange((s, prev) => {
@@ -88,12 +97,22 @@ onSessionChange((s, prev) => {
 // ---------- actions ----------
 const routineId = () => getView().id;
 
-function toggleExercise(exId) {
+// Runs a store change that can move cards (an exercise finishing goes to the bottom), animates it,
+// and celebrates when it finished the routine. change() returns { completed, exerciseDone, setDone }.
+function logChange(exId, change) {
   const rid = routineId();
+  const wasDone = !!(store.findRoutine(rid) && isExerciseDone(rid, exId));
   const before = capturePositions(app);
-  const { completed } = store.toggleExercise(rid, exId);   // re-renders synchronously
+  const result = change(rid);
+  // Finished the open exercise from its sets → close it and open the next one to do.
+  if (result.exerciseDone && !wasDone && openId === exId) {
+    const next = orderedExercises(store.findRoutine(rid)).pending[0];
+    openId = result.completed || !next ? null : next.ex.id;
+  }
+  render();
   animateMoves(app, before);
-  if (completed) {
+  // (Phase 1 · rest timer) result.setDone && !result.exerciseDone → start the rest countdown here.
+  if (result.completed) {
     celebrate(store.findRoutine(rid), () => {
       highlightId = rid;
       goHome();
@@ -101,6 +120,8 @@ function toggleExercise(exId) {
     });
   }
 }
+
+const isExerciseDone = (rid, exId) => orderedExercises(store.findRoutine(rid)).done.some(i => i.ex.id === exId);
 
 const ACTIONS = {
   // general
@@ -130,7 +151,11 @@ const ACTIONS = {
   'del-act': d => confirmDeleteActivity(d.id),
   // routine screen
   home: () => goHome(),
-  toggle: d => toggleExercise(d.id),
+  toggle: d => logChange(d.id, rid => store.toggleExercise(rid, d.id)),
+  expand: d => { openId = openId === d.id ? null : d.id; render(); },
+  'set-tick': d => logChange(d.id, rid => store.toggleSet(rid, d.id, Number(d.i))),
+  'set-add': d => logChange(d.id, rid => store.addSet(rid, d.id)),
+  'set-del': d => logChange(d.id, rid => store.removeSet(rid, d.id, Number(d.i))),
   'new-ex': () => openExerciseForm(routineId(), null),
   'edit-ex': d => openExerciseForm(routineId(), d.id),
   'del-ex': d => confirmDeleteExercise(routineId(), d.id),
@@ -151,7 +176,29 @@ app.addEventListener('input', e => {
   const rules = e.target.id === 'a-pw' && document.getElementById('pw-rules');
   if (rules) rules.innerHTML = pwRulesHTML(e.target.value);
 });
-app.addEventListener('change', e => { if (e.target.id === 'a-consent') auth.rememberInput(e.target.id, e.target.value, e.target); });
+app.addEventListener('change', e => {
+  if (e.target.id === 'a-consent') auth.rememberInput(e.target.id, e.target.value, e.target);
+  if (e.target.classList.contains('set-in')) saveSetInput(e.target);
+});
+
+// ---------- set rows (reps × weight boxes) ----------
+// Reads a box ("62,5" or "62.5"); an empty or invalid box goes back to its saved value on the next re-render.
+function saveSetInput(input) {
+  const { id, i, set } = input.dataset;
+  const value = parseFloat(String(input.value).replace(',', '.'));
+  if (!Number.isFinite(value) || value < 0) { renderLater = true; return; }
+  store.updateSet(routineId(), id, Number(i), { [set]: value });
+}
+app.addEventListener('focusin', e => { if (e.target.classList.contains('set-in')) e.target.select(); });
+app.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.classList.contains('set-in')) e.target.blur(); });
+// Left the boxes (keyboard closed) → catch up. The short wait lets a tap on a button (✓, +) land first:
+// re-drawing between the press and the release would swallow that tap.
+app.addEventListener('focusout', () => {
+  setTimeout(() => {
+    const a = document.activeElement;
+    if (renderLater && !(a && a.classList && a.classList.contains('set-in'))) render();
+  }, 400);
+});
 // Name/username fields live on the gate screen (#app) or in the Edit profile sheet (#layer).
 document.addEventListener('input', e => {
   if (e.target.id === 'u-display' || e.target.id === 'u-name') profileForm.onProfileInput(e.target.id, e.target.value, e.target);
