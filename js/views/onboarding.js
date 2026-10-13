@@ -3,7 +3,7 @@
 import { ICONS } from '../ui/icons.js';
 import { OI } from '../ui/onboarding-icons.js';
 import { t, getLang } from '../i18n/index.js';
-import { esc } from '../utils/format.js';
+import { esc, fmtClock } from '../utils/format.js';
 import { mascotHTML } from '../ui/mascot.js';
 import { progressBar } from './partials.js';
 import { STEPS, OPTIONAL, CHOICES, AVAILABLE_CHARACTERS, canContinue } from '../controllers/onboarding.js';
@@ -116,6 +116,11 @@ const SCREENS = {
     ${foot(L, L.ob.next, 'ob-next', canContinue())}`,
 
   done: (ui, L) => {
+    if (ui.plan === 'loading' || ui.plan === null) return `<div class="ob-center">
+      ${mascotHTML({ mood: 'focused', size: '200px', label: 'Estella' })}
+      <h1>${L.ob.planLoading}</h1></div>`;
+    const plan = Array.isArray(ui.plan) ? ui.plan.filter(r => r.exercises.length) : [];
+    if (plan.length) return planScreen(ui, plan, L);
     const a = ui.answers;
     const chips = [
       a.goal && [L.ob.summaryGoal, L.ob.goals[a.goal][0]],
@@ -129,3 +134,26 @@ const SCREENS = {
     </div>${foot(L, L.ob.doneGo, 'ob-finish')}`;
   },
 };
+
+// The starter plan: one card per routine (tap to see its exercises), save or skip.
+function planScreen(ui, plan, L) {
+  const a = ui.answers;
+  const time = s => (s < 60 ? `${s} s` : s % 60 === 0 ? `${s / 60} min` : fmtClock(s));   // 30 s, 10 min, 1:30
+  const dose = e => (e.type === 'time'
+    ? (e.sets > 1 ? `${e.sets} × ${time(e.seconds)}` : time(e.seconds))
+    : `${e.sets} × ${e.reps}${e.perSide ? ` ${L.ob.planPerSide}` : ''}`);
+  const card = (r, i) => `<li><details class="ob-plan-r"${i === 0 ? ' open' : ''}>
+      <summary><span class="ob-plan-n num">${i + 1}</span><span class="ob-plan-t"><b>${esc(r.name)}</b>
+        <span>${esc(L.ob.planCount(r.exercises.length))}</span></span><span class="ob-plan-chev" aria-hidden="true">${ICONS.back}</span></summary>
+      <ol class="ob-plan-ex">${r.exercises.map(e => `<li><span>${esc(e.name)}</span><b class="num">${esc(dose(e))}</b></li>`).join('')}</ol>
+    </details></li>`;
+  return `<div class="ob-plan-head">
+      ${mascotHTML({ mood: 'excited', hop: true, crop: 'bust', size: '88px', label: 'Estella' })}
+      <div><h1>${L.ob.planTitle}</h1><p class="sub">${esc(L.ob.planSub(plan.length, a.daysPerWeek, a.minutes))}</p></div>
+    </div>
+    <ul class="ob-plan">${plan.map(card).join('')}</ul>
+    ${a.goal === 'fat' ? `<p class="ob-plan-note">${esc(L.ob.planNoteFat)}</p>` : ''}
+    <p class="ob-plan-note">${esc(L.ob.planNote)}</p>
+    <div class="ob-foot"><button class="btn" data-action="ob-save-plan">${L.ob.planSave}</button>
+      <button class="textbtn" data-action="ob-finish">${L.ob.planSkip}</button></div>`;
+}

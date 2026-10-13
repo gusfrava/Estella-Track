@@ -100,7 +100,7 @@ function setsSummary(sets, type) {
       : a.repsR === a.reps ? `<span><b>${a.reps}</b> ${L.repsU} ${L.eachSide}</span>`
       : `<span><b>${a.reps}/${a.repsR}</b> ${L.repsU}</span>`;
     if (type === 'reps') return n + reps;
-    return n + reps + (a.weight > 0 ? `<span><b>${fmtNum(a.weight)}</b> ${a.unit}</span>` : `<span>${L.bodyweight}</span>`);
+    return n + reps + (a.weight > 0 ? `<span><b>${fmtNum(a.weight)}</b> ${a.unit}</span>` : '');   // no weight yet: nothing (filled in the first time)
   }
   return `<span class="setline">${sets.map(x => `<b>${setText(x, type)}</b>`).join(' · ')}${setsUnit(sets, type)}</span>`;
 }

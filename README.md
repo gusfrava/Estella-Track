@@ -22,7 +22,7 @@ sw.js                   Service worker: lets the installed app open offline.
 legal/                  Privacy policy and terms (ES + EN). If you change them meaningfully, bump LEGAL.version in js/config.js.
 icons/                  App icons.
 data/                   The exercise library (same for everyone, shipped with the app). See docs/EXERCISE-LIBRARY.md.
-  exercises.json        359 exercises: names ES/EN, muscle group, equipment, type, per side, muscle weights.
+  exercises.json        364 exercises: names ES/EN, muscle group, equipment, type, per side, muscle weights.
   exercise-videos.json  One technique video (YouTube link) per exercise. Fill these in over time.
 tools/                  One-off scripts (build-library.mjs made data/exercises.json from the old app;
                         build-character.mjs turns a Figma character export into js/ui/characters/*.js). Not loaded by the app.
@@ -54,12 +54,14 @@ js/
     sync.js             Connects store ↔ phone storage ↔ Firebase: listeners, saving each change, sign-in start/end.
     migrate.js          One-time move of old (v1) data into the v2 structure. Pure function, easy to test.
     library.js          Loads the exercise library + videos and searches it (Spanish/English, accents, plurals).
+    starter-plan.js     The routines proposed at the end of onboarding, from the answers (fixed rules, tables at the top).
 
   controllers/
     auth.js             Sign-in logic: login, create account, reset password, Google.
     profile.js          Name + username form: live "is it free?" check and saving (claims the name atomically).
     account.js          Accepting policy/terms, email verification, "Download my data", "Delete account".
-    onboarding.js       The welcome questions for new accounts: which screen, saving each answer, weight/height.
+    onboarding.js       The welcome questions for new accounts: which screen, saving each answer, weight/height,
+                        and the starter plan on the last screen (save / skip).
 
   views/                Build the HTML for each screen. No logic, no data changes.
     home.js  routine.js  progress.js  auth.js  username.js  consent.js  splash.js  partials.js  onboarding.js
@@ -90,6 +92,7 @@ js/
 - **Numbers on screen are wrong** (progress, "1/3", "↑ +2.5 kg"): `js/state/selectors.js`
 - **Looks wrong but the data is right:** the screen's file in `js/views/`, then `css/`
 - **A form saves the wrong thing:** its file in `js/sheets/`
+- **The starter plan picks a wrong exercise, or the wrong sets × reps:** the tables at the top of `js/services/starter-plan.js` (SPLITS, ROUTINES, SLOTS, DOSE)
 - **An exercise is missing from search, or found under the wrong group/type:** `data/exercises.json` (data) or `searchLibrary()` in `js/services/library.js` (matching)
 - **Sign-in errors:** `js/controllers/auth.js`. Error wording is under `errors` in the i18n files.
 - **Delete account or data download fails:** `js/controllers/account.js`, then `deleteUserData` / `exportUserData` in `firebase.js`. Deleting asks for the password (or Google) again first.

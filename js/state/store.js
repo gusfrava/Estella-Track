@@ -147,6 +147,19 @@ export function addRoutine({ name, recurring }) {
   return r;
 }
 
+// Several routines with their exercises at once (the starter plan). list = [{ name, exercises: [makeRoutineExercise data] }]
+export function addRoutines(list) {
+  let order = Math.max(-1, ...Object.values(state.routines).map(r => r.order));
+  const created = list.map(({ name, exercises = [] }) => {
+    const r = makeRoutine({ name, recurring: true, order: ++order });
+    r.exercises = exercises.map(makeRoutineExercise);
+    state.routines[r.id] = r;
+    return r;
+  });
+  if (created.length) emit('local', 'add-routines', created.map(r => setW('routines', r)));
+  return created;
+}
+
 export function updateRoutine(id, { name, recurring }) {
   const r = findRoutine(id); if (!r) return;
   r.name = name;
