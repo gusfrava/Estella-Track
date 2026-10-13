@@ -9,7 +9,7 @@
 
 import {
   blankState, normalizeState, normalizeRoutine, normalizeSession, normalizeStat, normalizeProfile, normalizeBody,
-  makeRoutine, makeRoutineExercise, makeGymSession, makeActivitySession, normalizeTarget, normalizeSet, normalizeType, planSets,
+  makeRoutine, makeRoutineExercise, normalizeSource, makeGymSession, makeActivitySession, normalizeTarget, normalizeSet, normalizeType, planSets,
   entryDone, pointFromSets, MAX_POINTS, MAX_SETS,
 } from './model.js';
 import { weekKey, weekKeyOf, ymdOf, todayStr } from '../utils/dates.js';
@@ -156,11 +156,13 @@ export function addRoutine({ name, recurring }) {
 }
 
 // Several routines with their exercises at once (the starter plan). list = [{ name, exercises: [makeRoutineExercise data] }]
+// source (optional) = where it came from, see model.normalizeSource ("Copiar rutina" passes the friend).
 export function addRoutines(list) {
   let order = Math.max(-1, ...Object.values(state.routines).map(r => r.order));
-  const created = list.map(({ name, exercises = [] }) => {
+  const created = list.map(({ name, exercises = [], source = null }) => {
     const r = makeRoutine({ name, recurring: true, order: ++order });
     r.exercises = exercises.map(makeRoutineExercise);
+    r.source = normalizeSource(source);
     state.routines[r.id] = r;
     return r;
   });

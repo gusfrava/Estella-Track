@@ -247,7 +247,7 @@ export async function removeFriend(myUid, theirUid, requestIds = []) {
 // ---------- friend cards ----------
 // profileCards/{uid}: written only by the server (functions/), see functions/card.js for what's in it.
 // CARD_VERSION must match functions/card.js: an older (or missing) card of your own makes the app ask for a rebuild.
-export const CARD_VERSION = 1;
+export const CARD_VERSION = 2;
 const cardDoc = uid => FB.f.doc(FB.db, 'profileCards', uid);
 
 // cb({ state: 'ok', card }) | cb({ state: 'none' }) (not built yet) | cb({ state: 'hidden' }) (they share it with nobody,
@@ -260,6 +260,44 @@ export function watchCard(uid, cb) {
 
 // Asks the server to (re)build my card: the server function sees cardRefreshAt change on my profile.
 export const requestCardRefresh = uid => FB.f.setDoc(userDoc(uid), { cardRefreshAt: Date.now() }, { merge: true });
+
+// ---------- shared routines ("Copiar rutina") ----------
+// sharedRoutines/{uid}: a friend's routines without weights, written only by the server (functions/routines.js).
+// Resolves { state: 'ok', routines } | { state: 'none' } (not built yet) | { state: 'hidden' } (they don't share them).
+export async function getSharedRoutines(uid) {
+  try {
+    const snap = await FB.f.getDoc(FB.f.doc(FB.db, 'sharedRoutines', uid));
+    return snap.exists() ? { state: 'ok', routines: snap.data().routines || [] } : { state: 'none' };
+  } catch (err) {
+    return { state: err && err.code === 'permission-denied' ? 'hidden' : 'error' };
+  }
+}
+
+// ---------- cheers ----------
+// cheers/{from}_{to}_{date} = { from, to, fromUsername, fromName, kind: 'fire'|'strong'|'clap', date, workout, createdAt }
+// One per friend per workout day: sending another kind replaces it.
+const CHEERS_SHOWN = 30;
+export const cheerId = (from, to, date) => `${from}_${to}_${date}`;
+
+export async function sendCheer(me, to, { kind, date, workout }) {
+  await FB.f.setDoc(FB.f.doc(FB.db, 'cheers', cheerId(me.uid, to, date)), {
+    from: me.uid, to, fromUsername: me.username, fromName: (me.displayName || '').slice(0, 60),
+    kind, date, workout: String(workout || '').slice(0, 60), createdAt: Date.now(),
+  });
+}
+export const deleteCheer = id => FB.f.deleteDoc(FB.f.doc(FB.db, 'cheers', id));
+
+// The latest cheers I received and sent. cb({ received, sent }) each time either changes.
+export function watchCheers(uid, cb, onError) {
+  const col = FB.f.collection(FB.db, 'cheers');
+  const lists = { received: null, sent: null };
+  const emit = () => { if (lists.received && lists.sent) cb({ received: lists.received, sent: lists.sent }); };
+  const read = key => snap => { lists[key] = snap.docs.map(d => ({ id: d.id, ...d.data() })); emit(); };
+  const q = field => FB.f.query(col, FB.f.where(field, '==', uid), FB.f.orderBy('createdAt', 'desc'), FB.f.limit(CHEERS_SHOWN));
+  const u1 = FB.f.onSnapshot(q('to'), read('received'), onError);
+  const u2 = FB.f.onSnapshot(q('from'), read('sent'), onError);
+  return () => { u1(); u2(); };
+}
 
 // ---------- your data: export and delete ----------
 // Every collection under users/{uid} that holds the person's data.
@@ -292,11 +330,18 @@ export async function exportUserData(user) {
   out.directory = dir.exists() ? dir.data() : null;
   const card = await FB.f.getDoc(cardDoc(user.uid)).catch(() => null);
   out.profileCard = card && card.exists() ? card.data() : null;   // what friends see (built by the server)
+  const sharedR = await FB.f.getDoc(FB.f.doc(FB.db, 'sharedRoutines', user.uid)).catch(() => null);
+  out.sharedRoutines = sharedR && sharedR.exists() ? sharedR.data() : null;
+  out.cheers = [];
+  for (const field of ['from', 'to']) {
+    (await FB.f.getDocs(FB.f.query(FB.f.collection(FB.db, 'cheers'), FB.f.where(field, '==', user.uid)))).docs
+      .forEach(d => out.cheers.push({ id: d.id, ...d.data() }));
+  }
   return out;
 }
 
 // Deletes every document of this person (their data, their username, their profile). Auth account is separate.
-// Their friend card (profileCards) is deleted by the server as soon as the profile is gone.
+// Their friend card (profileCards) and shared routines are deleted by the server as soon as the profile is gone.
 export async function deleteUserData(user) {
   const uid = user.uid;
   const refs = [];
@@ -309,6 +354,10 @@ export async function deleteUserData(user) {
   const reqs = FB.f.collection(FB.db, 'friendRequests');
   for (const field of ['from', 'to']) {
     (await FB.f.getDocs(FB.f.query(reqs, FB.f.where(field, '==', uid)))).docs.forEach(d => refs.push(reqDoc(d.id)));
+  }
+  for (const field of ['from', 'to']) {   // cheers I sent and received
+    (await FB.f.getDocs(FB.f.query(FB.f.collection(FB.db, 'cheers'), FB.f.where(field, '==', uid)))).docs
+      .forEach(d => refs.push(FB.f.doc(FB.db, 'cheers', d.id)));
   }
   if ((await FB.f.getDoc(dirDoc(uid))).exists()) refs.push(dirDoc(uid));
   const profileSnap = await FB.f.getDoc(userDoc(uid));

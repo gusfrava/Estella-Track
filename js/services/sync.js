@@ -15,7 +15,7 @@ import {
 } from '../state/store.js';
 import { SCHEMA_VERSION, DEFAULT_SHARING } from '../state/model.js';
 import { getSession, setSession } from '../state/session.js';
-import { setFriends, setRequests, clearSocial, setCard, dropCard } from '../state/social.js';
+import { setFriends, setRequests, clearSocial, setCard, dropCard, setCheers } from '../state/social.js';
 import { daysAgo } from '../utils/dates.js';
 import { logger } from '../utils/log.js';
 
@@ -134,6 +134,7 @@ function listen(user) {
   unsubs.push(fb.watchCard(uid, e => { myCard = e; askForCard(); }));
   unsubs.push(subscribe(askForCard));
   unsubs.push(fb.watchRequests(uid, lists => { if (mine()) setRequests(lists); }, onErr('friendRequests')));
+  unsubs.push(fb.watchCheers(uid, lists => { if (mine()) setCheers(lists); }, onErr('cheers')));
 }
 
 // One listener per friend's card (profileCards/{uid}); added and removed as the friends list changes.

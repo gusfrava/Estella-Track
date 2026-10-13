@@ -69,8 +69,16 @@ export function normalizeRoutine(id, d = {}) {
       target: normalizeTarget(e.target),
     })),
     current: d.current && d.current.sessionId ? { sessionId: d.current.sessionId, weekKey: d.current.weekKey || null } : null,
+    source: normalizeSource(d.source),
     createdAt: num(d.createdAt, 0), updatedAt: num(d.updatedAt, 0),
   };
+}
+
+// Where a routine came from: null = made by the person. { type: 'friend', id: friend uid, routineId, name: their @username }
+// for "Copiar rutina" (later also 'group' / 'trainer' / 'post').
+export function normalizeSource(src) {
+  if (!src || typeof src !== 'object' || !['friend', 'group', 'trainer', 'post'].includes(src.type)) return null;
+  return { type: src.type, id: String(src.id || ''), routineId: String(src.routineId || ''), name: String(src.name || '').slice(0, 40) };
 }
 
 export const MAX_SETS = 50;
@@ -116,7 +124,7 @@ export function normalizeProfile(d) {
 
 // ---------- factories ----------
 export const makeRoutine = ({ name, recurring, order }) => ({
-  id: uid(), name, order, recurring: !!recurring, archived: false, exercises: [], current: null, createdAt: Date.now(), updatedAt: Date.now(),
+  id: uid(), name, order, recurring: !!recurring, archived: false, exercises: [], current: null, source: null, createdAt: Date.now(), updatedAt: Date.now(),
 });
 
 export const makeRoutineExercise = ({ name, type, perSide, sets, reps, weight, unit, seconds, exerciseId, video }) => ({

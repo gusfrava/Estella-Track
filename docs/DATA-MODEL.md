@@ -1,8 +1,8 @@
 # Estella: data model v2
 
 **Status: approved design, built in phases.**
-- **Built:** `users/{uid}` profile and sharing settings, `routines`, `sessions`, `exerciseStats`, the automatic v1 → v2 migration, usernames (`usernames/{name}`, claimed in one batch with the profile) and the privacy settings screen, with matching `firestore.rules`. Friends part 1: search directory, friend requests and friend lists. Friends part 2: friend cards (`profileCards/{uid}`), written by the server (`functions/`, see docs/SERVER.md).
-- **Not built yet:** cheers, copying a friend's routine, groups, trainers, mascot and leaderboards. Each piece arrives with its feature. Friends can read only the friend card; routines and workouts themselves aren't readable by anyone else yet.
+- **Built:** `users/{uid}` profile and sharing settings, `routines`, `sessions`, `exerciseStats`, the automatic v1 → v2 migration, usernames (`usernames/{name}`, claimed in one batch with the profile) and the privacy settings screen, with matching `firestore.rules`. Friends part 1: search directory, friend requests and friend lists. Friends part 2: friend cards (`profileCards/{uid}`), written by the server (`functions/`, see docs/SERVER.md). Friends part 3: cheers and shared routines ("Copiar rutina").
+- **Not built yet:** groups, trainers, mascot and leaderboards. Each piece arrives with its feature. Friends can read the friend card and the shared routines (both built by the server); the person's own routines, sessions and stats stay readable only by them.
 
 ## Principles
 1. **Data lives under its owner. Sharing is a setting.** Nothing is locked away for good. Each kind of data has a "who can see this" level that the owner chooses.
@@ -59,7 +59,7 @@ users/{uid}                         PRIVATE settings (owner only)
     // type: 'weight_reps' | 'reps' | 'time' – what a set measures. perSide: reps logged for left and right.
     // exerciseId: the library exercise it was picked from (data/exercises.json), null for your own.
     // video: your own YouTube link ('' = the library's video for exerciseId, else a YouTube search).
-    source: { type: 'self'|'group'|'trainer'|'post', id, version },
+    source: null | { type: 'friend'|'group'|'trainer'|'post', id, routineId, name },   // 'friend' = Copiar rutina
     assignedBy,                      // trainer uid when assigned
     current: { sessionId, weekKey }  // the session holding this week's check marks (latest one if not recurring)
 
@@ -101,7 +101,16 @@ profileCards/{uid}                  SERVER ONLY (functions/card.js): what friend
   updatedAt
   // The app works out this week, the streak and comodines from goals + weeks (selectors.streakFrom), so cards never go
   // stale. The app writes users/{uid}.cardRefreshAt to ask for a rebuild when its own card is missing or outdated.
-  (later) cheers/{id}               from, sessionId, createdAt · mascot: { look, equipped, level }
+  (later) mascot: { look, equipped, level }
+
+sharedRoutines/{uid}                SERVER ONLY (functions/routines.js): routines friends can see and copy. visibility = sharing.routines
+  v, visibility, routines: [{ id, name, exercises: [{ exerciseId, name, type, perSide, sets, reps, seconds }] }], updatedAt
+  // no weights, notes or archived routines. Copying adds a routine with source: { type: 'friend', id, routineId, name }
+
+cheers/{from}_{to}_{date}           { from, to, fromUsername, fromName, kind: 'fire'|'strong'|'clap', date, workout, createdAt }
+                                    // a reaction to a friend's workout of that date; one per friend per workout day (another kind
+                                    // replaces it). Only friends can send; only the two people can read; either can delete.
+                                    // Indexes: (to, createdAt desc) and (from, createdAt desc) in firestore.indexes.json
 
 usernames/{username}                { uid }
 directory/{uid}                     { username, displayName, nameKey, lastKey, character, updatedAt }   // friend search; only while

@@ -3,10 +3,17 @@
     {
       "source": "functions",
       "codebase": "default",
-      "ignore": ["node_modules", ".git", "test", "*.local", "firebase-debug.log"]
+      "ignore": [
+        "node_modules",
+        ".git",
+        "test",
+        "*.local",
+        "firebase-debug.log"
+      ]
     }
   ],
   "firestore": {
-    "rules": "firestore.rules"
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   }
 }

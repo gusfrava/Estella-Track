@@ -1,9 +1,10 @@
 // A friend's week, from their card (profileCards/{uid}, built by the server): the short line in the friends list
 // and the "Esta semana / Racha / Último entreno" block on their card. Same rules as your own week card and streak.
-import { t } from '../i18n/index.js';
+import { t, routineName } from '../i18n/index.js';
 import { esc, fmtDay } from '../utils/format.js';
 import { ICONS } from '../ui/icons.js';
-import { friendWeek } from '../state/social.js';
+import { friendWeek, myCheerFor } from '../state/social.js';
+import { CHEER_ICONS } from '../ui/cheer-icons.js';
 import { weekStart, todayStr, parseYmd, ymd } from '../utils/dates.js';
 import { dayStrip } from './home.js';
 
@@ -29,12 +30,23 @@ export function miniDots(uid) {
   }).join('')}</span>`;
 }
 
-function when(date) {
+export function when(date) {
   const F = t().fr, today = todayStr();
   const y = new Date(); y.setDate(y.getDate() - 1);
   if (date === today) return F.today;
   if (date === ymd(y)) return F.yesterday;
   return fmtDay(parseYmd(date));
+}
+
+// What their last workout is called: the routine (translated if it's a starter-plan name) or the activity.
+export const lastName = last => (last.kind === 'activity' ? (last.sport || t().fr.activity) : (routineName({ name: last.name }) || t().fr.activity));
+
+// Fuego / Fuerza / Bravo for their last workout; the one I sent is pressed.
+function cheerRow(uid, last) {
+  const F = t().fr, mine = myCheerFor(uid, last.date);
+  return `<div class="fr-cheer"><span>${F.cheerPrompt}</span><div class="cheer-btns">${['fire', 'strong', 'clap'].map(k =>
+    `<button type="button" class="cheer-btn" data-cheer="${k}" aria-pressed="${!!mine && mine.kind === k}">${CHEER_ICONS[k]}<b>${esc(F.cheerKinds[k])}</b></button>`).join('')}</div>
+    ${mine ? `<small>${esc(F.cheerSent(F.cheerKinds[mine.kind]))}</small>` : ''}</div>`;
 }
 
 // The block on a friend's card.
@@ -53,7 +65,7 @@ export function friendWeekHTML(uid) {
   else streakSub = '';
 
   const last = w.last
-    ? `<div class="fr-last"><span>${F.last}</span><b>${esc(w.last.kind === 'activity' ? (w.last.sport || F.activity) : (w.last.name || F.activity))}</b><small>${esc(when(w.last.date))}</small></div>`
+    ? `<div class="fr-last"><span>${F.last}</span><b>${esc(lastName(w.last))}</b><small>${esc(when(w.last.date))}</small></div>${cheerRow(uid, w.last)}`
     : '';
 
   return `<section class="fr-week">

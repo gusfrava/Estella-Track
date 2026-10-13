@@ -6,7 +6,7 @@
 // - ACTIONS maps every data-action="..." in the HTML to one function. Unknown actions log a warning.
 
 import { isFirebaseConfigured } from './config.js';
-import { t, getLang, setLang, onLangChange, hasChosenLang, chooseLang, previewLang } from './i18n/index.js';
+import { t, routineName, getLang, setLang, onLangChange, hasChosenLang, chooseLang, previewLang } from './i18n/index.js';
 import { logger, DEBUG } from './utils/log.js';
 import * as fb from './services/firebase.js';
 import * as sync from './services/sync.js';
@@ -21,6 +21,7 @@ import { capturePositions, animateMoves, celebrate, confetti } from './ui/motion
 import { toast } from './ui/toast.js';
 import { ICONS } from './ui/icons.js';
 import { esc } from './utils/format.js';
+import { personName } from './views/people.js';
 import { splashView } from './views/splash.js';
 import { authView, pwRulesHTML } from './views/auth.js';
 import { homeView } from './views/home.js';
@@ -28,7 +29,8 @@ import { routineView } from './views/routine.js';
 import { progressView } from './views/progress.js';
 import { friendsView } from './views/friends.js';
 import * as friends from './controllers/friends.js';
-import { onSocialChange, pendingIncoming } from './state/social.js';
+import { onSocialChange, pendingIncoming, recentCheers, getSocial } from './state/social.js';
+import { CHEER_ICONS } from './ui/cheer-icons.js';
 import { openFriendSearch } from './sheets/friend-search.js';
 import { openFriendCard, runFriendAction } from './sheets/friend-card.js';
 import { orderedExercises, personalRecord, beatsRecord } from './state/selectors.js';
@@ -93,7 +95,10 @@ function render() {
   const routine = view.name === 'routine' ? store.findRoutine(view.id) : null;
   if (routine) app.innerHTML = routineView(store.getState(), routine, { openId });
   else if (view.name === 'progress') app.innerHTML = progressView(store.getState(), { user: s.user, localMode: s.localMode });
-  else if (view.name === 'friends') app.innerHTML = friendsView(store.getState(), { user: s.user, localMode: s.localMode });
+  else if (view.name === 'friends') {
+    app.innerHTML = friendsView(store.getState(), { user: s.user, localMode: s.localMode, cheersSeenAt: friends.cheersSeenAt() });
+    friends.markCheersSeen();   // the dots on new cheers stay until the next visit; the tab badge clears now
+  }
   else app.innerHTML = homeView(store.getState(), { user: s.user, localMode: s.localMode, highlightId, showOlder,
     verify: { needed: account.needsVerification(), ui: account.getVerifyUI() } });
   openInviteOnce();
@@ -116,6 +121,15 @@ store.subscribe((state, { action }) => {
 });
 account.onVerifyChange(render);
 onSocialChange(() => { const v = getView().name; if (v === 'friends' || v === 'home' || v === 'progress') render(); });
+// A cheer that arrives while the app is open: a small toast (not for the ones already there when it opened).
+let cheersShownUpTo = Date.now();
+onSocialChange(() => {
+  const fresh = recentCheers().filter(c => c.createdAt > cheersShownUpTo);
+  if (!fresh.length) return;
+  cheersShownUpTo = Math.max(...fresh.map(c => c.createdAt));
+  const c = fresh[0], f = getSocial().friends[c.from] || { username: c.fromUsername, displayName: c.fromName };
+  toast(`${CHEER_ICONS[c.kind] || CHEER_ICONS.fire}<span><b>${esc(t().fr.cheerToast(personName(f)))}</b>${esc(routineName({ name: c.workout }))}</span>`);
+});
 onboarding.onOnboardingChange(render);
 // The name/username form updates its status line in place (a full re-render would move the cursor).
 profileForm.onProfileFormChange((form, kind) => {
