@@ -15,7 +15,7 @@ import {
 } from '../state/store.js';
 import { SCHEMA_VERSION, DEFAULT_SHARING } from '../state/model.js';
 import { getSession, setSession } from '../state/session.js';
-import { setFriends, setRequests, clearSocial } from '../state/social.js';
+import { setFriends, setRequests, clearSocial, setCard, dropCard } from '../state/social.js';
 import { daysAgo } from '../utils/dates.js';
 import { logger } from '../utils/log.js';
 
@@ -119,8 +119,36 @@ function listen(user) {
   }, onErr('body')));
 
   // Friends and friend requests (state/social.js, not part of the training data).
-  unsubs.push(fb.watchFriends(uid, friends => { if (mine()) setFriends(friends); }, onErr('friends')));
+  unsubs.push(fb.watchFriends(uid, friends => { if (mine()) { setFriends(friends); watchFriendCards(friends, mine); } }, onErr('friends')));
+  unsubs.push(() => watchFriendCards({}, mine));
+  // My own card: if the server hasn't built it yet (or it's from an older version), ask for it once.
+  // (Checked again when the profile loads: no username yet = the server builds it once the username is set.)
+  let myCard = null, askedForCard = false;
+  const askForCard = () => {
+    const outdated = myCard && (myCard.state === 'none' || (myCard.state === 'ok' && myCard.card.v !== fb.CARD_VERSION));
+    const p = getState().profile;
+    if (!mine() || !outdated || askedForCard || !p || !p.username) return;
+    askedForCard = true;
+    fb.requestCardRefresh(uid).then(() => log.debug('asked for my friend card'), err => log.warn('card refresh request failed', err));
+  };
+  unsubs.push(fb.watchCard(uid, e => { myCard = e; askForCard(); }));
+  unsubs.push(subscribe(askForCard));
   unsubs.push(fb.watchRequests(uid, lists => { if (mine()) setRequests(lists); }, onErr('friendRequests')));
+}
+
+// One listener per friend's card (profileCards/{uid}); added and removed as the friends list changes.
+const cardUnsubs = new Map();
+function watchFriendCards(friends, mine) {
+  for (const uid of Object.keys(friends)) {
+    if (cardUnsubs.has(uid)) continue;
+    cardUnsubs.set(uid, fb.watchCard(uid, entry => { if (mine()) setCard(uid, entry); }));
+  }
+  for (const [uid, off] of cardUnsubs) {
+    if (friends[uid]) continue;
+    try { off(); } catch (e) { /* already closed */ }
+    cardUnsubs.delete(uid);
+    dropCard(uid);
+  }
 }
 
 // A routine that doesn't repeat can point at a session older than the 120-day window: load it on its own.

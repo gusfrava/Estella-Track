@@ -192,6 +192,31 @@
 .fr-since{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 6px;font-family:var(--display);font-weight:800}
 .fr-since svg{width:20px;height:20px;padding:3px;border-radius:50%;background:var(--teal);border:2px solid var(--ink)}
 .danger-text{color:var(--danger)}
+/* friends: a friend's week (list dots + card) */
+.person .ptext{flex:1;min-width:0}
+.person .ptext span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mdots{flex:none;display:flex;gap:3px}
+.mdots i{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ink);background:var(--card)}
+.mdots i.on{background:var(--orange)}
+.mdots i.today{box-shadow:0 0 0 2px var(--yellow)}
+.fr-week{border:2px solid var(--ink);border-radius:20px;background:var(--card);padding:14px;margin:6px 0 12px;display:flex;flex-direction:column;gap:10px}
+.fr-week-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fr-week-head h3{margin:0}
+.fr-week .week-met{margin:0}
+.fr-streak{display:flex;align-items:center;gap:10px;padding-top:10px;border-top:2px dashed var(--hairline)}
+.fr-streak>svg{flex:none;width:30px;height:30px}
+.fr-streak>div{flex:1;min-width:0;display:flex;flex-direction:column}
+.fr-streak b{font-family:var(--display);font-weight:800}
+.fr-streak small{color:var(--muted)}
+.fr-jokers{flex:none;display:flex;align-items:center;gap:4px;padding:4px 10px;border:2px solid var(--ink);border-radius:999px;background:var(--yellow);font-family:var(--display);font-weight:800}
+.fr-jokers svg{width:18px;height:18px}
+.fr-last{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding-top:10px;border-top:2px dashed var(--hairline)}
+.fr-last span{grid-column:1/-1;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.fr-last b{font-family:var(--display);font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr-last small{color:var(--muted)}
+.fr-week-note{text-align:center;margin:4px 0 12px}
+@media (max-width:359px){.mdots{display:none}}
+
 /* ---------- progress: personal records ---------- */
 .rec-banner{background:var(--yellow)}
 .rec{display:flex;align-items:center;gap:12px;background:var(--card);border:var(--line) solid var(--ink);border-radius:20px;padding:14px 16px;box-shadow:3px 4px 0 var(--ink)}

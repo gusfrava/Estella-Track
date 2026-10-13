@@ -244,6 +244,23 @@ export async function removeFriend(myUid, theirUid, requestIds = []) {
   await batch.commit();
 }
 
+// ---------- friend cards ----------
+// profileCards/{uid}: written only by the server (functions/), see functions/card.js for what's in it.
+// CARD_VERSION must match functions/card.js: an older (or missing) card of your own makes the app ask for a rebuild.
+export const CARD_VERSION = 1;
+const cardDoc = uid => FB.f.doc(FB.db, 'profileCards', uid);
+
+// cb({ state: 'ok', card }) | cb({ state: 'none' }) (not built yet) | cb({ state: 'hidden' }) (they share it with nobody,
+// or you're not friends anymore) | cb({ state: 'error' }). A refused read ends the listener.
+export function watchCard(uid, cb) {
+  return FB.f.onSnapshot(cardDoc(uid),
+    snap => cb(snap.exists() ? { state: 'ok', card: snap.data() } : { state: 'none' }),
+    err => cb({ state: err && err.code === 'permission-denied' ? 'hidden' : 'error' }));
+}
+
+// Asks the server to (re)build my card: the server function sees cardRefreshAt change on my profile.
+export const requestCardRefresh = uid => FB.f.setDoc(userDoc(uid), { cardRefreshAt: Date.now() }, { merge: true });
+
 // ---------- your data: export and delete ----------
 // Every collection under users/{uid} that holds the person's data.
 const USER_SUBCOLLECTIONS = ['routines', 'sessions', 'exerciseStats', 'body', 'customExercises', 'friends'];
@@ -273,10 +290,13 @@ export async function exportUserData(user) {
   }
   const dir = await FB.f.getDoc(dirDoc(user.uid));
   out.directory = dir.exists() ? dir.data() : null;
+  const card = await FB.f.getDoc(cardDoc(user.uid)).catch(() => null);
+  out.profileCard = card && card.exists() ? card.data() : null;   // what friends see (built by the server)
   return out;
 }
 
 // Deletes every document of this person (their data, their username, their profile). Auth account is separate.
+// Their friend card (profileCards) is deleted by the server as soon as the profile is gone.
 export async function deleteUserData(user) {
   const uid = user.uid;
   const refs = [];

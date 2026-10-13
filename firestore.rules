@@ -1,9 +1,9 @@
 rules_version = '2';
 
 // Estella security rules — data model v2 (see docs/DATA-MODEL.md).
-// Paste into Firebase console → Firestore Database → Rules → Publish.
-// Friends: search directory, friend requests and friend lists are below. Groups, trainers and leaderboards get
-// their rules when those features ship. Friends can't read each other's data yet (that comes with the friends' week).
+// Publish: `firebase deploy --only firestore:rules` (docs/SERVER.md), or paste into Firebase console → Firestore Database → Rules → Publish.
+// Friends: search directory, friend requests, friend lists and friend cards are below. Groups, trainers and leaderboards get
+// their rules when those features ship.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -121,6 +121,20 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'respondedAt'])
         && request.resource.data.status == 'accepted';
       allow delete: if signedIn() && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+    }
+
+    // profileCards/{uid}: what friends see (week, weekly goal, streak, last workout). Written only by the server
+    // (functions/index.js), never from a phone. visibility = the owner's "Tu perfil" sharing setting:
+    //   private → only the owner · friends → the owner and their friends · public → anyone signed in.
+    // Asking for a card that doesn't exist yet is allowed (there's nothing in it to see).
+    match /profileCards/{uid} {
+      allow get: if signedIn() && (resource == null
+        || request.auth.uid == uid
+        || resource.data.visibility == 'public'
+        || (resource.data.visibility == 'friends'
+            && exists(/databases/$(database)/documents/users/$(uid)/friends/$(request.auth.uid))));
+      allow list: if false;
+      allow write: if false;
     }
 
     // usernames/{name} → { uid, createdAt }: one document per taken name keeps names unique.

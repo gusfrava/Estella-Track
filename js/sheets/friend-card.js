@@ -1,6 +1,6 @@
 // A person's card: initial, name, @username and what you can do (añadir, cancelar, aceptar / rechazar,
 // eliminar de amigos). Opened from search, the friends list, or an invite link.
-// (The next PR adds their week and streak here.)
+// Friends also see the other person's week, streak and last workout (views/friend-week.js).
 import { openSheet, closeSheet, confirmSheet } from '../ui/sheet.js';
 import { t } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
@@ -9,6 +9,7 @@ import { ICONS } from '../ui/icons.js';
 import { onSocialChange, getSocial } from '../state/social.js';
 import * as friends from '../controllers/friends.js';
 import { avatarHTML, personName } from '../views/people.js';
+import { friendWeekHTML } from '../views/friend-week.js';
 import { logger } from '../utils/log.js';
 
 const log = logger('friends');
@@ -28,13 +29,19 @@ export function openFriendCard(person) {
       <button class="btn" data-fr="accept" ${data}>${F.accept}</button><button class="btn secondary" data-fr="decline" ${data}>${F.decline}</button>`;
     return `<button class="btn" data-fr="add" ${data}>${F.add}</button>`;
   };
+  const week = () => (friends.relationTo(p.uid) === 'friend' ? friendWeekHTML(p.uid) : '');
   openSheet(`<div class="fr-card">${avatarHTML(p, 'big')}<h2>${esc(personName(p))}</h2>
       ${p.displayName ? `<p class="sub">@${esc(p.username)}</p>` : ''}</div>
+    <div class="fr-week-box">${week()}</div>
     <div class="actions fr-actions">${buttons()}</div>`,
   s => {
-    const box = s.querySelector('.fr-actions');
+    const box = s.querySelector('.fr-actions'), weekBox = s.querySelector('.fr-week-box');
     box.addEventListener('click', e => { const b = e.target.closest('[data-fr]'); if (b) runFriendAction(b); });
-    const off = onSocialChange(() => { if (!s.isConnected) off(); else box.innerHTML = buttons(); });
+    const off = onSocialChange(() => {
+      if (!s.isConnected) { off(); return; }
+      box.innerHTML = buttons();
+      weekBox.innerHTML = week();
+    });
   });
 }
 

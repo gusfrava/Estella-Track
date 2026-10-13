@@ -6,6 +6,7 @@ A gym routine tracker. It's plain HTML, CSS and JavaScript modules, with no buil
 - **Live:** push the whole folder to your GitHub Pages repo.
 - **On your computer:** open a terminal in this folder, run `python -m http.server 8000`, then go to http://localhost:8000. Double-clicking index.html won't work, because browsers block JavaScript modules opened from a file.
 - **Connecting Firebase:** see SETUP-FIREBASE.md. The only file you edit is `js/config.js`.
+- **Server functions** (friend cards): `functions/`, deployed with `firebase deploy --only functions`. See docs/SERVER.md.
 
 ## How it's built
 Data only moves in one direction:
@@ -19,6 +20,8 @@ Screens never change data directly, and the store never touches the screen or Fi
 index.html              Page shell: loads the styles and js/main.js. No logic.
 manifest.webmanifest    App name, colors and icons for "Add to Home Screen".
 sw.js                   Service worker: lets the installed app open offline.
+functions/              Server code (Firebase Cloud Functions): builds the friend cards. Not loaded by the app. docs/SERVER.md.
+firebase.json, .firebaserc  Tell the Firebase CLI where the functions and rules are, and which project to deploy to.
 legal/                  Privacy policy and terms (ES + EN). If you change them meaningfully, bump LEGAL.version in js/config.js.
 icons/                  App icons.
 data/                   The exercise library (same for everyone, shipped with the app). See docs/EXERCISE-LIBRARY.md.

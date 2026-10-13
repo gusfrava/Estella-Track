@@ -159,12 +159,12 @@ function goalHistory(state) {
   return {};
 }
 
-// The goal for a week (weekKey), or null when none was set yet then.
-export function weeklyGoalFor(state, wk) {
-  const h = goalHistory(state);
-  const from = Object.keys(h).filter(k => k <= wk).sort().pop();
-  return from ? Number(h[from]) || null : null;
+// The goal for a week (weekKey) from a goal history { weekKey: days }, or null when none was set yet then.
+export function goalAt(goals, wk) {
+  const from = Object.keys(goals || {}).filter(k => k <= wk).sort().pop();
+  return from ? Number(goals[from]) || null : null;
 }
+export const weeklyGoalFor = (state, wk) => goalAt(goalHistory(state), wk);
 export const weeklyGoal = state => weeklyGoalFor(state, weekKey());
 
 // Days trained, per week: Map weekKey → Set of dates. A day counts when there's a gym session with a checked set
@@ -199,16 +199,17 @@ export const JOKER_START = 1, JOKER_EVERY = 4, JOKER_MAX = 2;
 //   'saved'   – fell short, a comodín kept the streak
 //   'missed'  – fell short, streak broken (or no streak to keep)
 //   'pending' – this week, goal not reached yet (it can still be)
-function weekHistory(state) {
-  const days = trainedDays(state);
+// days = Map weekKey → Set of dates trained, goals = goal history. Also used for friends' cards (their days and
+// goals come from profileCards/{uid}), so their streak follows exactly the same rules as yours.
+function weekHistory(days, goalHist) {
   const now = weekKey();
-  const goals = Object.keys(goalHistory(state));
+  const goals = Object.keys(goalHist);
   const first = [...days.keys(), ...goals].sort()[0];
   const keys = [];
   if (first) for (let k = now; k >= first; k = weeksBefore(k)) keys.unshift(k);
   let jokers = null, run = 0, alive = false;   // run: goal weeks in a row since the last comodín was earned
   const list = keys.map(key => {
-    const n = (days.get(key) || new Set()).size, goal = weeklyGoalFor(state, key);
+    const n = (days.get(key) || new Set()).size, goal = goalAt(goalHist, key);
     if (goal && jokers === null) jokers = JOKER_START;
     let status;
     if (n > 0 && n >= (goal || 1)) {
@@ -231,8 +232,10 @@ function weekHistory(state) {
 //   recent    – the last 8 weeks, oldest first: [{ key, done, saved, days, goal }] (the last one is this week).
 //   jokers    – comodines you have now (null without a weekly goal). nextJoker – goal weeks until the next one
 //               (0 when you already hold the most). savedLast – last week was kept by a comodín.
-export function weeklyStreak(state) {
-  const h = weekHistory(state);
+export const weeklyStreak = state => streakFrom(trainedDays(state), goalHistory(state));
+
+export function streakFrom(days, goalHist) {
+  const h = weekHistory(days, goalHist);
   const counts = w => w.status === 'met' || w.status === 'saved';
   const list = h.list;
   const last = list[list.length - 1];
@@ -245,7 +248,7 @@ export function weeklyStreak(state) {
   const now = weekKey();
   const recent = Array.from({ length: 8 }, (_, i) => {
     const key = weeksBefore(now, 7 - i);
-    const w = byKey.get(key) || { status: 'missed', days: 0, goal: weeklyGoalFor(state, key) };
+    const w = byKey.get(key) || { status: 'missed', days: 0, goal: goalAt(goalHist, key) };
     return { key, done: w.status === 'met', saved: w.status === 'saved', days: w.days, goal: w.goal };
   });
   const prev = list[list.length - 2];

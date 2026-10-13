@@ -1,5 +1,5 @@
-// Amigos tab: search + invite, requests to answer, your friends, requests you sent.
-// (Next PRs add each friend's week and streak, cheers and copying routines.)
+// Amigos tab: search + invite, requests to answer, your friends (with their week and streak), requests you sent.
+// (Next: cheers and copying routines.)
 import { ICONS } from '../ui/icons.js';
 import { t } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
@@ -7,7 +7,8 @@ import { pendingIncoming, pendingOutgoing, friendList, getSocial } from '../stat
 import { tabBar } from './partials.js';
 import { appHeader } from './home.js';
 import { mascotHTML } from '../ui/mascot.js';
-import { avatarHTML, personText } from './people.js';
+import { avatarHTML, personText, personName } from './people.js';
+import { friendLine, miniDots } from './friend-week.js';
 
 const SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 17a7 7 0 1 0 0 -14a7 7 0 0 0 0 14z"/><path d="M21 21l-6 -6"/></svg>';
 
@@ -36,8 +37,12 @@ export function friendsView(state, opts) {
   else if (!friends.length) {
     h += `<div class="fr-empty">${mascotHTML({ mood: 'amused', crop: 'bust', size: '84px' })}<div><h3>${F.emptyTitle}</h3><p>${F.emptyBody}</p></div></div>`;
   } else {
-    h += `<ul class="list people">${friends.map(f => `<li><button class="person tap" data-action="fr-card" data-uid="${esc(f.uid)}">
-      ${avatarHTML(f)}${personText(f)}<span class="pchev" aria-hidden="true">${ICONS.back}</span></button></li>`).join('')}</ul>`;
+    h += `<ul class="list people">${friends.map(f => {
+      const line = friendLine(f.uid);
+      return `<li><button class="person tap" data-action="fr-card" data-uid="${esc(f.uid)}">
+      ${avatarHTML(f)}<span class="ptext"><b>${esc(personName(f))}</b><span>${line ? esc(line) : (f.displayName ? `@${esc(f.username)}` : '')}</span></span>
+      ${miniDots(f.uid)}<span class="pchev" aria-hidden="true">${ICONS.back}</span></button></li>`;
+    }).join('')}</ul>`;
   }
 
   if (outgoing.length) {
