@@ -14,7 +14,7 @@ function docRef(path) {
     path,
     collection: name => colRef(`${path}/${name}`),
     get: async () => snapOf(path),
-    set: async data => { store.set(path, clone(data)); },
+    set: async (data, opts) => { store.set(path, opts && opts.merge ? { ...(store.get(path) || {}), ...clone(data) } : clone(data)); },
     delete: async () => { store.delete(path); },
     update: async (...args) => {
       if (!store.has(path)) { const e = new Error('not found'); e.code = 5; throw e; }
@@ -110,10 +110,14 @@ test('profile write builds the card, sessions update it, deleting the account re
   await fns.cardOnProfile.run(ev({ uid: 'u1' }, p3, p4));
   assert.deepStrictEqual(store.get('profileCards/u1').weeks, { '2026-10-05': '1', '2026-08-31': '1' });
 
+  // shared routines were built with the card
+  assert.deepStrictEqual(store.get('sharedRoutines/u1').routines.map(r => r.name), []);
+
   // account deleted
   store.delete('users/u1');
   await fns.cardOnProfile.run(ev({ uid: 'u1' }, p4, null));
   assert.ok(!store.has('profileCards/u1'));
+  assert.ok(!store.has('sharedRoutines/u1'));
   // a late session delete doesn't bring it back
   await fns.cardOnSession.run(ev({ uid: 'u1', sid: 's1' }, gym('2026-10-06'), null));
   assert.ok(!store.has('profileCards/u1'));
@@ -123,4 +127,37 @@ test('a profile without username yet gets no card', async () => {
   store.clear();
   await fns.cardOnProfile.run(ev({ uid: 'u2' }, null, { displayName: 'X' }));
   assert.ok(!store.has('profileCards/u2'));
+});
+
+test('routines: shared without weights, follow the Rutinas setting, skip progress-only changes', async () => {
+  store.clear();
+  const p = { username: 'jaz' };
+  store.set('users/u1', p);
+  await fns.cardOnProfile.run(ev({ uid: 'u1' }, null, p));
+  assert.deepStrictEqual(store.get('sharedRoutines/u1').routines, []);
+
+  const r1 = { name: 'Pierna A', order: 1, exercises: [{ id: 'x', exerciseId: 'sentadilla', name: 'Sentadilla', type: 'weight_reps', note: 'rodilla', target: { sets: 4, reps: 6, weight: 80, unit: 'kg' } }] };
+  store.set('users/u1/routines/r1', r1);
+  await fns.sharedOnRoutine.run(ev({ uid: 'u1', rid: 'r1' }, null, r1));
+  const s1 = store.get('sharedRoutines/u1');
+  assert.deepStrictEqual(s1.routines, [{ id: 'r1', name: 'Pierna A', exercises: [{ exerciseId: 'sentadilla', name: 'Sentadilla', type: 'weight_reps', perSide: false, sets: 4, reps: 6, seconds: 60 }] }]);
+  assert.ok(!JSON.stringify(s1).includes('80') && !JSON.stringify(s1).includes('rodilla'));
+
+  // only this week's progress changed: no rebuild
+  store.get('sharedRoutines/u1').updatedAt = 1;
+  const r1b = { ...r1, current: { sessionId: 's9', weekKey: '2026-10-12' }, updatedAt: 99 };
+  await fns.sharedOnRoutine.run(ev({ uid: 'u1', rid: 'r1' }, r1, r1b));
+  assert.strictEqual(store.get('sharedRoutines/u1').updatedAt, 1);
+
+  // archived and empty routines are not shared
+  store.set('users/u1/routines/r2', { name: 'Vacía', order: 0, exercises: [] });
+  store.set('users/u1/routines/r1', { ...r1, archived: true });
+  await fns.sharedOnRoutine.run(ev({ uid: 'u1', rid: 'r1' }, r1, { ...r1, archived: true }));
+  assert.deepStrictEqual(store.get('sharedRoutines/u1').routines, []);
+
+  // Rutinas → private
+  const p2 = { ...p, sharing: { routines: 'private' } };
+  store.set('users/u1', p2);
+  await fns.cardOnProfile.run(ev({ uid: 'u1' }, p, p2));
+  assert.strictEqual(store.get('sharedRoutines/u1').visibility, 'private');
 });

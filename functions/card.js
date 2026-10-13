@@ -16,7 +16,7 @@
 // The app works out "this week", the streak and the comodines from goals + weeks with the same rules as your
 // own Progreso screen (js/state/selectors.js → streakFrom), so a card never goes stale when someone stops training.
 
-const CARD_VERSION = 1;
+const CARD_VERSION = 2;   // 2: rebuilding also builds sharedRoutines (Friends part 3)
 const LEVELS = ['private', 'friends', 'public'];
 
 // ---------- dates ('YYYY-MM-DD', weeks start on Monday) ----------

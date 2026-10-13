@@ -2,7 +2,7 @@ rules_version = '2';
 
 // Estella security rules — data model v2 (see docs/DATA-MODEL.md).
 // Publish: `firebase deploy --only firestore:rules` (docs/SERVER.md), or paste into Firebase console → Firestore Database → Rules → Publish.
-// Friends: search directory, friend requests, friend lists and friend cards are below. Groups, trainers and leaderboards get
+// Friends: search directory, friend requests, friend lists, friend cards, shared routines and cheers are below. Groups, trainers and leaderboards get
 // their rules when those features ship.
 
 service cloud.firestore {
@@ -42,6 +42,17 @@ service cloud.firestore {
     function acceptedRequest(a, b) {
       return existsAfter(/databases/$(database)/documents/friendRequests/$(a + '_' + b))
         && getAfter(/databases/$(database)/documents/friendRequests/$(a + '_' + b)).data.status == 'accepted';
+    }
+
+    function validCheer(d) {
+      return d.keys().hasOnly(['from', 'to', 'fromUsername', 'fromName', 'kind', 'date', 'workout', 'createdAt'])
+        && d.from == request.auth.uid && d.to != request.auth.uid
+        && d.kind in ['fire', 'strong', 'clap']
+        && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.workout is string && d.workout.size() <= 60
+        && d.fromName is string && d.fromName.size() <= 60
+        && d.fromUsername == myUsername()
+        && d.createdAt is int;
     }
 
     function usernameUnchanged() {
@@ -135,6 +146,33 @@ service cloud.firestore {
             && exists(/databases/$(database)/documents/users/$(uid)/friends/$(request.auth.uid))));
       allow list: if false;
       allow write: if false;
+    }
+
+    // sharedRoutines/{uid}: the routines friends can see and copy, without weights or notes. Written only by the
+    // server (functions/routines.js). visibility = the owner's "Rutinas" sharing setting (same levels as profileCards).
+    match /sharedRoutines/{uid} {
+      allow get: if signedIn() && (resource == null
+        || request.auth.uid == uid
+        || resource.data.visibility == 'public'
+        || (resource.data.visibility == 'friends'
+            && exists(/databases/$(database)/documents/users/$(uid)/friends/$(request.auth.uid))));
+      allow list: if false;
+      allow write: if false;
+    }
+
+    // cheers/{from}_{to}_{date} = { from, to, fromUsername, fromName, kind, date, workout, createdAt }
+    // A reaction to a friend's workout of that date (one per friend per workout day; picking another kind changes it).
+    // Only friends can send one, as themselves; only the two people involved can see it; either can delete it.
+    match /cheers/{id} {
+      allow read: if signedIn() && (resource == null || resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+      allow create: if signedIn()
+        && id == request.auth.uid + '_' + request.resource.data.to + '_' + request.resource.data.date
+        && validCheer(request.resource.data)
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid)/friends/$(request.resource.data.to));
+      allow update: if signedIn() && resource.data.from == request.auth.uid
+        && validCheer(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['kind', 'createdAt', 'fromName', 'workout']);
+      allow delete: if signedIn() && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
     }
 
     // usernames/{name} → { uid, createdAt }: one document per taken name keeps names unique.

@@ -12,6 +12,11 @@ calculated by small functions that run on Google's servers (Firebase Cloud Funct
   - The app only reads cards. The Firestore rules let your friends read yours if "Tu perfil" is shared with friends
     (or public), and nobody can write one from a phone.
   - "Último entreno" is left out when "Entrenos" is set to private.
+- **Shared routines** (`sharedRoutines/{uid}`): your routines as friends see them, to copy ("Copiar rutina").
+  Exercises, sets and reps only (no weights, no notes, no archived routines).
+  - `sharedOnRoutine` rebuilds the list when a routine is added, edited or deleted (not when you just check sets).
+  - `cardOnProfile` builds it together with the card, follows the "Rutinas" sharing setting and deletes it with the account.
+- Cheers (`cheers/{from}_{to}_{date}`) don't need the server: the app writes them and the rules check that you're friends.
 
 ## One-time setup (already done on Jazmin's computer)
 1. Install Node.js (LTS) from nodejs.org.
@@ -37,11 +42,13 @@ firebase deploy --only functions
   Run `set FUNCTIONS_DISCOVERY_TIMEOUT=60` in the same Command Prompt, then deploy again.
 - Changes to the app itself (everything outside `functions/`) don't need this: they go live with the GitHub merge as always.
 
-## Publishing the Firestore rules
-`firebase deploy --only firestore:rules` publishes `firestore.rules` (same as pasting it in the console).
+## Publishing the Firestore rules and indexes
+`firebase deploy --only firestore` publishes `firestore.rules` and `firestore.indexes.json` (the indexes let the app
+list your cheers newest first). New indexes take a few minutes to build; until then the cheers list stays empty.
+`firebase deploy --only firestore:rules` publishes only the rules.
 
 ## Checking it works
-- Firebase console → Functions: `cardOnSession` and `cardOnProfile` are listed.
+- Firebase console → Functions: `cardOnSession`, `cardOnProfile` and `sharedOnRoutine` are listed.
 - Firebase console → Firestore → `profileCards`: a document per person after they open the app.
 - Logs: `firebase functions:log`, or Firebase console → Functions → Logs.
 

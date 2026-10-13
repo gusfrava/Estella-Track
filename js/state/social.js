@@ -2,14 +2,16 @@
 // and my friends' cards. Filled by services/sync.js from Firestore listeners; read by the Amigos screen and the friend sheets.
 //
 // social = { ready, friends: { uid: { since, username, displayName } }, incoming: [Request], outgoing: [Request],
-//            cards: { uid: { state: 'ok'|'none'|'hidden'|'error', card } } }
+//            cards: { uid: { state: 'ok'|'none'|'hidden'|'error', card } },
+//            cheers: { received: [Cheer], sent: [Cheer] } }   // newest first, the latest 30 of each
+// Cheer = { id, from, to, fromUsername, fromName, kind: 'fire'|'strong'|'clap', date, workout, createdAt }
 //   card = profileCards/{uid}, written by the server (functions/card.js). 'none' = not built yet (it's built when
 //   they open the app), 'hidden' = they share their profile with nobody.
 // Request = { id, from, to, fromUsername, fromName, toUsername, toName, status: 'pending'|'accepted', createdAt }
 import { streakFrom, goalAt } from './selectors.js';
 import { parseYmd, ymd, weekKey } from '../utils/dates.js';
 
-const blank = () => ({ ready: false, friends: {}, incoming: [], outgoing: [], cards: {} });
+const blank = () => ({ ready: false, friends: {}, incoming: [], outgoing: [], cards: {}, cheers: { received: [], sent: [] } });
 let social = blank();
 const listeners = new Set();
 
@@ -21,6 +23,7 @@ export function setFriends(friends) { social = { ...social, friends, ready: true
 export function setRequests({ incoming, outgoing }) { social = { ...social, incoming, outgoing }; changed(); }
 export function setCard(uid, entry) { social = { ...social, cards: { ...social.cards, [uid]: entry } }; changed(); }
 export function dropCard(uid) { const cards = { ...social.cards }; delete cards[uid]; social = { ...social, cards }; changed(); }
+export function setCheers(cheers) { social = { ...social, cheers }; changed(); }
 export function clearSocial() { social = blank(); changed(); }
 
 // ---------- reading ----------
@@ -63,3 +66,16 @@ export function friendWeek(uid) {
     streak: streakFrom(days, goals), last: c.last || null, character: c.character || 'estella',
   };
 }
+
+// ---------- cheers ----------
+// The cheer I sent this friend for their workout on `date`, or null.
+export const myCheerFor = (uid, date) => social.cheers.sent.find(c => c.to === uid && c.date === date) || null;
+
+// Cheers I received in the last `days` days (newest first), only from people who are still my friends.
+export function recentCheers(days = 7) {
+  const since = Date.now() - days * 864e5;
+  return social.cheers.received.filter(c => c.createdAt >= since && social.friends[c.from]);
+}
+
+// How many of those arrived after `seenAt` (the last time I opened Amigos) — the badge on the tab.
+export const unseenCheers = seenAt => recentCheers().filter(c => c.createdAt > (seenAt || 0)).length;

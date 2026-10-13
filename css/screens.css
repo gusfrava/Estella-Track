@@ -216,6 +216,28 @@
 .fr-last small{color:var(--muted)}
 .fr-week-note{text-align:center;margin:4px 0 12px}
 @media (max-width:359px){.mdots{display:none}}
+/* friends: cheers + their routines */
+.fr-cheer{display:flex;flex-direction:column;gap:8px}
+.fr-cheer>span{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+.fr-cheer small{color:var(--muted)}
+.cheer-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cheer-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:2px solid var(--ink);border-radius:16px;background:var(--card);font-family:var(--display);font-weight:800;font-size:.9rem;box-shadow:2px 3px 0 var(--ink)}
+.cheer-btn svg{width:26px;height:26px}
+.cheer-btn[aria-pressed="true"]{background:var(--orange);color:var(--ink)}
+.cheer-btn:active{transform:translate(1px,1px);box-shadow:1px 2px 0 var(--ink)}
+.cheer-btn:disabled{opacity:.6}
+.fr-routines-box .section-head{margin-top:4px}
+.fr-routines{margin-bottom:14px}
+.fr-copy{display:flex;flex-direction:column;gap:6px;padding:0 14px 14px}
+.fr-copy .hint{margin:0;text-align:center}
+.fr-copy .fr-since{margin:0}
+.cheers{gap:8px}
+.cheer-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border:2px solid var(--ink);border-radius:18px;background:var(--yellow-soft)}
+.cheer-item .cheer-ico{flex:none;width:42px;height:42px;border-radius:50%;border:2px solid var(--ink);background:var(--orange);display:grid;place-items:center}
+.cheer-item .cheer-ico svg{width:24px;height:24px}
+.cheer-item .ptext{flex:1;min-width:0}
+.cheer-item .ptext span{white-space:normal}
+.cheer-item small{flex:none;color:var(--muted)}
 
 /* ---------- progress: personal records ---------- */
 .rec-banner{background:var(--yellow)}
@@ -378,3 +400,4 @@
 .ob-more[open] .ob-plan-chev{transform:rotate(90deg)}
 .ob-more ul{margin:0;padding:0 0 4px 18px;display:flex;flex-direction:column;gap:8px;color:var(--ink);font-size:.93rem;line-height:1.4}
 @media (prefers-reduced-motion:reduce){.ob-plan-chev{transition:none}}
+.cheer-item.new .ptext b::after{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--orange);border:1.5px solid var(--ink);margin-left:6px;vertical-align:middle}

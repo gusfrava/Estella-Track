@@ -4,7 +4,8 @@ import { ICONS } from '../ui/icons.js';
 import { t, getLang } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
 import { LEGAL } from '../config.js';
-import { pendingIncoming } from '../state/social.js';
+import { pendingIncoming, unseenCheers } from '../state/social.js';
+import { cheersSeenAt } from '../controllers/friends.js';
 
 export const brand = () => `<div class="brand">${ICONS.star}<span>Estella</span></div>`;
 
@@ -39,8 +40,9 @@ export function legalLinks() {
 // Amigos shows a count when friend requests are waiting.
 export function tabBar(active) {
   const L = t();
-  const waiting = pendingIncoming().length;
-  const tab = (name, icon, label, badge = 0) => `<button class="tab" data-action="tab" data-tab="${name}" ${active === name ? 'aria-current="page"' : ''}>${icon}<span>${label}</span>${badge ? `<em class="tab-badge num" aria-label="${esc(L.fr.requestsWaiting(badge))}">${badge}</em>` : ''}</button>`;
+  // Badge on Amigos: friend requests to answer + cheers I haven't seen (not while I'm on Amigos).
+  const waiting = pendingIncoming().length + (active === 'friends' ? 0 : unseenCheers(cheersSeenAt()));
+  const tab = (name, icon, label, badge = 0) => `<button class="tab" data-action="tab" data-tab="${name}" ${active === name ? 'aria-current="page"' : ''}>${icon}<span>${label}</span>${badge ? `<em class="tab-badge num" aria-label="${esc(L.fr.badgeLabel(badge))}">${badge}</em>` : ''}</button>`;
   return `<nav class="tabbar" aria-label="${L.tabsLabel}">
     ${tab('home', ICONS.dumbbellTab, L.tabRoutines)}${tab('progress', ICONS.trophy, L.tabProgress)}${tab('friends', ICONS.users, L.tabFriends, waiting)}
   </nav>`;
