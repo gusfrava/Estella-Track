@@ -9,7 +9,7 @@
 //
 // The last screen proposes a starter plan (services/starter-plan.js) built from the answers:
 // "Guardar mi plan" creates those routines, "Prefiero armarlas yo" goes home without them.
-import { getState, updateProfile, saveBody, addRoutines } from '../state/store.js';
+import { getState, updateProfile, saveBody, addRoutines, setWeeklyGoal } from '../state/store.js';
 import { getSession } from '../state/session.js';
 import { loadLibrary } from '../services/library.js';
 import { buildStarterPlan, planSummary, PLAN_VERSION } from '../services/starter-plan.js';
@@ -119,6 +119,12 @@ function save(extra = {}) {
 
 const stepName = () => STEPS[ui.step];
 
+// Reaching the last screen: onboarding is complete, and the days a week become the weekly goal (home + streak).
+function complete() {
+  save({ completedAt: Date.now() });
+  if (ui.answers.daysPerWeek) setWeeklyGoal(ui.answers.daysPerWeek);
+}
+
 // Can "Continuar" be pressed on this screen?
 export function canContinue() {
   const s = stepName(), a = ui.answers;
@@ -171,7 +177,7 @@ export function next() {
   }
   if (!canContinue()) return;
   if (s === 'source') save();
-  if (STEPS[ui.step + 1] === 'done') save({ completedAt: Date.now() });
+  if (STEPS[ui.step + 1] === 'done') complete();
   ui.step = Math.min(STEPS.length - 1, ui.step + 1);
   log.debug('step', STEPS[ui.step]);
   if (stepName() === 'done') preparePlan();
@@ -184,7 +190,7 @@ export function skipStep() {
   if (!OPTIONAL.has(stepName())) return;
   if (stepName() === 'source') delete ui.answers.source;
   ui.error = '';
-  if (STEPS[ui.step + 1] === 'done') save({ completedAt: Date.now() });
+  if (STEPS[ui.step + 1] === 'done') complete();
   ui.step += 1;
   if (stepName() === 'done') preparePlan();
   changed();

@@ -22,7 +22,7 @@ sw.js                   Service worker: lets the installed app open offline.
 legal/                  Privacy policy and terms (ES + EN). If you change them meaningfully, bump LEGAL.version in js/config.js.
 icons/                  App icons.
 data/                   The exercise library (same for everyone, shipped with the app). See docs/EXERCISE-LIBRARY.md.
-  exercises.json        364 exercises: names ES/EN, muscle group, equipment, type, per side, muscle weights.
+  exercises.json        365 exercises: names ES/EN, muscle group, equipment, type, per side, muscle weights.
   exercise-videos.json  One technique video (YouTube link) per exercise. Fill these in over time.
 tools/                  One-off scripts (build-library.mjs made data/exercises.json from the old app;
                         build-character.mjs turns a Figma character export into js/ui/characters/*.js). Not loaded by the app.
@@ -69,7 +69,7 @@ js/
     (progress.js = the Progreso tab: personal records; the bottom tab bar is tabBar() in partials.js)
 
   sheets/               The pop-up panels and what their Save buttons do.
-    routine-form.js  exercise-form.js  activity-form.js  plus-menu.js  account.js  delete.js  fields.js
+    routine-form.js  exercise-form.js  activity-form.js  plus-menu.js  account.js  delete.js  fields.js  weekly-goal.js
     profile-form.js  privacy.js  delete-account.js
     exercise-picker.js  "Añadir ejercicio" step 1: search the library or browse by muscle group.
     video.js            "Ver técnica": plays the YouTube video in a sheet (loads only on tap).

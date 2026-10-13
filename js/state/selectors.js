@@ -1,6 +1,6 @@
 // Read-only calculations on the data (no changes here). Views use these.
 // "Done this week" is never stored: it comes from the routine's current session.
-import { ymd, weekRange, todayStr, weekKey, weekKeyOf, weeksBefore } from '../utils/dates.js';
+import { ymd, ymdOf, weekRange, todayStr, weekKey, weekKeyOf, weeksBefore } from '../utils/dates.js';
 import { currentSession } from './store.js';
 import { entryDone, planSets } from './model.js';
 
@@ -146,27 +146,58 @@ export function beatsRecord(ex, after, before) {
   return beats(pointScore(after.point, ex.type), pointScore(before.point, ex.type));
 }
 
-// ---------- weekly streak ----------
-// A week counts when you trained in it: a gym session with at least one checked set, or an activity.
-// Sessions are only loaded for the last 120 days, so older weeks also count from the exercise history points
-// (one per day an exercise was finished). Rest days never break a streak; only a whole week without training does.
-export function trainedWeeks(state) {
-  const weeks = new Set();
+// ---------- weekly goal + streak ----------
+// The weekly goal = how many days a week the person wants to train (chosen in onboarding, editable on home).
+// profile.weeklyGoals = { 'YYYY-MM-DD' (Monday the goal started): days } — changing it only affects that week
+// and later, so past weeks keep the goal they had and an old streak never breaks retroactively.
+// Accounts that finished onboarding before weeklyGoals existed use onboarding.daysPerWeek from that week on.
+function goalHistory(state) {
+  const p = state.profile || {};
+  if (p.weeklyGoals && Object.keys(p.weeklyGoals).length) return p.weeklyGoals;
+  const o = p.onboarding;
+  if (o && o.daysPerWeek && o.completedAt) return { [weekKeyOf(ymdOf(o.completedAt))]: o.daysPerWeek };
+  return {};
+}
+
+// The goal for a week (weekKey), or null when none was set yet then.
+export function weeklyGoalFor(state, wk) {
+  const h = goalHistory(state);
+  const from = Object.keys(h).filter(k => k <= wk).sort().pop();
+  return from ? Number(h[from]) || null : null;
+}
+export const weeklyGoal = state => weeklyGoalFor(state, weekKey());
+
+// Days trained, per week: Map weekKey → Set of dates. A day counts when there's a gym session with a checked set
+// or an activity. Sessions are only loaded for the last 120 days, so older days come from the exercise
+// history points (one per day an exercise was finished).
+export function trainedDays(state) {
+  const weeks = new Map();
+  const add = d => { const k = weekKeyOf(d); if (!weeks.has(k)) weeks.set(k, new Set()); weeks.get(k).add(d); };
   for (const s of Object.values(state.sessions)) {
-    const trained = s.kind === 'activity' || s.exercises.some(e => e.sets.some(x => x.done));
-    if (trained) weeks.add(weekKeyOf(s.date));
+    if (s.kind === 'activity' || s.exercises.some(e => e.sets.some(x => x.done))) add(s.date);
   }
-  for (const st of Object.values(state.stats)) for (const p of st.points) weeks.add(weekKeyOf(p.d));
+  for (const st of Object.values(state.stats)) for (const p of st.points) add(p.d);
   return weeks;
 }
 
+// This week against the goal: { goal, days, left, met }  (goal null → no goal set)
+export function weekGoalProgress(state) {
+  const goal = weeklyGoal(state);
+  const days = (trainedDays(state).get(weekKey()) || new Set()).size;
+  return { goal, days, left: goal ? Math.max(0, goal - days) : 0, met: goal ? days >= goal : days > 0 };
+}
+
 // { current, best, thisWeek, recent }
-//   current   – weeks in a row up to now. This week only adds once you train in it; until then the streak
-//               from last week is still alive (thisWeek = false → "train this week to keep it").
+//   A week counts when its goal was met (with no goal yet: when you trained at all). Rest days never break a
+//   streak; only a week that falls short does.
+//   current   – weeks in a row up to now. This week only adds once it counts; until then the streak from last
+//               week is still alive (thisWeek = false → "train N more days to keep it").
 //   best      – longest run ever (from what's loaded).
-//   recent    – the last 8 weeks, oldest first: [{ key, done }] (the last one is this week).
+//   recent    – the last 8 weeks, oldest first: [{ key, done, days, goal }] (the last one is this week).
 export function weeklyStreak(state) {
-  const weeks = trainedWeeks(state);
+  const days = trainedDays(state);
+  const counts = k => { const n = (days.get(k) || new Set()).size; const g = weeklyGoalFor(state, k); return n > 0 && n >= (g || 1); };
+  const weeks = new Set([...days.keys()].filter(counts));
   const now = weekKey();
   const thisWeek = weeks.has(now);
   let current = 0;
@@ -177,7 +208,10 @@ export function weeklyStreak(state) {
     best = Math.max(best, run);
     prev = k;
   }
-  const recent = Array.from({ length: 8 }, (_, i) => { const key = weeksBefore(now, 7 - i); return { key, done: weeks.has(key) }; });
+  const recent = Array.from({ length: 8 }, (_, i) => {
+    const key = weeksBefore(now, 7 - i);
+    return { key, done: weeks.has(key), days: (days.get(key) || new Set()).size, goal: weeklyGoalFor(state, key) };
+  });
   return { current, best: Math.max(best, current), thisWeek, recent };
 }
 
