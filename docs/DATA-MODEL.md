@@ -39,7 +39,7 @@ users/{uid}                         PRIVATE settings (owner only)
   username, displayName, lang, units, goal, createdAt, discoverable,
   sharing: { profile, routines, workouts, body },       // 'private' | 'friends' | 'public'
   units: 'kg' | 'lb',                                   // chosen in onboarding; default for new exercises
-  onboarding: { version, character, goal, experience, place, daysPerWeek, minutes, source,
+  onboarding: { version, character, goal, focus: 'balanced'|'legs'|'upper'|'arms', experience, place, daysPerWeek, minutes, source,
                 startedAt, completedAt, skippedAt,      // saved after every answer (js/controllers/onboarding.js)
                 starterPlan: { version, choice: 'saved'|'skipped', routines: ['fbA', …], at } },
                                                         // the plan proposed on the last screen; saved = its routines were created

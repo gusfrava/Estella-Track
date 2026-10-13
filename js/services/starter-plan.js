@@ -2,7 +2,8 @@
 // (no AI, no network). Same answers → same plan. Later an AI version can return the same shape and fall back to this.
 //
 //   buildStarterPlan(answers, { lang, unit }) → [{ key, name, exercises: [{ exerciseId, name, type, perSide, sets, reps, seconds, weight, unit }] }]
-//   answers = profile.onboarding: { goal, experience, place, daysPerWeek, minutes }
+//   weeklyVolume(plan, daysPerWeek) → { chest, back, shoulders, arms, glutes, quads, hamstrings }  sets per week
+//   answers = profile.onboarding: { goal, experience, place, daysPerWeek, minutes, focus }
 //
 // How it decides (change the tables below to change the plan):
 //   SPLITS     days per week → which routines (full body / torso-pierna / empuje-tirón-pierna…)
@@ -11,10 +12,13 @@
 //              each day takes an option the plan hasn't used yet, so days differ
 //   CARDIO     perder grasa: cardio at the end of every workout, 10–25 min by workout length
 //   DOSE       goal + slot kind → sets × reps
+//   FOCUS      the area the person wants to prioritize: its slots come earlier and it gets ~30% more weekly sets
+//   VOLUME     sets per muscle per week, counted across the whole plan; sets are moved from the muscle with the
+//              most (relative to its target) to the one with the least, within the time the person has
 // Weights start at 0 (empty): people fill them in the first time; we don't guess.
 import { libraryExercise } from './library.js';
 
-export const PLAN_VERSION = 1;
+export const PLAN_VERSION = 2;
 
 // ---------- how many routines ----------
 const SPLITS = {
@@ -84,9 +88,9 @@ const SLOTS = {
   hpull: S('big',
     { easy: ['remo_en_maquina_con_pecho_apoyado', 'remo_sentado_en_cable', 'remo_hammer_strength_bajo'],
       std: ['remo_con_barra', 'remo_con_mancuerna_a_una_mano', 'remo_t_bar_con_pecho_apoyado'] },
-    ['remo_con_mancuerna_a_una_mano', 'remo_invertido'], ['remo_con_mancuerna_a_una_mano', 'remo_con_banda'], ['superman', 'bird_dog']),
+    ['remo_con_mancuerna_a_una_mano', 'remo_invertido'], ['remo_con_mancuerna_a_una_mano', 'remo_con_banda'], ['remo_invertido_en_mesa', 'superman']),
   hpull2: S('acc', ['remo_sentado_en_cable', 'remo_con_mancuerna_a_una_mano', 'remo_unilateral_en_cable'],
-    ['remo_con_mancuerna_a_una_mano', 'remo_invertido'], ['remo_con_banda', 'remo_con_mancuerna_a_una_mano'], ['superman', 'bird_dog']),
+    ['remo_con_mancuerna_a_una_mano', 'remo_invertido'], ['remo_con_banda', 'remo_con_mancuerna_a_una_mano'], ['superman', 'remo_invertido_en_mesa']),
   vpush: S('big',
     { easy: ['press_de_hombro_en_maquina', 'press_de_hombro_con_mancuernas_sentado'],
       std: ['press_de_hombro_con_mancuernas_sentado', 'press_militar_de_pie', 'press_de_hombro_en_maquina'] },
@@ -95,7 +99,7 @@ const SLOTS = {
     { easy: ['jalon_al_pecho_agarre_ancho', 'jalon_al_pecho_agarre_neutro', 'pullover_en_maquina'],
       std: ['jalon_al_pecho_agarre_neutro', 'jalon_al_pecho_agarre_ancho', 'jalon_unilateral_medio_arrodillado'],
       adv: ['dominada_agarre_neutro', 'dominada_agarre_ancho', 'jalon_al_pecho_agarre_neutro'] },
-    ['pullover_con_mancuerna_para_dorsal', 'remo_invertido'], ['pullover_con_mancuerna_para_dorsal', 'remo_con_banda'], ['bird_dog', 'superman']),
+    ['pullover_con_mancuerna_para_dorsal', 'remo_invertido'], ['pullover_con_mancuerna_para_dorsal', 'remo_con_banda'], ['remo_invertido_en_mesa', 'bird_dog']),
   lunge: S('acc',
     { easy: ['zancada_hacia_atras', 'split_squat_estatico', 'step_up_alto'], std: ['split_squat_bulgaro', 'zancada_caminando', 'step_up_alto'] },
     { easy: ['zancada_hacia_atras', 'split_squat_estatico', 'step_up_alto'], std: ['split_squat_bulgaro', 'zancada_caminando', 'step_up_alto'] },
@@ -142,6 +146,119 @@ const CARDIO = {
 };
 // Rendimiento atlético: one jump first, while the legs are fresh.
 const JUMP = { gym: 'box_jump', small: 'box_jump', home: 'sentadilla_con_salto', body: 'sentadilla_con_salto' };
+const JUMP_IDS = new Set(Object.values(JUMP));
+
+// ---------- focus ----------
+// Slots of the focus area move up in every routine (after the first three, so no routine loses its push, pull or
+// legs). Days that train the area get up to 2 extra focus slots; other days get 1 small one when it fits any day
+// (a glute or arm exercise is fine on an upper or leg day; a chest press on leg day isn't). FOCUS_BOOST
+// multiplies the area's weekly target, and the balancer moves sets towards it.
+export const FOCUS_BOOST = 1.3;
+const FOCUS = {
+  balanced: { slots: [], extra: [], anyDay: [], muscles: [] },
+  legs: { slots: ['squat', 'squat2', 'hinge', 'lunge', 'glute', 'quadacc', 'hamacc', 'abduct', 'calves'], extra: ['glute', 'abduct', 'hamacc'],
+    anyDay: ['abduct', 'glute'], muscles: ['glutes', 'quads', 'hamstrings'] },
+  upper: { slots: ['hpush', 'hpush2', 'hpull', 'hpull2', 'vpull', 'fly'], extra: ['hpush2', 'hpull2', 'fly'], anyDay: [], muscles: ['chest', 'back'] },
+  arms: { slots: ['biceps', 'triceps', 'hammer', 'lateral', 'vpush', 'rear'], extra: ['biceps', 'triceps', 'lateral'],
+    anyDay: ['biceps', 'triceps'], muscles: ['shoulders', 'arms'] },
+};
+const focusOf = f => FOCUS[f] || FOCUS.balanced;
+
+// ---------- weekly volume ----------
+// Muscle groups shown and balanced, with the library's muscle keys (exercises.json "sv") that count for each.
+// A set counts 1 for a muscle the exercise works hard (weight ≥ 70) and ½ for one it helps (40–69).
+const MUSCLES = {
+  chest: ['chest'], back: ['lats', 'midBack'], shoulders: ['shouldersF', 'shouldersB'], arms: ['bicepsF', 'triceps'],
+  glutes: ['glutes'], quads: ['quads'], hamstrings: ['hamstrings'],
+};
+export const MUSCLE_GROUPS = Object.keys(MUSCLES);
+// Weekly target for a big muscle by level; smaller groups get a share. Real volume depends on days × minutes,
+// so targets are used as proportions: the plan is balanced relative to them, not forced to reach them.
+const TARGET = { easy: 8, std: 11, adv: 14 };
+// Shoulders also count half from every press, so their target is higher (otherwise lateral raises lose sets).
+const SHARE = { chest: 1, back: 1, shoulders: 1.3, arms: 0.8, glutes: 1, quads: 1, hamstrings: 0.8 };
+const MAX_SETS = 4;
+// Fewest sets the balancer may leave: main lifts and focus exercises keep 3, the rest 2 (never below the start for beginners).
+const minSets = ex => (ex.kind === 'big' || ex.focus ? 3 : 2);
+// Extra sets per workout the balancer may add on top of the starting dose (beginners: none, they start lighter).
+const EXTRA_SETS = { easy: 0, std: 2, adv: 4 };
+
+function contribution(ex, group) {
+  const e = libraryExercise(ex.exerciseId);
+  if (!e || !e.sv || ex.type === 'time' || ex.jump || JUMP_IDS.has(ex.exerciseId)) return 0;
+  const w = Math.max(0, ...MUSCLES[group].map(k => e.sv[k] || 0));
+  return w >= 70 ? 1 : w >= 40 ? 0.5 : 0;
+}
+
+// Sets per muscle group per week. Each routine is done daysPerWeek / routines times a week.
+export function weeklyVolume(plan, daysPerWeek) {
+  const list = plan.filter(r => r.exercises.length);
+  const freq = list.length ? (daysPerWeek || list.length) / list.length : 0;
+  const v = Object.fromEntries(MUSCLE_GROUPS.map(g => [g, 0]));
+  for (const r of list) for (const ex of r.exercises) for (const g of MUSCLE_GROUPS) v[g] += ex.sets * contribution(ex, g) * freq;
+  return Object.fromEntries(MUSCLE_GROUPS.map(g => [g, Math.round(v[g])]));
+}
+
+function targetsFor(level, focus) {
+  const boosted = new Set(focusOf(focus).muscles);
+  return Object.fromEntries(MUSCLE_GROUPS.map(g => [g, TARGET[level] * SHARE[g] * (boosted.has(g) ? FOCUS_BOOST : 1)]));
+}
+
+// Adds and moves sets so every muscle group gets a similar share of its target (see VOLUME above).
+// "Similar share" = the groups' volume ÷ target ratios are as close to each other as possible (we measure the
+// spread of their logarithms, so 6 vs 12 counts as much as 12 vs 24). Groups this plan can't train
+// (no arm exercises without equipment, for example) are left out.
+function balance(plan, { daysPerWeek, level, focus }) {
+  const T = targetsFor(level, focus);
+  const freq = daysPerWeek / plan.length;
+  const adjustable = ex => !ex.cardio && !ex.jump && ex.type !== 'time' && ex.kind !== 'core';
+  const items = [];   // every adjustable exercise with what one set of it adds per week, per group
+  plan.forEach((r, ri) => r.exercises.forEach(ex => {
+    if (adjustable(ex)) items.push({ ex, ri, c: MUSCLE_GROUPS.map(g => contribution(ex, g) * freq) });
+  }));
+  const groups = MUSCLE_GROUPS.map((g, gi) => gi).filter(gi => items.some(it => it.c[gi] >= 0.5 * freq));
+  const v = MUSCLE_GROUPS.map(g => 0);
+  for (const r of plan) for (const ex of r.exercises) MUSCLE_GROUPS.forEach((g, gi) => { v[gi] += ex.sets * contribution(ex, g) * freq; });
+  const spread = vol => {
+    const logs = groups.map(gi => Math.log((vol[gi] + 0.5) / T[MUSCLE_GROUPS[gi]]));
+    const mean = logs.reduce((x, y) => x + y, 0) / logs.length;
+    return logs.reduce((x, y) => x + (y - mean) ** 2, 0);
+  };
+  const withSet = (it, sign) => v.map((x, gi) => x + sign * it.c[gi]);
+  const sessionSets = ri => plan[ri].exercises.reduce((n, ex) => n + (ex.cardio ? 0 : ex.sets), 0);
+  const start = plan.map((r, ri) => sessionSets(ri));
+  const apply = (it, sign) => { it.ex.sets += sign; it.c.forEach((x, gi) => { v[gi] += sign * x; }); };
+
+  // 1) Use the extra room (intermediate/advanced): one set at a time, where it helps the balance most.
+  for (;;) {
+    let best = null;
+    for (const it of items) {
+      if (it.ex.sets >= MAX_SETS || sessionSets(it.ri) >= start[it.ri] + EXTRA_SETS[level]) continue;
+      const sc = spread(withSet(it, 1));
+      if (!best || sc < best.sc) best = { it, sc };
+    }
+    if (!best) break;
+    apply(best.it, 1);
+  }
+  // 2) Move single sets from one exercise to another while it makes the plan more even. A workout stays
+  //    within ±2 sets of where it started, so its length barely changes.
+  for (let i = 0; i < 60; i++) {
+    const now = spread(v);
+    let best = null;
+    for (const from of items) {
+      if (from.ex.sets <= minSets(from.ex) || sessionSets(from.ri) <= start[from.ri] - 3) continue;
+      const less = withSet(from, -1);
+      for (const to of items) {
+        if (to === from || to.ex.sets >= MAX_SETS) continue;
+        if (to.ri !== from.ri && sessionSets(to.ri) >= start[to.ri] + 3) continue;
+        const sc = spread(less.map((x, gi) => x + to.c[gi]));
+        if (sc < now - 1e-3 && (!best || sc < best.sc)) best = { from, to, sc };
+      }
+    }
+    if (!best) break;
+    apply(best.from, -1); apply(best.to, 1);
+  }
+}
 
 // ---------- sets × reps ----------
 // [sets, reps] per slot kind. Core holds are timed (seconds) – see coreDose.
@@ -192,16 +309,27 @@ export function buildStarterPlan(answers = {}, { lang = 'es', unit = 'kg', names
   const level = levelOf(experience, goal);
   const count = COUNT[minutes] || 5;
   const ctx = { place, lang, unit };
+  const focus = focusOf(answers.focus);
+  const isFocus = slotKey => focus.slots.includes(slotKey);
+  // Slot order for a routine with the focus: the first three stay (each routine keeps its main movements),
+  // then focus slots and the extra ones, then the rest.
+  const slotOrder = key => {
+    const base = ROUTINES[key];
+    const head = base.slice(0, 3), tail = base.slice(3);
+    const extra = base.some(isFocus) ? focus.extra.filter(k => !base.includes(k)).slice(0, 2)
+      : focus.anyDay.filter(k => !base.includes(k)).slice(0, 1);
+    return [...head, ...tail.filter(isFocus), ...extra, ...tail.filter(k => !isFocus(k))];
+  };
 
   const planUsed = new Set();   // exercises already in earlier routines of this plan (for variety)
-  return split.map(key => {
+  const plan = split.map(key => {
     const used = new Set();
     const exercises = [];
-    const add = (id, d, type) => {
+    const add = (id, d, type, tags = {}) => {
       const e = libraryExercise(id);
       if (!e || used.has(id)) return;
       used.add(id); planUsed.add(id);
-      exercises.push(exerciseFrom(type ? { ...e, type } : e, d, ctx));
+      exercises.push({ ...exerciseFrom(type ? { ...e, type } : e, d, ctx), ...tags });
     };
     // first option not in this routine; prefer one the plan hasn't used yet (unless it's a strength main lift)
     const choose = (options, varied = true) => {
@@ -209,20 +337,28 @@ export function buildStarterPlan(answers = {}, { lang = 'es', unit = 'kg', names
       return (varied && free.find(id => !planUsed.has(id))) || free[0];
     };
     // athletic: one jump first (fresh legs), counted in reps; it takes one of the spots
-    if (goal === 'athletic') add(JUMP[place], { sets: 3, reps: 5, seconds: 30 }, 'reps');
+    if (goal === 'athletic') add(JUMP[place], { sets: 3, reps: 5, seconds: 30 }, 'reps', { jump: true });
     const room = goal === 'fat' ? count - 1 : count;   // fat loss: the last spot is cardio
-    for (const slotKey of [...ROUTINES[key], ...FILLERS]) {
+    for (const slotKey of [...slotOrder(key), ...FILLERS]) {
       if (exercises.length >= room) break;
       const slot = SLOTS[slotKey];
       const id = choose(optionsFor(slot, place, level), !(goal === 'strength' && slot.kind === 'big'));
-      if (id) add(id, dose(slot.kind, answers, level));
+      if (id) add(id, dose(slot.kind, answers, level), null, { kind: slot.kind, focus: isFocus(slotKey) });
     }
+    // Order in the workout: jump, focus compounds, other main lifts, the rest; cardio last.
+    const rank = ex => (ex.jump ? 0 : ex.focus && (ex.kind === 'big' || ex.kind === 'acc') ? 1 : ex.kind === 'big' ? 2
+      : ex.kind === 'acc' ? 3 : ex.focus ? 4 : ex.kind === 'iso' ? 5 : 6);
+    exercises.sort((a, b) => rank(a) - rank(b));
     if (goal === 'fat') {
       const id = choose(CARDIO[level === 'easy' ? 'easy' : 'hard'][place]);
-      if (id) add(id, { sets: 1, reps: 1, seconds: (CARDIO_MINUTES[minutes] || 15) * 60 });
+      if (id) add(id, { sets: 1, reps: 1, seconds: (CARDIO_MINUTES[minutes] || 15) * 60 }, null, { cardio: true });
     }
     return { key, name: names[key] || key, exercises };
   });
+  balance(plan, { daysPerWeek, level, focus: answers.focus });
+  // kind / focus / jump / cardio were only for building; the saved exercise has the usual fields
+  for (const r of plan) r.exercises = r.exercises.map(({ kind, focus: f, jump, cardio, ...ex }) => ex);
+  return plan;
 }
 
 // Every exercise id the tables use (for the tests: they must all exist in data/exercises.json).
@@ -232,4 +368,27 @@ export function allPlanIds() {
   for (const s of Object.values(SLOTS)) for (const p of ['gym', 'small', 'home', 'body']) addAll(s[p]);
   Object.values(CARDIO).forEach(addAll);
   return [...ids];
+}
+
+// What the plan screen explains: which kind of split, the weekly sets per muscle group, and how much more the
+// focus area gets than it would in a balanced plan (measured, not assumed). plan = buildStarterPlan(answers).
+//   → { split: 'full'|'upperLower'|'byArea'|'fullRotate', level, volume, focusMuscles, focusExtra /* % or 0 */, light }
+export function planSummary(answers = {}, plan = []) {
+  const { daysPerWeek, place, goal, experience } = answers;
+  const level = levelOf(experience, goal);
+  const keys = plan.map(r => r.key);
+  const split = keys[0] === 'upA' ? 'upperLower' : keys[0] === 'push' ? 'byArea'
+    : place === 'body' && daysPerWeek >= 4 ? 'fullRotate' : 'full';
+  const volume = weeklyVolume(plan, daysPerWeek);
+  const focusMuscles = focusOf(answers.focus).muscles;
+  let focusExtra = 0;
+  if (focusMuscles.length) {
+    const base = weeklyVolume(buildStarterPlan({ ...answers, focus: 'balanced' }), daysPerWeek);
+    const sum = v => focusMuscles.reduce((n, g) => n + v[g], 0);
+    if (sum(base) > 0) focusExtra = Math.max(0, Math.round((sum(volume) / sum(base) - 1) * 100 / 5) * 5);   // to the nearest 5 %
+  }
+  // little total time (1–2 short days): fewer sets per muscle than the usual range — fine to start
+  const big = ['chest', 'back', 'glutes', 'quads'].map(g => volume[g]);
+  const light = big.reduce((n, x) => n + x, 0) / big.length < 6;
+  return { split, level, volume, focusMuscles, focusExtra, light };
 }

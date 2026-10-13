@@ -71,6 +71,10 @@ const SCREENS = {
     key: 'goal', value: g, icon: OI['goal_' + g], title: L.ob.goals[g][0], desc: L.ob.goals[g][1], on: ui.answers.goal === g })).join('')}</div>
     ${foot(L, L.ob.next, 'ob-next', canContinue())}`,
 
+  focus: (ui, L) => `${question(L.ob.focusTitle, L.ob.focusSub)}<div class="ob-list">${CHOICES.focus.map(f => option({
+    key: 'focus', value: f, icon: OI['focus_' + f], title: L.ob.focuses[f][0], desc: L.ob.focuses[f][1], on: ui.answers.focus === f })).join('')}</div>
+    ${foot(L)}`,
+
   experience: (ui, L) => `${question(L.ob.expTitle)}<div class="ob-list">${CHOICES.experience.map(x => option({
     key: 'experience', value: x, icon: OI['exp_' + x], title: L.ob.exps[x][0], desc: L.ob.exps[x][1], on: ui.answers.experience === x })).join('')}</div>
     ${foot(L, L.ob.next, 'ob-next', canContinue())}`,
@@ -148,13 +152,47 @@ function planScreen(ui, plan, L) {
         <span>${esc(L.ob.planCount(r.exercises.length))}</span></span><span class="ob-plan-chev" aria-hidden="true">${ICONS.back}</span></summary>
       <ol class="ob-plan-ex">${r.exercises.map(e => `<li><span>${esc(exerciseName(e))}</span><b class="num">${esc(dose(e))}</b></li>`).join('')}</ol>
     </details></li>`;
+  const info = ui.planInfo || {};
   return `<div class="ob-plan-head">
       ${mascotHTML({ mood: 'excited', hop: true, crop: 'bust', size: '88px', label: 'Estella' })}
       <div><h1>${L.ob.planTitle}</h1><p class="sub">${esc(L.ob.planSub(plan.length, a.daysPerWeek, a.minutes))}</p></div>
     </div>
+    <p class="ob-plan-why">${OI['focus_' + (a.focus || 'balanced')]}<span>${esc(L.ob.planWhy(a.focus || 'balanced', info.focusExtra || 0))}</span></p>
     <ul class="ob-plan">${plan.map(card).join('')}</ul>
+    ${info.volume ? volumeHTML(info, L) : ''}
     ${a.goal === 'fat' ? `<p class="ob-plan-note">${esc(L.ob.planNoteFat)}</p>` : ''}
-    <p class="ob-plan-note">${esc(L.ob.planNote)}</p>
+    ${moreHTML(a, info, L)}
     <div class="ob-foot"><button class="btn" data-action="ob-save-plan">${L.ob.planSave}</button>
       <button class="textbtn" data-action="ob-finish">${L.ob.planSkip}</button></div>`;
+}
+
+// "Series por semana": one bar per muscle group; the focus area is highlighted.
+function volumeHTML(info, L) {
+  const groups = Object.keys(info.volume);
+  const max = Math.max(1, ...groups.map(g => info.volume[g]));
+  const row = g => {
+    const n = info.volume[g], focus = info.focusMuscles.includes(g);
+    return `<li class="${focus ? 'focus' : ''}"><span class="ob-vol-g">${esc(L.ob.muscles[g])}</span>
+      <span class="ob-vol-bar"><i style="width:${Math.round((n / max) * 100)}%"></i></span><b class="num">${n || '–'}</b></li>`;
+  };
+  return `<section class="ob-vol" aria-label="${esc(L.ob.volTitle)}">
+    <h2>${esc(L.ob.volTitle)}</h2><p class="ob-vol-sub">${esc(L.ob.volSub)}</p>
+    <ul>${groups.map(row).join('')}</ul></section>`;
+}
+
+// "¿Cómo armamos tu plan?": the reasons behind this plan, from the answers.
+function moreHTML(a, info, L) {
+  const W = L.ob.why;
+  const lines = [
+    W.split[info.split || 'full'](a.daysPerWeek),
+    W.goal[a.goal],
+    W.level[info.level || 'std'],
+    W.volume,
+    a.focus && a.focus !== 'balanced' ? W.focus(L.ob.focuses[a.focus][0], info.focusExtra || 0) : '',
+    info.light ? W.light : '',
+    W.progress,
+    W.weights,
+  ].filter(Boolean);
+  return `<details class="ob-more"><summary>${esc(L.ob.moreTitle)}<span class="ob-plan-chev" aria-hidden="true">${ICONS.back}</span></summary>
+    <ul>${lines.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>`;
 }

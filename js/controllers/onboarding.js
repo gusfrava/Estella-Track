@@ -2,7 +2,7 @@
 // (profile.onboarding in users/{uid}), so nothing is lost if the app closes halfway. Weight and height go to
 // users/{uid}/body/{date} (private health data), never into the profile.
 //
-// profile.onboarding = { version, character, goal, experience, place, daysPerWeek, minutes, source,
+// profile.onboarding = { version, character, goal, focus, experience, place, daysPerWeek, minutes, source,
 //                        startedAt, completedAt, skippedAt,
 //                        starterPlan: { version, choice: 'saved'|'skipped', routines: ['fbA', …], at } }
 // profile.units = 'kg' | 'lb'  (default for new exercises)
@@ -12,7 +12,7 @@
 import { getState, updateProfile, saveBody, addRoutines } from '../state/store.js';
 import { getSession } from '../state/session.js';
 import { loadLibrary } from '../services/library.js';
-import { buildStarterPlan, PLAN_VERSION } from '../services/starter-plan.js';
+import { buildStarterPlan, planSummary, PLAN_VERSION } from '../services/starter-plan.js';
 import { t, getLang } from '../i18n/index.js';
 import { logger } from '../utils/log.js';
 
@@ -20,11 +20,12 @@ const log = logger('onboarding');
 const VERSION = 1;
 
 // The screens, in order. Optional ones show "Saltar".
-export const STEPS = ['welcome', 'character', 'goal', 'experience', 'place', 'days', 'minutes', 'body', 'source', 'done'];
+export const STEPS = ['welcome', 'character', 'goal', 'focus', 'experience', 'place', 'days', 'minutes', 'body', 'source', 'done'];
 export const OPTIONAL = new Set(['body', 'source']);
 export const CHOICES = {
   character: ['estella', 'diego'],
   goal: ['strength', 'muscle', 'fat', 'athletic', 'health'],
+  focus: ['balanced', 'legs', 'upper', 'arms'],
   experience: ['never', 'beginner', 'intermediate', 'advanced'],
   place: ['gym', 'small', 'home', 'body'],
   minutes: [30, 45, 60, 90],
@@ -33,7 +34,7 @@ export const CHOICES = {
 export const AVAILABLE_CHARACTERS = new Set(['estella']);   // Diego appears once his art is in the app
 
 // ---------- UI state (this device only) ----------
-let ui = null;          // { step, answers, body: { unit, weight, height, ft, inch }, error, plan }
+let ui = null;          // { step, answers, body: { unit, weight, height, ft, inch }, error, plan, planInfo }
                         // plan: null (not asked yet) | 'loading' | 'failed' | [routines] (empty = can't build one)
 let forced = false;     // "Repetir introducción" from the account menu
 const listeners = new Set();
@@ -59,7 +60,7 @@ export function getOnboardingUI() {
     const saved = p.onboarding || {};
     ui = {
       step: 0,
-      answers: { character: 'estella', ...pick(saved) },
+      answers: { character: 'estella', focus: 'balanced', ...pick(saved) },
       body: { unit: p.units === 'lb' ? 'lb' : 'kg', weight: '', height: '', ft: '', inch: '' },
       error: '',
       plan: null,
@@ -78,6 +79,7 @@ function preparePlan() {
     if (ui !== mine) return;
     const unit = getState().profile?.units === 'lb' ? 'lb' : 'kg';
     ui.plan = buildStarterPlan(ui.answers, { lang: getLang(), unit, names: t().ob.planNames });
+    ui.planInfo = planSummary(ui.answers, ui.plan);
     log.debug('starter plan', ui.plan.map(r => `${r.key}:${r.exercises.length}`).join(' '));
     changed();
   }, err => {
@@ -104,7 +106,7 @@ export function resetOnboardingUI() { ui = null; forced = false; }
 
 export function replayOnboarding() { ui = null; forced = true; changed(); }
 
-const pick = o => Object.fromEntries(['character', 'goal', 'experience', 'place', 'daysPerWeek', 'minutes', 'source']
+const pick = o => Object.fromEntries(['character', 'goal', 'focus', 'experience', 'place', 'daysPerWeek', 'minutes', 'source']
   .filter(k => o[k] != null).map(k => [k, o[k]]));
 
 // Writes the answers so far (merged into users/{uid}.onboarding).
@@ -190,7 +192,7 @@ export function skipStep() {
 
 export function back() {
   getOnboardingUI();
-  if (ui.step > 0) { ui.step -= 1; ui.error = ''; changed(); }
+  if (ui.step > 0) { ui.step -= 1; ui.error = ''; ui.plan = null; changed(); }   // answers may change: plan is rebuilt
 }
 
 // "Ahora no" on the welcome screen: never asked again (it can be replayed from the account menu).
