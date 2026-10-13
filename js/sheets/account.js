@@ -11,7 +11,7 @@ import { legalLinks } from '../views/partials.js';
 import { openPrivacySheet } from './privacy.js';
 import { openProfileSheet } from './profile-form.js';
 import { openDeleteAccountSheet } from './delete-account.js';
-import { downloadMyData } from '../controllers/account.js';
+import { prepareMyData, saveMyData, usesShareSheet } from '../controllers/account.js';
 import { logger } from '../utils/log.js';
 
 const log = logger('account');
@@ -47,16 +47,36 @@ export function openAccountSheet() {
     s.querySelector('[data-k=edit]').onclick = () => openProfileSheet();
     s.querySelector('[data-k=privacy]').onclick = () => openPrivacySheet();
     s.querySelector('[data-k=delete]').onclick = () => openDeleteAccountSheet();
-    const exportBtn = s.querySelector('[data-k=export]');
-    exportBtn.onclick = async () => {
-      exportBtn.disabled = true; exportBtn.textContent = L.exporting;
-      try { await downloadMyData(); s.querySelector('#acct-msg').innerHTML = `<div class="formmsg ok-box">${esc(L.exportDone)}</div>`; }
-      catch (err) { log.warn('export failed', err); s.querySelector('#acct-msg').innerHTML = `<div class="formmsg err-box">${esc(L.exportFailed)}</div>`; }
-      exportBtn.disabled = false; exportBtn.textContent = L.exportData;
-    };
+    wireExportButton(s.querySelector('[data-k=export]'), s.querySelector('#acct-msg'));
     s.querySelector('[data-k=out]').onclick = () => {
       closeSheet(true);
       signOutUser().catch(err => log.warn('sign out failed', err));
     };
   });
+}
+
+// "Download my data" button. Step 1 prepares the file; on phones step 2 ("Save file") opens the share sheet.
+export function wireExportButton(btn, msgBox) {
+  const L = t();
+  const msg = (cls, text) => { msgBox.innerHTML = text ? `<div class="formmsg ${cls}">${esc(text)}</div>` : ''; };
+  let file = null;
+  const save = async () => {
+    const result = await saveMyData(file);
+    if (result === 'downloaded') msg('ok-box', L.exportDone);
+    else if (result === 'shared') msg('ok-box', L.exportShared);
+  };
+  btn.onclick = async () => {
+    if (file) { save(); return; }
+    btn.disabled = true; btn.textContent = L.exporting; msg('', '');
+    try {
+      file = await prepareMyData();
+      btn.disabled = false;
+      if (usesShareSheet(file)) { btn.textContent = L.exportSave; msg('ok-box', L.exportReady); }
+      else { btn.textContent = L.exportData; await save(); file = null; }
+    } catch (err) {
+      log.warn('export failed', err);
+      btn.disabled = false; btn.textContent = L.exportData; file = null;
+      msg('err-box', L.exportFailed);
+    }
+  };
 }

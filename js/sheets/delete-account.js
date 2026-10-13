@@ -4,7 +4,8 @@ import { t } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
 import { getSession } from '../state/session.js';
 import * as fb from '../services/firebase.js';
-import { deleteAccount, downloadMyData } from '../controllers/account.js';
+import { deleteAccount } from '../controllers/account.js';
+import { wireExportButton } from './account.js';
 import { errorMessage, showInfo } from '../controllers/auth.js';
 import { logger } from '../utils/log.js';
 
@@ -21,7 +22,8 @@ export function openDeleteAccountSheet() {
     <ul class="consent-points">
       <li>${L.deleteWhat1}</li><li>${L.deleteWhat2}</li><li>${L.deleteWhat3}</li>
     </ul>
-    <button type="button" class="textbtn link" data-k="export" style="margin-bottom:12px">${L.deleteExportFirst}</button>
+    <button type="button" class="btn secondary small" data-k="export" style="margin-bottom:8px">${L.deleteExportFirst}</button>
+    <div id="d-export-msg" style="margin-bottom:8px"></div>
     <form id="f-delete" novalidate>
       ${usesPassword ? `<div class="field"><label for="d-pw">${L.deletePassword}</label>
         <input id="d-pw" class="input" type="password" autocomplete="current-password"></div>` : `<p class="hint" style="margin-bottom:14px">${L.deleteGoogle}</p>`}
@@ -40,7 +42,7 @@ export function openDeleteAccountSheet() {
     const showErr = msg => { errBox.innerHTML = msg ? `<div class="formmsg err-box" role="alert">${esc(msg)}</div>` : ''; };
     wordInput.addEventListener('input', () => { go.disabled = wordInput.value.trim().toUpperCase() !== word; });
     s.querySelector('[data-k=cancel]').onclick = () => closeSheet();
-    s.querySelector('[data-k=export]').onclick = () => downloadMyData().catch(err => { log.warn(err); showErr(L.exportFailed); });
+    wireExportButton(s.querySelector('[data-k=export]'), s.querySelector('#d-export-msg'));
     s.querySelector('#f-delete').onsubmit = async e => {
       e.preventDefault();
       if (go.disabled) return;
