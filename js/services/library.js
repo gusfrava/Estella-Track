@@ -2,7 +2,7 @@
 // (data/exercise-videos.json). Same for everyone, read-only, shipped with the app (no Firestore reads).
 //
 // LibraryExercise = { id, n /* Spanish name */, en /* English name */, g /* group key */, eq /* equipment */,
-//                     lv /* 0 any, 1 beginner, 2 intermediate, 3 advanced */, type, side /* 1 = per side */,
+//                     eqEn /* equipment in English */, lv /* 0 any, 1 beginner, 2 intermediate, 3 advanced */, type, side /* 1 = per side */,
 //                     s /* popularity score, higher first */, sv, cw /* muscle weights, for muscle maps later */ }
 // Videos file: { [id]: { name, video /* YouTube link, '' = none yet */ } }
 import { youTubeId, isShort } from '../utils/youtube.js';
@@ -64,7 +64,7 @@ export function loadLibrary() {
 export function indexLibrary(list, videos = {}) {
   const byId = {};
   for (const e of list) {
-    e.k = withSynonyms(norm(`${e.n} ${e.en} ${e.eq} ${GROUP_WORDS[e.g] || ''}`));   // what search looks at
+    e.k = withSynonyms(norm(`${e.n} ${e.en} ${e.eq} ${e.eqEn || ''} ${GROUP_WORDS[e.g] || ''}`));   // what search looks at
     e.kn = withSynonyms(norm(`${e.n} ${e.en}`));                       // names only (ranked higher)
     byId[e.id] = e;
   }

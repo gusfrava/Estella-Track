@@ -12,7 +12,7 @@ One exercise per line:
 | `id` | Permanent id (e.g. `press_de_banca_con_barra`). Routines store it as `exerciseId`, so **never change or reuse an id**. To retire an exercise, leave it in. |
 | `n` / `en` | Spanish / English name |
 | `g` | Group for browsing: pecho, espalda, hombros, brazos, piernas, gluteos, core, cardio, movilidad |
-| `eq` | Equipment, free text |
+| `eq` / `eqEn` | Equipment in Spanish / English (English comes from `tools/equipment-en.json`) |
 | `lv` | 0 any, 1 beginner, 2 intermediate, 3 advanced |
 | `type` | `weight_reps`, `reps` or `time` (what a set measures) |
 | `side` | 1 = done one side at a time (the "Por lado" switch starts on) |

@@ -9,6 +9,20 @@ const GROUP = g => {
     'glúteos': 'gluteos', 'core': 'core', 'cardio': 'cardio', 'movilidad': 'movilidad' }[f];
 };
 const LEVEL = { prin: 1, inte: 2, avan: 3, todo: 0, a: 2, b: 2 };
+// Equipment is written in Spanish in the old list; tools/equipment-en.json translates each term for "eqEn".
+const EQ_EN = JSON.parse(fs.readFileSync(new URL('./equipment-en.json', import.meta.url), 'utf8'));
+function eqEnglish(eq) {
+  const term = t => {
+    t = t.trim();
+    if (EQ_EN[t]) return EQ_EN[t];
+    let m;
+    if ((m = t.match(/^(.*) opcional$/))) return `${term(m[1])} (optional)`;
+    if (t.includes(' o ')) return t.split(' o ').map(term).join(' or ');
+    if (t.includes('/')) return t.split('/').map(term).join('/');
+    throw new Error(`no English for equipment "${t}" — add it to tools/equipment-en.json`);
+  };
+  return eq.split(';').map(term).join('; ');
+}
 const out = old.map(e => {
   let group = GROUP(e.g);
   if (/wrist|pronaci/i.test(e.n)) group = 'brazos';
@@ -22,7 +36,7 @@ const out = old.map(e => {
   if (group === 'movilidad' || group === 'cardio') type = 'time';
   const side = type !== 'time' && e.u ? 1 : 0;
   if (!group) throw new Error('no group for ' + e.n + ' / ' + e.g);
-  return { id: e.id, n: e.n, en: e.en, g: group, eq: e.eq, lv: LEVEL[e.lv] ?? 0, type, side, s: e.s, sv: e.sv, cw: e.cw };
+  return { id: e.id, n: e.n, en: e.en, g: group, eq: e.eq, eqEn: eqEnglish(e.eq), lv: LEVEL[e.lv] ?? 0, type, side, s: e.s, sv: e.sv, cw: e.cw };
 });
 const ids = new Set(); for (const e of out) { if (ids.has(e.id)) throw new Error('dup ' + e.id); ids.add(e.id); }
 fs.writeFileSync(outDir + '/exercises.json', '[\n' + out.map(e => JSON.stringify(e)).join(',\n') + '\n]\n');
