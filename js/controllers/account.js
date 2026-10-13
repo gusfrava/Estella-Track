@@ -56,19 +56,37 @@ export async function checkVerified() {
 }
 
 // ---------- download my data ----------
-export async function downloadMyData() {
-  const user = getSession().user;
-  const data = await fb.exportUserData(user);
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
+// Phones (especially the iPhone home-screen app) can't do normal downloads, so there we use the share sheet
+// ("Guardar en Archivos", AirDrop, WhatsApp…). The share sheet only opens straight from a tap, so it's two steps:
+// prepareMyData() fetches everything, then saveMyData(file) runs from a second tap.
+const isTouchDevice = () => window.matchMedia && matchMedia('(pointer: coarse)').matches;
+
+export function usesShareSheet(file) {
+  try { return isTouchDevice() && !!navigator.canShare && navigator.canShare({ files: [file] }); } catch (e) { return false; }
+}
+
+export async function prepareMyData() {
+  const data = await fb.exportUserData(getSession().user);
+  const name = `estella-mis-datos-${ymd(new Date())}.json`;
+  log.debug('export ready', Object.keys(data));
+  return new File([JSON.stringify(data, null, 2)], name, { type: 'application/json' });
+}
+
+// Returns 'shared' | 'downloaded' | 'cancelled'. Must be called directly from a tap.
+export async function saveMyData(file) {
+  if (usesShareSheet(file)) {
+    try { await navigator.share({ files: [file], title: file.name }); return 'shared'; }
+    catch (err) { if (err && err.name === 'AbortError') return 'cancelled'; log.warn('share failed, trying download', err); }
+  }
+  const url = URL.createObjectURL(file);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `estella-mis-datos-${ymd(new Date())}.json`;
+  a.download = file.name;
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10000);
-  log.debug('exported', Object.keys(data));
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  return 'downloaded';
 }
 
 // ---------- delete account ----------
