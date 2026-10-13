@@ -6,8 +6,8 @@ import { esc, fmtDay, fmtNum, fmtClock } from '../utils/format.js';
 import { nextMonday, pad2 } from '../utils/dates.js';
 import { orderedExercises, routineProgress, planChange, isRoutineDone, setsToShow, lastTime } from '../state/selectors.js';
 import { editDeleteButtons, progressBar } from './partials.js';
-import { youTubeId, searchUrl } from '../utils/youtube.js';
-import { libraryVideoId, libraryExercise } from '../services/library.js';
+import { searchUrl } from '../utils/youtube.js';
+import { techniqueVideo, libraryExercise } from '../services/library.js';
 
 export function routineView(state, r, ui = {}) {
   const L = t();
@@ -115,15 +115,16 @@ function lastTimeLine(last, type) {
 }
 
 // "▶ Ver técnica": your own video, else the library's, both play in a sheet; otherwise a YouTube search (new tab).
+// Next to it, "Añadir video" / "Cambiar video" opens the exercise form at the video link.
 function techniqueButton(ex) {
   const L = t();
-  const id = youTubeId(ex.video) || libraryVideoId(ex.exerciseId);
   const label = `<span aria-hidden="true">▶</span> ${L.watchTechnique}`;
-  if (id) return `<button class="tech" data-action="video" data-id="${ex.id}">${label}</button>`;
+  const edit = `<button class="tech-edit textbtn link" data-action="edit-video" data-id="${ex.id}">${ex.video ? L.videoChange : L.videoAdd}</button>`;
+  if (techniqueVideo(ex)) return `<div class="tech-row"><button class="tech" data-action="video" data-id="${ex.id}">${label}</button>${edit}</div>`;
   const lib = libraryExercise(ex.exerciseId);
   const en = getLang() === 'en';
   const q = `${en && lib ? lib.en : ex.name} ${en ? 'proper form' : 'técnica'}`;
-  return `<a class="tech" href="${esc(searchUrl(q))}" target="_blank" rel="noopener">${label}</a>`;
+  return `<div class="tech-row"><a class="tech" href="${esc(searchUrl(q))}" target="_blank" rel="noopener">${label}</a>${edit}</div>`;
 }
 
 // Number for an input box: no thousands separator; decimal comma in Spanish (both are accepted when reading).

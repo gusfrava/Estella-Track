@@ -14,7 +14,8 @@ import { stepper, wireSteppers, readNumber } from './fields.js';
 
 // exerciseId = null to add a new one. prefill (new only) = { name, type, perSide, exerciseId, sets, reps, seconds }
 // from the picker. replace = swap the open sheet's content instead of opening a new sheet.
-export function openExerciseForm(routineId, exerciseId, prefill = null, { replace = false } = {}) {
+// focus: 'video' = scroll to the video link and select it (from "Añadir/Cambiar video").
+export function openExerciseForm(routineId, exerciseId, prefill = null, { replace = false, focus = '' } = {}) {
   const L = t();
   const routine = findRoutine(routineId);
   if (!routine) return;
@@ -89,6 +90,10 @@ export function openExerciseForm(routineId, exerciseId, prefill = null, { replac
     const change = s.querySelector('[data-k=change]');
     if (change) change.onclick = () => openExercisePicker(routineId, { replace: true });
     // "Buscar en YouTube" searches for whatever name is typed right now (opens in a new tab).
+    if (focus === 'video') {
+      const v = s.querySelector('#f-video');
+      setTimeout(() => { v.scrollIntoView({ block: 'center' }); v.focus({ preventScroll: true }); v.select(); }, 320);
+    }
     s.querySelector('[data-k=yt-search]').onclick = e => {
       const typed = s.querySelector('#f-exname').value.trim() || name;
       e.currentTarget.href = searchUrl(`${typed} ${getLang() === 'en' ? 'proper form' : 'técnica'}`);

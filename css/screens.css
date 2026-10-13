@@ -181,3 +181,6 @@
 /* "▶ Ver técnica" inside an open exercise */
 .tech{display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;padding:6px 12px;border:2px solid var(--ink);border-radius:99px;background:var(--card);font-family:var(--display);font-weight:800;font-size:.9rem;color:var(--ink);text-decoration:none}
 .tech span{color:var(--danger)}
+.tech-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
+.tech-row .tech{margin:0}
+.tech-edit{font-size:.88rem}

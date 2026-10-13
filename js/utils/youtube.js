@@ -22,7 +22,13 @@ export function youTubeId(text) {
   return ID.test(id) ? id : '';
 }
 
+// True for a YouTube Shorts link (youtube.com/shorts/…): vertical video, shown in a tall player.
+export function isShort(text) {
+  const s = String(text || '').trim();
+  try { return new URL(/^https?:\/\//i.test(s) ? s : `https://${s}`).pathname.startsWith('/shorts/'); } catch (e) { return false; }
+}
+
 // Privacy-enhanced embed (no YouTube cookies until the video plays).
 export const embedUrl = id => `https://www.youtube-nocookie.com/embed/${id}?rel=0&playsinline=1&autoplay=1`;
-export const watchUrl = id => `https://www.youtube.com/watch?v=${id}`;
+export const watchUrl = (id, short = false) => (short ? `https://www.youtube.com/shorts/${id}` : `https://www.youtube.com/watch?v=${id}`);
 export const searchUrl = query => `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;

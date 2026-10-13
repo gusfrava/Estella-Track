@@ -5,7 +5,7 @@
 //                     lv /* 0 any, 1 beginner, 2 intermediate, 3 advanced */, type, side /* 1 = per side */,
 //                     s /* popularity score, higher first */, sv, cw /* muscle weights, for muscle maps later */ }
 // Videos file: { [id]: { name, video /* YouTube link, '' = none yet */ } }
-import { youTubeId } from '../utils/youtube.js';
+import { youTubeId, isShort } from '../utils/youtube.js';
 import { logger } from '../utils/log.js';
 
 const log = logger('library');
@@ -80,6 +80,17 @@ export const libraryExercise = id => (lib && id && lib.byId[id]) || null;
 export function libraryVideoId(id) {
   const v = lib && id && lib.videos[id];
   return v ? youTubeId(v.video) : '';
+}
+
+// The video to play for a routine exercise: your own link first, then the library's.
+// → { id, short } (short = YouTube Shorts, vertical) or null when there's none (then we offer a YouTube search).
+export function techniqueVideo(ex) {
+  if (!ex) return null;
+  const own = youTubeId(ex.video);
+  if (own) return { id: own, short: isShort(ex.video) };
+  const v = lib && ex.exerciseId && lib.videos[ex.exerciseId];
+  const libId = v ? youTubeId(v.video) : '';
+  return libId ? { id: libId, short: isShort(v.video) } : null;
 }
 
 // ---------- search ----------
