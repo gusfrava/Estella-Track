@@ -2,9 +2,14 @@
 /* ---------- sheet ---------- */
 .scrim{position:fixed;inset:0;background:rgba(43,27,18,.45);z-index:20;opacity:0;transition:opacity .2s}
 .scrim.open{opacity:1}
-.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;max-height:92vh;overflow:auto;background:var(--bg);border:var(--line) solid var(--ink);border-bottom:0;border-radius:28px 28px 0 0;padding:10px 20px calc(24px + env(safe-area-inset-bottom,0px));z-index:21;transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;max-height:calc(100vh - 64px - var(--safe-top));max-height:calc(100dvh - 64px - var(--safe-top));overflow:auto;overscroll-behavior:contain;background:var(--bg);border:var(--line) solid var(--ink);border-bottom:0;border-radius:28px 28px 0 0;padding:0 20px calc(24px + env(safe-area-inset-bottom,0px));z-index:21;transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+/* Sticky top: handle (drag it down to close) + × button. */
+.sheet-top{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:center;height:46px;margin:0 -20px 4px;background:var(--bg);touch-action:none;cursor:grab}
+.sheet-top .grab{margin:0}
+.sheet-x{position:absolute;right:12px;top:6px;width:36px;height:36px;border-radius:50%;border:2px solid var(--ink);background:var(--card);display:grid;place-items:center;font-size:1.4rem;line-height:1;font-weight:700}
 .sheet.open{transform:none}
 .grab{width:48px;height:5px;border-radius:9px;background:var(--ink);opacity:.25;margin:0 auto 16px}
+.sheet-top+h2{padding-right:40px}
 .sheet h2{font-size:1.65rem;margin-bottom:18px}
 .actions{display:flex;flex-direction:column;gap:12px;margin-top:8px}
 .actions .textbtn{align-self:center}

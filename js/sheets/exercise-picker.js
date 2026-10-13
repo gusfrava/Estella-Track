@@ -56,6 +56,8 @@ export function openExercisePicker(routineId, { replace = false } = {}) {
 }
 
 const nameOf = e => (getLang() === 'en' ? e.en : e.n);
+// Equipment in the app's language, "barra, banco" / "barbell, bench".
+const equipmentOf = e => ((getLang() === 'en' ? e.eqEn : e.eq) || e.eq || '').split(';').map(s => s.trim()).filter(Boolean).join(', ');
 
 function itemHTML(e) {
   const L = t();
@@ -65,7 +67,7 @@ function itemHTML(e) {
   if (e.side) tags.push(L.tagSide);
   return `<li><button type="button" class="lib-item" data-pick="${esc(e.id)}">
     <span class="lib-name">${esc(nameOf(e))}</span>
-    <span class="lib-meta">${esc(L.groups[e.g] || '')}${e.eq ? ` · ${esc(e.eq)}` : ''}</span>
+    <span class="lib-meta">${esc(L.groups[e.g] || '')}${equipmentOf(e) ? ` · ${esc(equipmentOf(e))}` : ''}</span>
     ${tags.length ? `<span class="lib-tags">${tags.map(x => `<span>${esc(x)}</span>`).join('')}</span>` : ''}
   </button></li>`;
 }
