@@ -159,6 +159,91 @@ export async function claimUsername(uid, { username, displayName, previous }) {
   await batch.commit();
 }
 
+// ---------- friends ----------
+// directory/{uid}               { username, displayName, nameKey, lastKey, character, updatedAt }  — only while "Aparecer en
+//                               búsquedas" is on. What anyone signed in can see in search: name, @username, character.
+// friendRequests/{from}_{to}    { from, to, fromUsername, fromName, toUsername, toName, status: 'pending'|'accepted', createdAt }
+// users/{uid}/friends/{friendUid}  { since, username, displayName }  — written for both people when a request is accepted.
+// The rules (firestore.rules) check each step; see docs/DATA-MODEL.md → Friends.
+const SEARCH_LIMIT = 10;
+const dirDoc = uid => FB.f.doc(FB.db, 'directory', uid);
+const reqDoc = id => FB.f.doc(FB.db, 'friendRequests', id);
+const friendDoc = (uid, fid) => FB.f.doc(FB.db, 'users', uid, 'friends', fid);
+export const requestId = (from, to) => `${from}_${to}`;
+
+// entry = { username, displayName, nameKey, character } or null to leave the directory.
+export async function setDirectoryEntry(uid, entry) {
+  if (entry) await FB.f.setDoc(dirDoc(uid), { ...entry, updatedAt: Date.now() });
+  else await FB.f.deleteDoc(dirDoc(uid));
+}
+
+export async function getDirectoryEntry(uid) {
+  const snap = await FB.f.getDoc(dirDoc(uid));
+  return snap.exists() ? { uid, ...snap.data() } : null;
+}
+
+// Usernames, names and last names (name from its second word) that start with what was typed
+// (already lowercase, no accents). Up to 10 of each.
+export async function searchDirectory(usernamePrefix, namePrefix) {
+  const col = FB.f.collection(FB.db, 'directory');
+  const byField = (field, v) => FB.f.getDocs(FB.f.query(col, FB.f.where(field, '>=', v), FB.f.where(field, '<', v + '\uf8ff'),
+    FB.f.orderBy(field), FB.f.limit(SEARCH_LIMIT)));
+  const snaps = await Promise.all([usernamePrefix ? byField('username', usernamePrefix) : null,
+    namePrefix ? byField('nameKey', namePrefix) : null, namePrefix ? byField('lastKey', namePrefix) : null]);
+  const out = new Map();
+  for (const snap of snaps) if (snap) snap.docs.forEach(d => out.set(d.id, { uid: d.id, ...d.data() }));
+  return [...out.values()];
+}
+
+// Requests sent by me and to me, and my friends. cb gets the full lists each time something changes.
+export function watchRequests(uid, cb, onError) {
+  const col = FB.f.collection(FB.db, 'friendRequests');
+  const lists = { incoming: null, outgoing: null };
+  const emit = () => { if (lists.incoming && lists.outgoing) cb({ incoming: lists.incoming, outgoing: lists.outgoing }); };
+  const read = key => snap => { lists[key] = snap.docs.map(d => ({ id: d.id, ...d.data() })); emit(); };
+  const u1 = FB.f.onSnapshot(FB.f.query(col, FB.f.where('to', '==', uid)), read('incoming'), onError);
+  const u2 = FB.f.onSnapshot(FB.f.query(col, FB.f.where('from', '==', uid)), read('outgoing'), onError);
+  return () => { u1(); u2(); };
+}
+
+export function watchFriends(uid, cb, onError) {
+  return FB.f.onSnapshot(FB.f.collection(FB.db, 'users', uid, 'friends'), snap => {
+    const friends = {};
+    snap.docs.forEach(d => { friends[d.id] = d.data(); });
+    cb(friends);
+  }, onError);
+}
+
+// me / them = { uid, username, displayName }
+export async function sendFriendRequest(me, them) {
+  await FB.f.setDoc(reqDoc(requestId(me.uid, them.uid)), {
+    from: me.uid, to: them.uid, fromUsername: me.username, fromName: me.displayName || '',
+    toUsername: them.username, toName: them.displayName || '', status: 'pending', createdAt: Date.now(),
+  });
+}
+
+// Cancel (sender) or decline (receiver): the request is simply removed.
+export const deleteFriendRequest = id => FB.f.deleteDoc(reqDoc(id));
+
+// Accepting: the request turns 'accepted' and both people get each other in their friends list (one batch).
+export async function acceptFriendRequest(me, req) {
+  const batch = FB.f.writeBatch(FB.db);
+  const since = Date.now();
+  batch.update(reqDoc(req.id), { status: 'accepted', respondedAt: since });
+  batch.set(friendDoc(me.uid, req.from), { since, username: req.fromUsername, displayName: req.fromName || '' });
+  batch.set(friendDoc(req.from, me.uid), { since, username: me.username, displayName: me.displayName || '' });
+  await batch.commit();
+}
+
+// Removing a friend clears it on both sides, plus any request between the two (requestIds = the ones that exist).
+export async function removeFriend(myUid, theirUid, requestIds = []) {
+  const batch = FB.f.writeBatch(FB.db);
+  batch.delete(friendDoc(myUid, theirUid));
+  batch.delete(friendDoc(theirUid, myUid));
+  requestIds.forEach(id => batch.delete(reqDoc(id)));
+  await batch.commit();
+}
+
 // ---------- your data: export and delete ----------
 // Every collection under users/{uid} that holds the person's data.
 const USER_SUBCOLLECTIONS = ['routines', 'sessions', 'exerciseStats', 'body', 'customExercises', 'friends'];
@@ -181,6 +266,13 @@ export async function exportUserData(user) {
     profile: profileSnap.exists() ? profileSnap.data() : null,
   };
   for (const name of USER_SUBCOLLECTIONS) out[name] = await readCollection(user.uid, name);
+  const reqs = FB.f.collection(FB.db, 'friendRequests');
+  out.friendRequests = [];
+  for (const field of ['from', 'to']) {
+    (await FB.f.getDocs(FB.f.query(reqs, FB.f.where(field, '==', user.uid)))).docs.forEach(d => out.friendRequests.push({ id: d.id, ...d.data() }));
+  }
+  const dir = await FB.f.getDoc(dirDoc(user.uid));
+  out.directory = dir.exists() ? dir.data() : null;
   return out;
 }
 
@@ -192,6 +284,13 @@ export async function deleteUserData(user) {
     const snap = await FB.f.getDocs(FB.f.collection(FB.db, 'users', uid, name));
     snap.docs.forEach(d => refs.push(FB.f.doc(FB.db, 'users', uid, name, d.id)));
   }
+  // Friends: remove me from each friend's list, and every friend request to or from me; leave the directory.
+  for (const d of (await FB.f.getDocs(FB.f.collection(FB.db, 'users', uid, 'friends'))).docs) refs.push(friendDoc(d.id, uid));
+  const reqs = FB.f.collection(FB.db, 'friendRequests');
+  for (const field of ['from', 'to']) {
+    (await FB.f.getDocs(FB.f.query(reqs, FB.f.where(field, '==', uid)))).docs.forEach(d => refs.push(reqDoc(d.id)));
+  }
+  if ((await FB.f.getDoc(dirDoc(uid))).exists()) refs.push(dirDoc(uid));
   const profileSnap = await FB.f.getDoc(userDoc(uid));
   const username = profileSnap.exists() ? profileSnap.data().username : null;
   // Data first, in batches; the profile and the username go together in the very last batch.

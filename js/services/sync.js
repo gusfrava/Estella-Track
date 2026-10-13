@@ -15,6 +15,7 @@ import {
 } from '../state/store.js';
 import { SCHEMA_VERSION, DEFAULT_SHARING } from '../state/model.js';
 import { getSession, setSession } from '../state/session.js';
+import { setFriends, setRequests, clearSocial } from '../state/social.js';
 import { daysAgo } from '../utils/dates.js';
 import { logger } from '../utils/log.js';
 
@@ -116,6 +117,10 @@ function listen(user) {
     if (!mine() || (fromCache && !Object.keys(docs).length)) return;
     applyRemoteCollection('body', docs);
   }, onErr('body')));
+
+  // Friends and friend requests (state/social.js, not part of the training data).
+  unsubs.push(fb.watchFriends(uid, friends => { if (mine()) setFriends(friends); }, onErr('friends')));
+  unsubs.push(fb.watchRequests(uid, lists => { if (mine()) setRequests(lists); }, onErr('friendRequests')));
 }
 
 // A routine that doesn't repeat can point at a session older than the 120-day window: load it on its own.
@@ -172,6 +177,7 @@ async function migrate(user, profileData) {
 function stopListeners() {
   unsubs.forEach(u => { try { u(); } catch (e) {} });
   unsubs = [];
+  clearSocial();
 }
 
 // Account deletion: stop listening so the profile listener doesn't recreate the account while it's being deleted.

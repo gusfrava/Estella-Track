@@ -2,8 +2,8 @@ rules_version = '2';
 
 // Estella security rules — data model v2 (see docs/DATA-MODEL.md).
 // Paste into Firebase console → Firestore Database → Rules → Publish.
-// Friends, groups, trainers and leaderboards get their read rules when those features ship;
-// until then everything outside a user's own data (and username lookups) is closed.
+// Friends: search directory, friend requests and friend lists are below. Groups, trainers and leaderboards get
+// their rules when those features ship. Friends can't read each other's data yet (that comes with the friends' week).
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -31,6 +31,19 @@ service cloud.firestore {
       return !('username' in data)
         || getAfter(/databases/$(database)/documents/usernames/$(data.username)).data.uid == request.auth.uid;
     }
+    // The username on my profile (rules may read any document, the app can't).
+    function myUsername() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('username', null);
+    }
+    function usernameOf(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.get('username', null);
+    }
+    // A friend request from a to b exists and is accepted (after this write).
+    function acceptedRequest(a, b) {
+      return existsAfter(/databases/$(database)/documents/friendRequests/$(a + '_' + b))
+        && getAfter(/databases/$(database)/documents/friendRequests/$(a + '_' + b)).data.status == 'accepted';
+    }
+
     function usernameUnchanged() {
       return request.resource.data.get('username', null) == resource.data.get('username', null);
     }
@@ -55,11 +68,59 @@ service cloud.firestore {
       match /exerciseStats/{id}   { allow read, write: if isOwner(uid); }
       match /body/{id}            { allow read, write: if isOwner(uid); }
       match /customExercises/{id} { allow read, write: if isOwner(uid); }
-      match /friends/{id}         { allow read, write: if isOwner(uid); }
+
+      // friends/{fid} = { since, username, displayName }. Being on someone's list is what will let you see what they
+      // share with friends, so nobody can add themselves: entries need an accepted request between the two.
+      //  - the owner adds a friend once a request either way was accepted (in the same batch);
+      //  - the person who accepts adds themselves to the sender's list (the sender asked for it);
+      //  - either of the two can remove the entry (unfriending clears both lists).
+      match /friends/{fid} {
+        allow read: if isOwner(uid);
+        allow create: if request.resource.data.keys().hasOnly(['since', 'username', 'displayName'])
+          && ((isOwner(uid) && (acceptedRequest(fid, uid) || acceptedRequest(uid, fid)))
+              || (signedIn() && request.auth.uid == fid && acceptedRequest(uid, fid)));
+        allow update: if isOwner(uid) && request.resource.data.keys().hasOnly(['since', 'username', 'displayName']);
+        allow delete: if isOwner(uid) || (signedIn() && request.auth.uid == fid);
+      }
 
       // Written only by Estella's server functions (points and mascot growth can't be edited from a phone).
       match /mascot/{id} { allow read: if isOwner(uid); allow write: if false; }
       match /wallet/{id} { allow read: if isOwner(uid); allow write: if false; }
+    }
+
+    // directory/{uid} = { username, displayName, nameKey, lastKey, character, updatedAt }: what friend search shows. Only there
+    // while "Aparecer en búsquedas" is on. Anyone signed in can search it (20 results at most); only the owner writes
+    // it, and only with their own username.
+    match /directory/{uid} {
+      allow get: if signedIn();
+      allow list: if signedIn() && request.query.limit <= 20;
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['username', 'displayName', 'nameKey', 'lastKey', 'character', 'updatedAt'])
+        && request.resource.data.username == myUsername()
+        && request.resource.data.displayName is string && request.resource.data.displayName.size() <= 60
+        && request.resource.data.nameKey is string && request.resource.data.nameKey.size() <= 60
+        && request.resource.data.lastKey is string && request.resource.data.lastKey.size() <= 60;
+      allow delete: if isOwner(uid);
+    }
+
+    // friendRequests/{from}_{to} = { from, to, fromUsername, fromName, toUsername, toName, status, createdAt, respondedAt }
+    // Only the two people involved can see it. The sender creates it (as themselves, to someone who exists and isn't
+    // already their friend); the receiver can only accept it; either can delete it (cancel / decline / unfriend).
+    match /friendRequests/{id} {
+      allow read: if signedIn() && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+      allow create: if signedIn()
+        && id == request.auth.uid + '_' + request.resource.data.to
+        && request.resource.data.keys().hasOnly(['from', 'to', 'fromUsername', 'fromName', 'toUsername', 'toName', 'status', 'createdAt'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to != request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.fromUsername == myUsername()
+        && request.resource.data.toUsername == usernameOf(request.resource.data.to)
+        && !exists(/databases/$(database)/documents/users/$(request.auth.uid)/friends/$(request.resource.data.to));
+      allow update: if signedIn() && resource.data.to == request.auth.uid && resource.data.status == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'respondedAt'])
+        && request.resource.data.status == 'accepted';
+      allow delete: if signedIn() && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
     }
 
     // usernames/{name} → { uid, createdAt }: one document per taken name keeps names unique.
