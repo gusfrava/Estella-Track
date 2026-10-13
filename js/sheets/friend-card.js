@@ -3,18 +3,16 @@
 // Friends also see the other person's week, streak and last workout (views/friend-week.js), can cheer that workout,
 // and can see and copy their routines (without weights).
 import { openSheet, closeSheet, confirmSheet } from '../ui/sheet.js';
-import { t } from '../i18n/index.js';
-import { esc } from '../utils/format.js';
+import { t, routineName } from '../i18n/index.js';
+import { esc, fmtClock } from '../utils/format.js';
 import { toast } from '../ui/toast.js';
 import { ICONS } from '../ui/icons.js';
-import { onSocialChange, getSocial } from '../state/social.js';
+import { onSocialChange, getSocial, friendWeek, myCheerFor } from '../state/social.js';
 import * as friends from '../controllers/friends.js';
 import { avatarHTML, personName } from '../views/people.js';
 import { friendWeekHTML } from '../views/friend-week.js';
-import { friendWeek } from '../state/social.js';
-import { routineName } from '../i18n/index.js';
+import { CHEER_ICONS } from '../ui/cheer-icons.js';
 import { exerciseName, loadLibrary } from '../services/library.js';
-import { fmtClock } from '../utils/format.js';
 import { logger } from '../utils/log.js';
 
 const log = logger('friends');
@@ -56,12 +54,25 @@ export function openFriendCard(person) {
         if (btn) btn.closest('details').open = true;
       });
     });
+    // The cheer I sent for their last workout (follows that workout if a newer one shows up while the card is open).
+    let cheerWatch = null, cheerDate = null;
+    const followCheer = () => {
+      const w = isFriend() ? friendWeek(p.uid) : null, date = w && w.last ? w.last.date : null;
+      if (date === cheerDate) return;
+      if (cheerWatch) cheerWatch();
+      cheerDate = date;
+      cheerWatch = date ? friends.watchMyCheer(p.uid, date) : null;
+    };
     const off = onSocialChange(() => {
-      if (!s.isConnected) { off(); return; }
-      box.innerHTML = buttons();
-      weekBox.innerHTML = week();
-      if (!isFriend()) rBox.innerHTML = '';
+      if (!s.isConnected) { off(); if (cheerWatch) cheerWatch(); return; }
+      followCheer();
+      // Only redraw what changed, so a button that's mid-animation isn't replaced by an identical one.
+      const set = (el, html) => { if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; } };
+      set(box, buttons());
+      set(weekBox, week());
+      if (!isFriend()) set(rBox, '');
     });
+    followCheer();
     if (isFriend()) {
       Promise.all([friends.sharedRoutinesOf(p.uid), loadLibrary().catch(() => null)]).then(([res]) => {
         shared = res;
@@ -75,10 +86,16 @@ export function openFriendCard(person) {
 function sendCheer(p, btn) {
   const w = friendWeek(p.uid);
   if (!w || !w.last) return;
-  btn.disabled = true;
-  friends.cheer(p.uid, btn.dataset.cheer, { date: w.last.date, name: lastNameOf(w.last) })
-    .catch(err => { log.warn('cheer failed', err); toast(`<span><b>${esc(t().fr.failed)}</b></span>`); })
-    .finally(() => { btn.disabled = false; });   // the row redraws itself when the cheer shows up (listener)
+  const F = t().fr, kind = btn.dataset.cheer;
+  const before = myCheerFor(p.uid, w.last.date), removing = !!before && before.kind === kind;
+  if (navigator.vibrate) navigator.vibrate(15);
+  // The button changes right away (the row redraws as soon as cheer() runs), with a small pop and a toast.
+  friends.cheer(p.uid, kind, { date: w.last.date, name: lastNameOf(w.last) })
+    .catch(err => { log.warn('cheer failed', err); toast(`<span><b>${esc(F.failed)}</b></span>`); });
+  if (removing) { toast(`<span><b>${esc(F.cheerRemoved)}</b></span>`); return; }
+  const b = document.querySelector(`.sheet .cheer-btn[data-cheer="${kind}"]`);
+  if (b) b.classList.add('pop');
+  toast(`${CHEER_ICONS[kind]}<span><b>${esc(F.cheerSentToast(F.cheerKinds[kind]))}</b>${esc(personName(p))}</span>`);
 }
 const lastNameOf = last => (last.kind === 'activity' ? last.sport : routineName({ name: last.name })) || '';
 

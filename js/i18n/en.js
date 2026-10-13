@@ -80,6 +80,7 @@ export default {
     copy:'Copy to my routines', copied:'Already copied', copyAgain:'Copy again', copiedToast:'Routine copied',
     copyHint:'Exercises, sets and reps are copied. You add your own weights.',
     badgeLabel:n=>n===1?'1 new thing in Friends':`${n} new things in Friends`,
+    cheerSentToast:k=>`You sent ${k}`, cheerRemoved:'Cheer taken back',
     sentToast:'Request sent', failed:'That didn’t work. Check your connection and try again.',
   },
   tabsLabel:'Sections', tabRoutines:'Routines', tabProgress:'Progress',

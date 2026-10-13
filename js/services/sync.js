@@ -134,7 +134,17 @@ function listen(user) {
   unsubs.push(fb.watchCard(uid, e => { myCard = e; askForCard(); }));
   unsubs.push(subscribe(askForCard));
   unsubs.push(fb.watchRequests(uid, lists => { if (mine()) setRequests(lists); }, onErr('friendRequests')));
-  unsubs.push(fb.watchCheers(uid, lists => { if (mine()) setCheers(lists); }, onErr('cheers')));
+  // Cheers I received. If the listener fails (e.g. the database index is still being built right after a deploy),
+  // try again a minute later instead of staying empty until the app is reopened.
+  let offCheers = null, cheersRetry = null;
+  const startCheers = () => {
+    offCheers = fb.watchCheersToMe(uid, list => { if (mine()) setCheers(list); }, err => {
+      log.warn('cheers listener error, retrying in 60 s', err);
+      if (mine()) cheersRetry = setTimeout(startCheers, 60000);
+    });
+  };
+  startCheers();
+  unsubs.push(() => { clearTimeout(cheersRetry); if (offCheers) offCheers(); });
 }
 
 // One listener per friend's card (profileCards/{uid}); added and removed as the friends list changes.

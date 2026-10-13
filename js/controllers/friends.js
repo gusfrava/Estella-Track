@@ -4,7 +4,7 @@
 import * as fb from '../services/firebase.js';
 import { getState, subscribe, addRoutines } from '../state/store.js';
 import { getSession } from '../state/session.js';
-import { getSocial, relation, pendingIncoming, pendingOutgoing, requestsWith, myCheerFor, recentCheers } from '../state/social.js';
+import { getSocial, relation, pendingIncoming, pendingOutgoing, requestsWith, myCheerFor, setMyCheer, recentCheers } from '../state/social.js';
 import { norm } from '../services/library.js';
 import { logger } from '../utils/log.js';
 
@@ -125,12 +125,27 @@ export function friendPerson(uid) { const f = getSocial().friends[uid]; return f
 export const CHEER_KINDS = ['fire', 'strong', 'clap'];
 
 // Cheer a friend's last workout ({ date, name }) with `kind`. Tapping the kind you already sent takes it back.
+// The button changes right away; if saving fails it goes back and the promise rejects.
+// Resolves 'sent' | 'changed' | 'removed'.
 export async function cheer(uid, kind, workout) {
   if (!CHEER_KINDS.includes(kind) || !workout || !workout.date) return null;
-  const mine = myCheerFor(uid, workout.date);
-  if (mine && mine.kind === kind) { await fb.deleteCheer(mine.id); return null; }
-  await fb.sendCheer(me(), uid, { kind, date: workout.date, workout: workout.name });
-  return kind;
+  const before = myCheerFor(uid, workout.date);
+  const id = fb.cheerId(me().uid, uid, workout.date);
+  const removing = before && before.kind === kind;
+  setMyCheer(uid, workout.date, removing ? null : { id, kind, to: uid, date: workout.date, createdAt: Date.now() });
+  try {
+    if (removing) await fb.deleteCheer(id);
+    else await fb.sendCheer(me(), uid, { kind, date: workout.date, workout: workout.name });
+  } catch (err) {
+    setMyCheer(uid, workout.date, before);
+    throw err;
+  }
+  return removing ? 'removed' : before ? 'changed' : 'sent';
+}
+
+// While a friend's card is open: keep "the cheer I sent for their last workout" up to date. Returns a stop function.
+export function watchMyCheer(uid, date) {
+  return fb.watchCheer(fb.cheerId(me().uid, uid, date), c => setMyCheer(uid, date, c));
 }
 
 // When I last looked at my cheers (Amigos tab), kept on this phone: newer ones get the badge on the tab.
