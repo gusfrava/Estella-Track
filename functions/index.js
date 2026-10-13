@@ -5,8 +5,6 @@
 //  - cardOnSession: a workout or activity changed → update that week's days and the last workout.
 //  - cardOnProfile: profile changed → name, goal, sharing; rebuilds the whole card when it's missing or outdated
 //    (the app asks for that by writing cardRefreshAt); deletes the card when the account is deleted.
-const { initializeApp } = require('firebase-admin/app');
-const { getFirestore, FieldPath, FieldValue } = require('firebase-admin/firestore');
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { onDocumentWritten } = require('firebase-functions/v2/firestore');
 const logger = require('firebase-functions/logger');
@@ -15,8 +13,20 @@ const card = require('./card');
 // us-central1 is inside the database's location (nam7). maxInstances caps cost if something ever loops.
 setGlobalOptions({ region: 'us-central1', maxInstances: 10, memory: '256MiB' });
 
-initializeApp();
-const db = getFirestore();
+// firebase-admin is loaded the first time a function runs, not when the file is read: `firebase deploy` reads this
+// file on your computer to see which functions exist, and gives up after 10 seconds (loading firebase-admin there
+// can take longer on Windows).
+let admin = null;
+function fsdb() {
+  if (!admin) {
+    const { initializeApp } = require('firebase-admin/app');
+    const firestore = require('firebase-admin/firestore');
+    initializeApp();
+    admin = { db: firestore.getFirestore(), FieldPath: firestore.FieldPath, FieldValue: firestore.FieldValue };
+  }
+  return admin;
+}
+const db = { collection: name => fsdb().db.collection(name) };
 const cardRef = uid => db.collection('profileCards').doc(uid);
 const sessionsOf = uid => db.collection('users').doc(uid).collection('sessions');
 const dataOf = snap => (snap && snap.exists ? snap.data() : null);
@@ -53,7 +63,7 @@ exports.cardOnSession = onDocumentWritten('users/{uid}/sessions/{sid}', async ev
   for (const wk of weeks) {
     const snap = await sessionsOf(uid).where('date', '>=', wk).where('date', '<=', card.addDays(wk, 6)).get();
     const d = card.weekDigits(snap.docs.map(x => x.data()), (current.pts || {})[wk]);
-    updates.push(new FieldPath('weeks', wk), d || FieldValue.delete());
+    updates.push(new (fsdb().FieldPath)('weeks', wk), d || fsdb().FieldValue.delete());
   }
   updates.push('last', await latest(uid, profile), 'updatedAt', Date.now());
   try {

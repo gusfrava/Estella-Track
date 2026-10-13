@@ -33,6 +33,8 @@ firebase deploy --only functions
 - The first deploy asks to turn on some Google services (Cloud Build, Artifact Registry, Eventarc…): answer yes.
   If it then fails with a permissions / "service agent" error, wait 5 minutes and run the deploy again.
 - If it asks how many days to keep container images, press Enter (the default keeps storage cost at zero).
+- "User code failed to load … Timeout after 10000": your computer took more than 10 seconds to read the functions.
+  Run `set FUNCTIONS_DISCOVERY_TIMEOUT=60` in the same Command Prompt, then deploy again.
 - Changes to the app itself (everything outside `functions/`) don't need this: they go live with the GitHub merge as always.
 
 ## Publishing the Firestore rules
