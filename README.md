@@ -54,16 +54,18 @@ js/
     account.js          Accepting policy/terms, email verification, "Download my data", "Delete account".
 
   views/                Build the HTML for each screen. No logic, no data changes.
-    home.js  routine.js  auth.js  username.js  consent.js  splash.js  partials.js
+    home.js  routine.js  progress.js  auth.js  username.js  consent.js  splash.js  partials.js
+    (progress.js = the Progreso tab: personal records; the bottom tab bar is tabBar() in partials.js)
 
   sheets/               The pop-up panels and what their Save buttons do.
     routine-form.js  exercise-form.js  activity-form.js  plus-menu.js  account.js  delete.js  fields.js
     profile-form.js  privacy.js  delete-account.js
 
   ui/
-    router.js           Home vs routine screen, and the phone's back button.
+    router.js           Which screen shows (Rutinas tab, Progreso tab, a routine), and the phone's back button.
     sheet.js            Opening/closing bottom sheets, and the "are you sure?" sheet.
     motion.js           List reordering animation, confetti, the completion card.
+    toast.js            The short message at the top ("¡Nuevo récord!").
     icons.js            SVG icons.
 ```
 

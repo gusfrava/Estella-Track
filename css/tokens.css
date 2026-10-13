@@ -9,8 +9,10 @@
   --teal:#3DC4B3;
   --teal-ink:#127F73;
   --yellow:#FFC94D;
+  --yellow-soft:#FFF7DD;
   --danger:#C8371F;
   --line:2.5px;
+  --tabbar-h:64px;
   --display:"Baloo 2", "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif;
   --body:"Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: light;

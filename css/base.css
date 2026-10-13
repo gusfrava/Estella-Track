@@ -7,7 +7,7 @@ input,textarea{font:inherit;color:inherit}
 [hidden]{display:none!important}
 :focus-visible{outline:3px solid var(--teal-ink);outline-offset:3px;border-radius:12px}
 
-.wrap{max-width:480px;margin:0 auto;padding-inline:20px;padding-block:calc(20px + var(--safe-top)) 140px}
+.wrap{max-width:480px;margin:0 auto;padding-inline:20px;padding-block:calc(20px + var(--safe-top)) calc(150px + var(--tabbar-h))}
 
 /* ---------- shared bits ---------- */
 h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.05}

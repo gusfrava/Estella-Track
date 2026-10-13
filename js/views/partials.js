@@ -33,3 +33,12 @@ export function legalLinks() {
   const L = t();
   return `<p class="legal-links"><a href="${LEGAL.privacyUrl}" target="_blank" rel="noopener">${L.privacyPolicy}</a> · <a href="${LEGAL.termsUrl}" target="_blank" rel="noopener">${L.terms}</a></p>`;
 }
+
+// Bottom tabs on the two main screens. active = 'home' | 'progress'.
+export function tabBar(active) {
+  const L = t();
+  const tab = (name, icon, label) => `<button class="tab" data-action="tab" data-tab="${name}" ${active === name ? 'aria-current="page"' : ''}>${icon}<span>${label}</span></button>`;
+  return `<nav class="tabbar" aria-label="${L.tabsLabel}">
+    ${tab('home', ICONS.dumbbellTab, L.tabRoutines)}${tab('progress', ICONS.trophy, L.tabProgress)}
+  </nav>`;
+}

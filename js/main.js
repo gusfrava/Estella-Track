@@ -15,14 +15,19 @@ import { getSession, setSession, onSessionChange } from './state/session.js';
 import * as auth from './controllers/auth.js';
 import * as profileForm from './controllers/profile.js';
 import * as account from './controllers/account.js';
-import { getView, onRouteChange, openRoutine, goHome, resetRoute, initRouter } from './ui/router.js';
+import { getView, onRouteChange, openRoutine, goHome, showTab, resetRoute, initRouter } from './ui/router.js';
 import { closeSheet } from './ui/sheet.js';
 import { capturePositions, animateMoves, celebrate } from './ui/motion.js';
+import { toast } from './ui/toast.js';
+import { ICONS } from './ui/icons.js';
+import { esc } from './utils/format.js';
 import { splashView } from './views/splash.js';
 import { authView, pwRulesHTML } from './views/auth.js';
 import { homeView } from './views/home.js';
 import { routineView } from './views/routine.js';
-import { orderedExercises } from './state/selectors.js';
+import { progressView } from './views/progress.js';
+import { orderedExercises, personalRecord, beatsRecord } from './state/selectors.js';
+import { todayStr } from './utils/dates.js';
 import { usernameView, statusHTML, errorHTML } from './views/username.js';
 import { consentView } from './views/consent.js';
 import { openPlusMenu } from './sheets/plus-menu.js';
@@ -61,10 +66,10 @@ function render() {
   }
   const view = getView();
   const routine = view.name === 'routine' ? store.findRoutine(view.id) : null;
-  app.innerHTML = routine
-    ? routineView(store.getState(), routine, { openId })
-    : homeView(store.getState(), { user: s.user, localMode: s.localMode, highlightId, showOlder,
-        verify: { needed: account.needsVerification(), ui: account.getVerifyUI() } });
+  if (routine) app.innerHTML = routineView(store.getState(), routine, { openId });
+  else if (view.name === 'progress') app.innerHTML = progressView(store.getState(), { user: s.user, localMode: s.localMode });
+  else app.innerHTML = homeView(store.getState(), { user: s.user, localMode: s.localMode, highlightId, showOlder,
+    verify: { needed: account.needsVerification(), ui: account.getVerifyUI() } });
 }
 
 store.subscribe((state, { action }) => {
@@ -103,6 +108,8 @@ function logChange(exId, change) {
   const rid = routineId();
   const wasDone = !!(store.findRoutine(rid) && isExerciseDone(rid, exId));
   const before = capturePositions(app);
+  const ex = store.findRoutine(rid).exercises.find(e => e.id === exId);
+  const recordBefore = ex && personalRecord(store.getState(), ex);
   const result = change(rid);
   // Finished the open exercise from its sets → close it and open the next one to do.
   if (result.exerciseDone && !wasDone && openId === exId) {
@@ -111,6 +118,7 @@ function logChange(exId, change) {
   }
   render();
   animateMoves(app, before);
+  if (result.exerciseDone && ex) celebrateRecord(ex, recordBefore);
   // (Phase 1 · rest timer) result.setDone && !result.exerciseDone → start the rest countdown here.
   if (result.completed) {
     celebrate(store.findRoutine(rid), () => {
@@ -119,6 +127,13 @@ function logChange(exId, change) {
       setTimeout(() => { highlightId = null; }, 800);
     });
   }
+}
+
+// Finishing an exercise beat the previous best → "¡Nuevo récord!" (not for the very first time it's done).
+function celebrateRecord(ex, before) {
+  const after = personalRecord(store.getState(), ex);
+  if (!beatsRecord(ex, after, before) || after.point.d !== todayStr()) return;
+  toast(`${ICONS.trophy}<span><b>${t().newRecordToast}</b>${esc(ex.name)}</span>`);
 }
 
 const isExerciseDone = (rid, exId) => orderedExercises(store.findRoutine(rid)).done.some(i => i.ex.id === exId);
@@ -144,6 +159,7 @@ const ACTIONS = {
   'verify-check': () => account.checkVerified(),
   // home
   open: d => openRoutine(d.id),
+  tab: d => showTab(d.tab),
   older: () => { showOlder = !showOlder; render(); },
   'edit-routine': d => openRoutineForm(store.findRoutine(d.id)),
   'del-routine': d => confirmDeleteRoutine(d.id),

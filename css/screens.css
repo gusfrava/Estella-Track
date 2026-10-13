@@ -34,7 +34,7 @@
 .act-text em{display:block;font-style:normal;font-size:.9rem;margin-top:2px;overflow-wrap:anywhere}
 .older{margin-top:12px;font-family:var(--display);font-weight:700;color:var(--teal-ink);padding:6px 2px}
 
-.fab{position:fixed;right:max(20px, calc((100vw - 480px)/2 + 20px));bottom:calc(24px + env(safe-area-inset-bottom,0px));width:72px;height:72px;border-radius:50%;background:var(--orange);border:var(--line) solid var(--ink);box-shadow:4px 5px 0 var(--ink);display:grid;place-items:center;z-index:5;transition:transform .08s,box-shadow .08s}
+.fab{position:fixed;right:max(20px, calc((100vw - 480px)/2 + 20px));bottom:calc(var(--tabbar-h) + 18px + env(safe-area-inset-bottom,0px));width:72px;height:72px;border-radius:50%;background:var(--orange);border:var(--line) solid var(--ink);box-shadow:4px 5px 0 var(--ink);display:grid;place-items:center;z-index:5;transition:transform .08s,box-shadow .08s}
 .fab:active{transform:translate(3px,4px);box-shadow:1px 1px 0 var(--ink)}
 .fab svg{width:32px;height:32px}
 /* ---------- routine screen ---------- */
@@ -56,7 +56,7 @@
 .ex.done .check{background:var(--teal)}
 .ex.done .check svg{opacity:1;transform:none}
 .ex-body{flex:1;min-width:0;text-align:left;padding:2px 0}
-.ex-name{display:block;font-family:var(--display);font-weight:800;font-size:1.2rem;line-height:1.15;overflow-wrap:anywhere}
+.ex-name{display:block;font-family:var(--display);font-weight:800;font-size:1.2rem;line-height:1.15;overflow-wrap:break-word;hyphens:auto}
 .ex.done .ex-name{text-decoration:line-through;text-decoration-thickness:2.5px}
 .stats{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:4px;color:var(--muted);font-size:.93rem}
 .stats b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
@@ -139,4 +139,28 @@
   .set-in{font-size:1rem;padding:0 2px}
   .set-check{width:38px;height:38px}
   .set-u{font-size:.8rem}
+  .ex-name{font-size:1.05rem}
+  .ex .ex-row{gap:8px}
+  .ex .ib{width:36px;height:36px}
 }
+/* ---------- bottom tabs (Rutinas | Progreso) ---------- */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:6;max-width:480px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;
+  height:calc(var(--tabbar-h) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);
+  background:var(--card);border:var(--line) solid var(--ink);border-bottom:0;border-radius:24px 24px 0 0}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:var(--display);font-weight:800;font-size:.85rem;color:var(--muted)}
+.tab svg{width:26px;height:26px}
+.tab[aria-current="page"]{color:var(--ink)}
+.tab[aria-current="page"] svg{background:var(--yellow);border-radius:10px;padding:2px;width:34px;height:30px;border:2px solid var(--ink)}
+/* ---------- progress: personal records ---------- */
+.rec-banner{background:var(--yellow)}
+.rec{display:flex;align-items:center;gap:12px;background:var(--card);border:var(--line) solid var(--ink);border-radius:20px;padding:14px 16px;box-shadow:3px 4px 0 var(--ink)}
+.rec.new{background:var(--yellow-soft)}
+.rec-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rec-text>b{font-family:var(--display);font-weight:800;font-size:1.15rem;line-height:1.15;overflow-wrap:anywhere}
+.rec-text>span{color:var(--muted);font-size:.9rem}
+.rec-chip{align-self:flex-start;margin-top:6px;background:var(--orange)}
+.rec-val{flex:none;display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:50%}
+.rec-val b{font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1}
+.rec-val small{font-weight:700;color:var(--muted)}
+.rec-val em{font-style:normal;font-weight:700;width:100%;text-align:right;color:var(--muted)}
+.empty svg{width:44px;height:44px;margin-bottom:6px}
