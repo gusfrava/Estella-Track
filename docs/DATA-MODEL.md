@@ -40,6 +40,8 @@ users/{uid}                         PRIVATE settings (owner only)
   sharing: { profile, routines, workouts, body },       // 'private' | 'friends' | 'public'
   weeklyGoals: { 'YYYY-MM-DD': days },                // weekly goal by the Monday it started (onboarding days, or "Meta semanal" on home);
                                                        // a week counts for the streak when its goal is met
+                                                       // (or a comodín saves it: start with 1, +1 every 4 goal weeks, max 2;
+                                                       //  worked out from history in selectors.weeklyStreak, never stored)
   units: 'kg' | 'lb',                                   // chosen in onboarding; default for new exercises
   onboarding: { version, character, goal, focus: 'balanced'|'legs'|'upper'|'arms', experience, place, daysPerWeek, minutes, source,
                 startedAt, completedAt, skippedAt,      // saved after every answer (js/controllers/onboarding.js)

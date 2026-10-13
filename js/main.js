@@ -205,6 +205,7 @@ const ACTIONS = {
   // routine screen
   home: () => goHome(),
   toggle: d => logChange(d.id, rid => store.toggleExercise(rid, d.id)),
+  repeat: () => { store.repeatRoutine(routineId()); openId = null; window.scrollTo({ top: 0, behavior: 'smooth' }); },
   expand: d => { openId = openId === d.id ? null : d.id; render(); },
   'set-tick': d => logChange(d.id, rid => store.toggleSet(rid, d.id, Number(d.i))),
   'set-add': d => logChange(d.id, rid => store.addSet(rid, d.id)),

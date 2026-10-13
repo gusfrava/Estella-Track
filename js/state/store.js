@@ -186,6 +186,14 @@ export function deleteRoutine(id) {
   emit('local', 'delete-routine', writes);
 }
 
+// "Hacer otra vez": a finished routine starts fresh today, keeping the finished workout in your history
+// (unlike "Desmarcar todo", which throws it away). The next check-off creates a new session.
+export function repeatRoutine(id) {
+  const r = findRoutine(id); if (!r || !r.current) return;
+  r.current = null;
+  emit('local', 'repeat-routine', [setW('routines', touch(r))]);
+}
+
 // "Desmarcar todo": throws away the current check marks (and their history points).
 export function resetRoutine(id) {
   const r = findRoutine(id); if (!r) return;
