@@ -4,7 +4,7 @@
 import { openSheet, replaceSheet, closeSheet } from '../ui/sheet.js';
 import { t, getLang } from '../i18n/index.js';
 import { youTubeId, searchUrl } from '../utils/youtube.js';
-import { libraryExercise } from '../services/library.js';
+import { libraryExercise, exerciseName } from '../services/library.js';
 import { openExercisePicker } from './exercise-picker.js';
 import { esc, fmtDay, fmtNum, fmtClock } from '../utils/format.js';
 import { parseYmd } from '../utils/dates.js';
@@ -30,7 +30,7 @@ export function openExerciseForm(routineId, exerciseId, prefill = null, { replac
   const fromLib = libraryExercise(libId);
   const secs = tg ? tg.seconds : (p.seconds || 60);
   const typeBtn = (v, label) => `<button type="button" data-type="${v}" aria-pressed="${type === v}">${label}</button>`;
-  const name = ex ? ex.name : (p.name || '');
+  const name = ex ? exerciseName(ex) : (p.name || '');
 
   (replace ? replaceSheet : openSheet)(`<h2>${isNew ? L.newExercise : L.editExercise}</h2>
     ${isNew && fromLib ? `<div class="lib-picked">${L.libFromLibrary}<button type="button" class="textbtn link" data-k="change">${L.libChange}</button></div>` : ''}

@@ -1,7 +1,8 @@
 // Progress tab: personal records — the best you've ever done on each exercise, grouped by routine.
 // Records come from the history points in exerciseStats (see selectors.personalRecord).
 import { ICONS } from '../ui/icons.js';
-import { t } from '../i18n/index.js';
+import { t, routineName } from '../i18n/index.js';
+import { exerciseName } from '../services/library.js';
 import { esc, fmtDay, fmtNum, fmtClock } from '../utils/format.js';
 import { parseYmd, daysAgo } from '../utils/dates.js';
 import { recordsByRoutine, weeklyStreak } from '../state/selectors.js';
@@ -28,7 +29,7 @@ export function progressView(state, opts) {
   } else {
     if (newThisMonth) h += `<div class="banner rec-banner">${ICONS.trophy}<span>${esc(L.recordsThisMonth(newThisMonth))}</span></div>`;
     for (const g of groups) {
-      h += `<div class="section-head"><h2>${esc(g.routine.name)}</h2></div>
+      h += `<div class="section-head"><h2>${esc(routineName(g.routine))}</h2></div>
         <ul class="list">${g.items.map(i => recordItem(i.ex, i.record)).join('')}</ul>`;
     }
   }
@@ -62,7 +63,7 @@ function recordItem(ex, { point, prev }) {
   const gain = gainText(ex.type, point, prev);
   return `<li class="rec${isNew ? ' new' : ''}">
     <span class="rec-text">
-      <b>${esc(ex.name)}</b>
+      <b>${esc(exerciseName(ex))}</b>
       <span>${esc(when)}${gain ? ` · <span class="delta">${esc(gain)}</span>` : ''}</span>
       ${isNew ? `<span class="chip rec-chip">${L.newRecord}</span>` : ''}
     </span>

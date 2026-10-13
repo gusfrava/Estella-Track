@@ -1,14 +1,14 @@
 // Routine screen: progress bar, title, exercise list (finished ones at the bottom), add button.
 // Tapping an exercise opens it in place with one row per set (reps × weight, ✓). ui.openId = the open one.
 import { ICONS } from '../ui/icons.js';
-import { t, getLang } from '../i18n/index.js';
+import { t, getLang, routineName } from '../i18n/index.js';
 import { esc, fmtDay, fmtNum, fmtClock } from '../utils/format.js';
 import { nextMonday, pad2 } from '../utils/dates.js';
 import { orderedExercises, routineProgress, planChange, isRoutineDone, setsToShow, lastTime } from '../state/selectors.js';
 import { editDeleteButtons, progressBar } from './partials.js';
 import { mascotHTML } from '../ui/mascot.js';
 import { searchUrl } from '../utils/youtube.js';
-import { techniqueVideo, libraryExercise } from '../services/library.js';
+import { techniqueVideo, libraryExercise, exerciseName } from '../services/library.js';
 
 export function routineView(state, r, ui = {}) {
   const L = t();
@@ -23,8 +23,8 @@ export function routineView(state, r, ui = {}) {
   </div>
   <div class="rhead">
     ${mascotHTML({ crop: 'bust', size: '56px', mood: isRoutineDone(r) ? 'excited' : done || anyLogged(r) ? 'focused' : 'amused' })}
-    <div><h1>${esc(r.name)}</h1><p class="sub">${esc(L.exercisesN(total))} · ${r.recurring ? L.weekly : L.once}</p></div>
-    ${editDeleteButtons('routine', r.id, r.name)}
+    <div><h1>${esc(routineName(r))}</h1><p class="sub">${esc(L.exercisesN(total))} · ${r.recurring ? L.weekly : L.once}</p></div>
+    ${editDeleteButtons('routine', r.id, routineName(r))}
   </div>`;
 
   if (isRoutineDone(r)) {
@@ -55,12 +55,12 @@ function exerciseItem(state, r, item, open) {
   const checkLabel = done ? L.markUndone : partial ? L.setsDoneOf(nDone, sets.length) + '. ' + L.markDone : L.markDone;
   return `<li class="ex${done ? ' done' : ''}${open ? ' open' : ''}${partial ? ' partial' : ''}" data-flip="${ex.id}">
     <div class="ex-row">
-      <button class="check" data-action="toggle" data-id="${ex.id}" aria-pressed="${done}" aria-label="${checkLabel}: ${esc(ex.name)}">${partial ? `<span class="check-n num">${nDone}/${sets.length}</span>` : ICONS.check}</button>
+      <button class="check" data-action="toggle" data-id="${ex.id}" aria-pressed="${done}" aria-label="${checkLabel}: ${esc(exerciseName(ex))}">${partial ? `<span class="check-n num">${nDone}/${sets.length}</span>` : ICONS.check}</button>
       <button class="ex-body" data-action="expand" data-id="${ex.id}" aria-expanded="${open}" aria-controls="sets-${ex.id}">
-        <span class="ex-name">${esc(ex.name)}</span>
+        <span class="ex-name">${esc(exerciseName(ex))}</span>
         <span class="stats">${stats}${deltaHTML(planChange(state, ex), ex.target.unit)}</span>
       </button>
-      ${editDeleteButtons('ex', ex.id, ex.name)}
+      ${editDeleteButtons('ex', ex.id, exerciseName(ex))}
     </div>
     ${open ? setsPanel(state, r, ex, sets) : ''}
   </li>`;
@@ -128,7 +128,7 @@ function techniqueButton(ex) {
   if (techniqueVideo(ex)) return `<div class="tech-row"><button class="tech" data-action="video" data-id="${ex.id}">${label}</button>${edit}</div>`;
   const lib = libraryExercise(ex.exerciseId);
   const en = getLang() === 'en';
-  const q = `${en && lib ? lib.en : ex.name} ${en ? 'proper form' : 'técnica'}`;
+  const q = `${en && lib ? lib.en : exerciseName(ex)} ${en ? 'proper form' : 'técnica'}`;
   return `<div class="tech-row"><a class="tech" href="${esc(searchUrl(q))}" target="_blank" rel="noopener">${label}</a>${edit}</div>`;
 }
 
