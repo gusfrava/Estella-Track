@@ -106,7 +106,7 @@ export function planChange(state, ex) {
 
 export function lastUsedUnit(state) {
   for (const r of routinesList(state)) for (const e of r.exercises) if (e.target && e.target.unit) return e.target.unit;
-  return 'kg';
+  return (state.profile && state.profile.units) === 'lb' ? 'lb' : 'kg';   // chosen in onboarding
 }
 
 // ---------- personal records (from the history points in exerciseStats) ----------

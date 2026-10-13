@@ -1,11 +1,12 @@
 // Data shapes (v2). Full design: docs/DATA-MODEL.md.
 //
-// In memory the app keeps:  State = { profile, routines: {id: Routine}, sessions: {id: Session}, stats: {id: ExerciseStat} }
+// In memory the app keeps:  State = { profile, routines: {id: Routine}, sessions: {id: Session}, stats: {id: ExerciseStat}, body: {date: BodyEntry} }
 // In Firestore each one is its own document:
 //   users/{uid}                        profile + settings
 //   users/{uid}/routines/{id}          Routine        – the plan
 //   users/{uid}/sessions/{id}          Session        – what actually happened (gym workout or other activity)
 //   users/{uid}/exerciseStats/{id}     ExerciseStat   – per-exercise history for prefill, "↑ +2.5 kg" and charts
+//   users/{uid}/body/{YYYY-MM-DD}      BodyEntry      – weight / height on a day (health data: private, only if the person adds it)
 //
 // Routine = { id, name, order, recurring, archived, exercises: RoutineExercise[],
 //             current: { sessionId, weekKey } | null,   // the session that holds this week's (or, if not recurring, the latest) check marks
@@ -44,7 +45,10 @@ export const MAX_POINTS = 500;   // history points kept per exercise
 export const EX_TYPES = ['weight_reps', 'reps', 'time'];
 export const normalizeType = v => (EX_TYPES.includes(v) ? v : 'weight_reps');
 
-export const blankState = () => ({ profile: null, routines: {}, sessions: {}, stats: {} });
+export const blankState = () => ({ profile: null, routines: {}, sessions: {}, stats: {}, body: {} });
+
+// BodyEntry = { id /* = date */, date, weight, weightUnit: 'kg'|'lb', heightCm, source: 'onboarding'|'manual', updatedAt }
+// weight / heightCm are null when not given. Height is always stored in cm (feet + inches are converted).
 
 // ---------- normalizers: fill in missing fields so partial or older data never breaks a screen ----------
 const num = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
@@ -96,6 +100,12 @@ export function normalizeSession(id, d = {}) {
 
 export function normalizeStat(id, d = {}) {
   return { id, name: d.name || '', points: (Array.isArray(d.points) ? d.points : []).filter(p => p && p.d).sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0)) };
+}
+
+export function normalizeBody(id, d = {}) {
+  const pos = v => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : null);
+  return { id, date: d.date || id, weight: pos(d.weight), weightUnit: d.weightUnit === 'lb' ? 'lb' : 'kg', heightCm: pos(d.heightCm),
+    source: d.source || 'manual', updatedAt: num(d.updatedAt, 0) };
 }
 
 export function normalizeProfile(d) {
@@ -165,5 +175,6 @@ export function normalizeState(d) {
   for (const [id, r] of Object.entries(d.routines || {})) out.routines[id] = normalizeRoutine(id, r);
   for (const [id, s] of Object.entries(d.sessions || {})) out.sessions[id] = normalizeSession(id, s);
   for (const [id, s] of Object.entries(d.stats || {})) out.stats[id] = normalizeStat(id, s);
+  for (const [id, b] of Object.entries(d.body || {})) out.body[id] = normalizeBody(id, b);
   return out;
 }

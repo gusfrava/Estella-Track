@@ -59,9 +59,11 @@ js/
     auth.js             Sign-in logic: login, create account, reset password, Google.
     profile.js          Name + username form: live "is it free?" check and saving (claims the name atomically).
     account.js          Accepting policy/terms, email verification, "Download my data", "Delete account".
+    onboarding.js       The welcome questions for new accounts: which screen, saving each answer, weight/height.
 
   views/                Build the HTML for each screen. No logic, no data changes.
-    home.js  routine.js  progress.js  auth.js  username.js  consent.js  splash.js  partials.js
+    home.js  routine.js  progress.js  auth.js  username.js  consent.js  splash.js  partials.js  onboarding.js
+    (onboarding.js = the first language screen + the welcome questions)
     (progress.js = the Progreso tab: personal records; the bottom tab bar is tabBar() in partials.js)
 
   sheets/               The pop-up panels and what their Save buttons do.
@@ -78,6 +80,7 @@ js/
     mascot.js           Draws the mascot (mood, full body or bust, hop). characters/ holds each character's drawing.
                         Its animations (blink, breathing, hop) are in css/mascot.css.
     icons.js            SVG icons.
+    onboarding-icons.js Icons for the welcome questions (Tabler Icons, MIT).
 ```
 
 ## Where to look when something breaks

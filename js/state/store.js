@@ -4,15 +4,15 @@
 //   source 'remote' – a document changed in Firestore (other phone, or our own write echoing back)
 //   source 'load'   – loaded from the device cache / local mode
 //   source 'reset'  – cleared on sign-out
-//   writes = [{ op: 'set'|'delete', col: 'routines'|'sessions'|'stats', id, data }]  – one entry per document
+//   writes = [{ op: 'set'|'delete', col: 'routines'|'sessions'|'stats'|'body', id, data }]  – one entry per document
 // It knows nothing about the screen or Firebase.
 
 import {
-  blankState, normalizeState, normalizeRoutine, normalizeSession, normalizeStat, normalizeProfile,
+  blankState, normalizeState, normalizeRoutine, normalizeSession, normalizeStat, normalizeProfile, normalizeBody,
   makeRoutine, makeRoutineExercise, makeGymSession, makeActivitySession, normalizeTarget, normalizeSet, normalizeType, planSets,
   entryDone, pointFromSets, MAX_POINTS, MAX_SETS,
 } from './model.js';
-import { weekKey, weekKeyOf, ymdOf } from '../utils/dates.js';
+import { weekKey, weekKeyOf, ymdOf, todayStr } from '../utils/dates.js';
 import { stable } from '../utils/data.js';
 import { logger } from '../utils/log.js';
 
@@ -91,7 +91,7 @@ export function clearState() {
 
 // Firestore sent the current contents of a collection (or of a window of it).
 // inScope(doc) says which local docs that listener is responsible for, so docs outside it are kept.
-const NORMALIZE = { routines: normalizeRoutine, sessions: normalizeSession, stats: normalizeStat };
+const NORMALIZE = { routines: normalizeRoutine, sessions: normalizeSession, stats: normalizeStat, body: normalizeBody };
 export function applyRemoteCollection(col, docs, inScope = () => true) {
   const map = state[col], norm = NORMALIZE[col];
   let changed = false;
@@ -122,6 +122,17 @@ export function applyRemoteProfile(raw) {
 export function updateProfile(patch) {
   state.profile = { ...(state.profile || {}), ...patch };
   emit('local', 'update-profile', [{ op: 'profile', data: patch }]);
+}
+
+// ---------- body data (users/{uid}/body/{date}) ----------
+// One entry per day; saving again the same day updates it. Only what's given is stored (null = not given).
+export function saveBody({ weight = null, weightUnit = 'kg', heightCm = null, source = 'manual' }) {
+  if (!weight && !heightCm) return;
+  const date = todayStr();
+  const prev = state.body[date] || {};
+  const entry = normalizeBody(date, { ...prev, date, weight: weight ?? prev.weight, weightUnit, heightCm: heightCm ?? prev.heightCm, source, updatedAt: Date.now() });
+  state.body[date] = entry;
+  emit('local', 'save-body', [setW('body', entry)]);
 }
 
 // A new week started while the app was open: nothing to change, the screens just need to recalculate.

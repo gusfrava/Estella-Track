@@ -6,7 +6,7 @@
 // - ACTIONS maps every data-action="..." in the HTML to one function. Unknown actions log a warning.
 
 import { isFirebaseConfigured } from './config.js';
-import { t, getLang, setLang, onLangChange } from './i18n/index.js';
+import { t, getLang, setLang, onLangChange, hasChosenLang, chooseLang, previewLang } from './i18n/index.js';
 import { logger, DEBUG } from './utils/log.js';
 import * as fb from './services/firebase.js';
 import * as sync from './services/sync.js';
@@ -17,7 +17,7 @@ import * as profileForm from './controllers/profile.js';
 import * as account from './controllers/account.js';
 import { getView, onRouteChange, openRoutine, goHome, showTab, resetRoute, initRouter } from './ui/router.js';
 import { closeSheet } from './ui/sheet.js';
-import { capturePositions, animateMoves, celebrate } from './ui/motion.js';
+import { capturePositions, animateMoves, celebrate, confetti } from './ui/motion.js';
 import { toast } from './ui/toast.js';
 import { ICONS } from './ui/icons.js';
 import { esc } from './utils/format.js';
@@ -30,6 +30,8 @@ import { orderedExercises, personalRecord, beatsRecord } from './state/selectors
 import { todayStr } from './utils/dates.js';
 import { usernameView, statusHTML, errorHTML } from './views/username.js';
 import { consentView } from './views/consent.js';
+import { languageView, onboardingView } from './views/onboarding.js';
+import * as onboarding from './controllers/onboarding.js';
 import { openPlusMenu } from './sheets/plus-menu.js';
 import { openRoutineForm } from './sheets/routine-form.js';
 import { openExerciseForm } from './sheets/exercise-form.js';
@@ -49,6 +51,7 @@ let showOlder = false;    // older activities expanded
 let consentError = '';    // "tick the box" message on the consent screen
 let openId = null;        // exercise opened to log its sets (routine screen)
 let renderLater = false;  // a set value changed while typing → re-render once you leave the field
+let lastObStep = null;    // onboarding screen last shown (scroll to top / confetti only when it changes)
 
 // ---------- render ----------
 function render() {
@@ -56,6 +59,8 @@ function render() {
   document.documentElement.lang = getLang();
   const s = getSession();
   if (s.mode === 'loading') { app.innerHTML = splashView(); return; }
+  // Very first screen on a phone that hasn't picked a language yet.
+  if (s.mode === 'auth' && !hasChosenLang()) { app.innerHTML = languageView(); return; }
   if (s.mode === 'auth') { app.innerHTML = authView(auth.getAuthUI(), { configured: isFirebaseConfigured(), fatal: s.fatal }); return; }
   // One-time gates for signed-in accounts: accept the privacy policy/terms, then pick a username.
   const profile = store.getState().profile;
@@ -67,6 +72,16 @@ function render() {
     app.innerHTML = usernameView(profileForm.ensureProfileForm());
     return;
   }
+  // New accounts: a few questions (goal, days, weight…), saved as they're answered.
+  if (!s.localMode && s.user && profile && onboarding.needsOnboarding()) {
+    const ui = onboarding.getOnboardingUI();
+    const step = onboarding.STEPS[ui.step];
+    app.innerHTML = onboardingView(ui);
+    if (step !== lastObStep) { window.scrollTo(0, 0); if (step === 'done') confetti(); }
+    lastObStep = step;
+    return;
+  }
+  lastObStep = null;
   const view = getView();
   const routine = view.name === 'routine' ? store.findRoutine(view.id) : null;
   if (routine) app.innerHTML = routineView(store.getState(), routine, { openId });
@@ -82,6 +97,7 @@ store.subscribe((state, { action }) => {
   render();
 });
 account.onVerifyChange(render);
+onboarding.onOnboardingChange(render);
 // The name/username form updates its status line in place (a full re-render would move the cursor).
 profileForm.onProfileFormChange((form, kind) => {
   const status = document.getElementById('u-status');
@@ -96,7 +112,7 @@ onRouteChange(() => { openId = null; render(); });
 auth.onAuthUIChange(render);
 onLangChange(lang => { fb.setAuthLanguage(lang); render(); });
 onSessionChange((s, prev) => {
-  if (s.user !== prev.user) { profileForm.resetProfileForm(); account.resetVerifyUI(); consentError = ''; }
+  if (s.user !== prev.user) { profileForm.resetProfileForm(); account.resetVerifyUI(); onboarding.resetOnboardingUI(); consentError = ''; }
   if (s.mode === 'app' && prev.mode !== 'app') resetRoute();
   if (s.mode !== 'app') closeSheet(true);
   render();
@@ -151,6 +167,16 @@ const ACTIONS = {
   'toggle-pw': () => { auth.togglePassword(); const pw = document.getElementById('a-pw'); if (pw) pw.focus(); },
   google: () => auth.google(),
   'local-mode': () => sync.enterLocalMode(),
+  // first screen (language) + onboarding
+  'pick-lang': d => previewLang(d.lang),
+  'lang-continue': () => chooseLang(getLang()),
+  'ob-pick': d => onboarding.choose(d.key, d.value),
+  'ob-next': () => onboarding.next(),
+  'ob-back': () => onboarding.back(),
+  'ob-skip': () => onboarding.skipStep(),
+  'ob-skip-all': () => onboarding.skipAll(),
+  'ob-unit': d => onboarding.setBodyField('unit', d.unit),
+  'ob-finish': () => { onboarding.finish(); resetRoute(); },
   // consent screen + email verification
   'accept-legal': () => {
     const box = document.getElementById('c-accept');
@@ -198,6 +224,11 @@ app.addEventListener('click', e => {
 });
 
 app.addEventListener('input', e => {
+  if (e.target.dataset.obBody) {
+    onboarding.setBodyField(e.target.dataset.obBody, e.target.value);
+    const err = app.querySelector('.ob .err-box'); if (err) err.remove();     // typing again clears "check the numbers"
+    return;
+  }
   auth.rememberInput(e.target.id, e.target.value, e.target);
   const rules = e.target.id === 'a-pw' && document.getElementById('pw-rules');
   if (rules) rules.innerHTML = pwRulesHTML(e.target.value);

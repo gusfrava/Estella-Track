@@ -1,7 +1,7 @@
 // Sync layer: connects the store to Firestore and to this device's storage.
 //
 // Signed in:
-//   - Listens to users/{uid} and its routines, sessions (last 120 days) and exerciseStats; every change lands in the store.
+//   - Listens to users/{uid} and its routines, sessions (last 120 days), exerciseStats and body; every change lands in the store.
 //   - Every 'local' store change sends its document writes to Firestore (works offline: Firestore queues them).
 //   - Keeps a copy on the device so the app opens instantly next time.
 //   - First time on v2: moves the v1 data (account backup or pre-account device data) into the new structure.
@@ -62,7 +62,7 @@ export function startUserSession(user) {
   requested = new Set();
 
   const cached = readJSON(KEYS.userV2(user.uid));
-  setSession({ user, localMode: false, mode: cached ? 'app' : 'loading' });
+  setSession({ user, localMode: false, mode: cached ? 'app' : 'loading', synced: { routines: false, sessions: false } });
   if (cached) loadState(cached, 'load');            // instant start from this device's copy
 
   listen(user);
@@ -89,7 +89,12 @@ function listen(user) {
     migrate(user, exists ? data : null).catch(err => { log.error('migration failed — will retry on next open', err); migrating = false; });
   }, onErr('profile')));
 
+  // synced.<col> = the server has answered at least once (onboarding waits for it: an empty list from this
+  // device's cache doesn't mean the account is new).
+  const synced = col => { const s = getSession().synced || {}; if (!s[col]) setSession({ synced: { ...s, [col]: true } }); };
+
   unsubs.push(fb.watchCollection(uid, 'routines', ({ docs, fromCache }) => {
+    if (mine() && !fromCache) synced('routines');
     if (!mine() || (fromCache && !Object.keys(docs).length)) return;
     applyRemoteCollection('routines', docs);
     fetchMissingCurrentSessions(user);
@@ -97,6 +102,7 @@ function listen(user) {
 
   const since = daysAgo(SESSION_WINDOW_DAYS);
   unsubs.push(fb.watchCollection(uid, 'sessions', ({ docs, fromCache }) => {
+    if (mine() && !fromCache) synced('sessions');
     if (!mine() || (fromCache && !Object.keys(docs).length)) return;
     applyRemoteCollection('sessions', docs, s => s.date >= since && !requested.has(s.id));
   }, onErr('sessions'), { sinceDate: since }));
@@ -105,6 +111,11 @@ function listen(user) {
     if (!mine() || (fromCache && !Object.keys(docs).length)) return;
     applyRemoteCollection('stats', docs);
   }, onErr('exerciseStats')));
+
+  unsubs.push(fb.watchCollection(uid, 'body', ({ docs, fromCache }) => {
+    if (!mine() || (fromCache && !Object.keys(docs).length)) return;
+    applyRemoteCollection('body', docs);
+  }, onErr('body')));
 }
 
 // A routine that doesn't repeat can point at a session older than the 120-day window: load it on its own.
