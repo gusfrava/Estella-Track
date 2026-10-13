@@ -9,6 +9,9 @@ import { recordsByRoutine, weeklyStreak, weekGoalProgress } from '../state/selec
 import { tabBar } from './partials.js';
 import { appHeader } from './home.js';
 
+// Tabler Icons (MIT): shield-check
+const SHIELD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"/><path d="M9 12l2 2l4 -4"/></svg>';
+
 const NEW_DAYS = 7;      // a record shows "Nuevo" for a week
 const MONTH_DAYS = 30;   // "N récords nuevos este mes"
 
@@ -42,21 +45,29 @@ export function progressView(state, opts) {
 function streakCard(s, g) {
   const L = t();
   const msg = s.thisWeek ? L.streakKept
+    : s.savedLast ? L.jokerUsed
     : g.goal ? (s.current ? L.streakLeft(g.left) : g.days ? L.streakStartLeft(g.left) : L.streakStartGoal(g.goal))
     : !s.current ? L.streakStart : L.streakKeepIt;
-  // dots: full = goal reached, half = trained but short of the goal
+  // dots: full = goal reached, shield = kept by a comodín, half = trained but short of the goal
   const dots = s.recent.map((w, i) => {
     const now = i === s.recent.length - 1;
-    const part = !w.done && w.days > 0;
-    const title = `${fmtDay(parseYmd(w.key))}${w.goal ? ` · ${w.days}/${w.goal}` : ''}`;
-    return `<span class="sdot${w.done ? ' on' : part ? ' part' : ''}${now ? ' now' : ''}" title="${esc(title)}"></span>`;
+    const part = !w.done && !w.saved && w.days > 0;
+    const title = `${fmtDay(parseYmd(w.key))}${w.goal ? ` · ${w.days}/${w.goal}` : ''}${w.saved ? ` · ${L.jokerName}` : ''}`;
+    return `<span class="sdot${w.done ? ' on' : w.saved ? ' saved' : part ? ' part' : ''}${now ? ' now' : ''}" title="${esc(title)}"></span>`;
   }).join('');
+  // comodines: how many you have, when the next one comes, and what they do
+  const jokers = s.jokers == null ? '' : `<div class="jokers">
+      <span class="jokers-ico" aria-hidden="true">${SHIELD}</span>
+      <span class="jokers-text"><b>${esc(L.jokersN(s.jokers))}</b><span>${esc(s.nextJoker ? L.jokerNext(s.nextJoker) : L.jokerFull)}</span></span>
+    </div>
+    <p class="jokers-how">${esc(L.jokerHow)}</p>`;
   return `<section class="streak" aria-label="${L.streakLabel}">
     <div class="streak-top">${ICONS.flame}
       <div><b class="num">${esc(s.current ? L.streakWeeks(s.current) : L.streakZero)}</b><span>${esc(msg)}</span></div>
     </div>
     <div class="sdots" role="img" aria-label="${esc(L.streakDotsLabel(s.recent.filter(w => w.done).length))}">${dots}</div>
     ${s.best > s.current ? `<p class="streak-best">${esc(L.streakBest(s.best))}</p>` : ''}
+    ${jokers}
   </section>`;
 }
 

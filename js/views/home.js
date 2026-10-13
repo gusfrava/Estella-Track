@@ -2,7 +2,7 @@
 import { ICONS } from '../ui/icons.js';
 import { t, routineName } from '../i18n/index.js';
 import { esc, fmtDay, fmtDuration } from '../utils/format.js';
-import { nextMonday, parseYmd, todayStr } from '../utils/dates.js';
+import { nextMonday, parseYmd, todayStr, ymd } from '../utils/dates.js';
 import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities, weeklyStreak, trainedToday, weekGoalProgress } from '../state/selectors.js';
 import { mascotHTML } from '../ui/mascot.js';
 import { brand, langToggle, editDeleteButtons, progressBar, tabBar } from './partials.js';
@@ -82,10 +82,19 @@ function weekCard(week, streak, g) {
       ${main}
       <div class="week-stat"><b class="num">${n}</b><span>${L.activitiesN(n)}</span></div>
     </div>
-    ${progressBar(pct)}
+    ${g.goal ? dayStrip(week.start, g.dates) : progressBar(pct)}
     ${g.goal && g.met ? `<p class="week-met">${esc(L.goalMet)}</p>` : ''}
     ${streakLine}
   </section>`;
+}
+
+// Monday–Sunday, filled on days you trained (a checked set or an activity), today outlined.
+function dayStrip(start, dates) {
+  const L = t(), today = todayStr();
+  const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(start); d.setDate(d.getDate() + i); return ymd(d); });
+  const n = days.filter(d => dates.has(d)).length;
+  return `<div class="wdays" role="img" aria-label="${esc(L.daysTrainedLabel(n))}">${days.map((d, i) =>
+    `<span class="wday${dates.has(d) ? ' on' : ''}${d === today ? ' today' : ''}"><i>${dates.has(d) ? ICONS.check : ''}</i><b>${L.dayLetters[i]}</b></span>`).join('')}</div>`;
 }
 
 function routineCard(r, highlightId) {

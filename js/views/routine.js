@@ -29,7 +29,9 @@ export function routineView(state, r, ui = {}) {
 
   if (isRoutineDone(r)) {
     const nextReset = fmtDay(nextMonday(), { weekday: 'long', day: 'numeric', month: 'short' });
-    h += `<div class="banner">${ICONS.star}<span>${esc(r.recurring ? L.doneThisWeek(nextReset) : L.doneOnce)}</span></div>`;
+    h += `<div class="banner done-banner">${ICONS.star}<span>${esc(r.recurring ? L.doneThisWeek(nextReset) : L.doneOnce)}</span>
+      <button class="pill-btn" data-action="repeat">${L.repeatRoutine}</button></div>
+      <p class="hint repeat-hint">${esc(L.repeatHint)}</p>`;
   }
 
   h += total

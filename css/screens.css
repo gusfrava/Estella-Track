@@ -177,9 +177,28 @@
 .sdot{height:14px;border:2px solid var(--ink);border-radius:99px;background:var(--bg)}
 .sdot.on{background:var(--orange)}
 .sdot.now:not(.on){border-style:dashed}
+.sdot.saved{background:var(--teal)}
+.jokers{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:12px;border-top:2px dashed var(--hairline)}
+.jokers-ico{flex:none;width:40px;height:40px;border-radius:12px;border:2px solid var(--ink);background:var(--teal);display:grid;place-items:center}
+.jokers-ico svg{width:24px;height:24px}
+.jokers-text{display:flex;flex-direction:column}
+.jokers-text b{font-family:var(--display);font-weight:800;font-size:1.05rem}
+.jokers-text span{color:var(--muted);font-size:.9rem}
+.jokers-how{margin:8px 0 0;color:var(--muted);font-size:.85rem;line-height:1.35}
 .sdot.part{background:linear-gradient(to right,var(--orange) 50%,var(--bg) 50%)}
 .week-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .week-goal{padding:4px 10px;border:2px solid var(--ink);border-radius:99px;background:var(--card);font-family:var(--display);font-weight:800;font-size:.85rem;white-space:nowrap}
+.wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:2px}
+.wday{display:flex;flex-direction:column;align-items:center;gap:4px}
+.wday i{width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);background:var(--card);display:grid;place-items:center}
+.wday i svg{width:16px;height:16px}
+.wday.on i{background:var(--orange)}
+.wday.today i{box-shadow:0 0 0 3px var(--yellow),0 0 0 5px var(--ink)}
+.wday b{font-family:var(--display);font-weight:800;font-size:.85rem}
+.done-banner{flex-wrap:wrap}
+.done-banner span{flex:1;min-width:160px}
+.pill-btn{padding:6px 14px;border:2px solid var(--ink);border-radius:99px;background:var(--card);font-family:var(--display);font-weight:800;white-space:nowrap}
+.repeat-hint{margin:8px 4px 0}
 .week-met{margin:8px 0 0;font-family:var(--display);font-weight:800}
 .goal-label{min-height:44px;display:flex;flex-direction:column;margin:14px 0 4px}
 .goal-label b{font-family:var(--display);font-weight:800;font-size:1.1rem}

@@ -180,39 +180,81 @@ export function trainedDays(state) {
   return weeks;
 }
 
-// This week against the goal: { goal, days, left, met }  (goal null → no goal set)
+// This week against the goal: { goal, days, left, met, dates } — dates = the days trained ('YYYY-MM-DD').
 export function weekGoalProgress(state) {
   const goal = weeklyGoal(state);
-  const days = (trainedDays(state).get(weekKey()) || new Set()).size;
-  return { goal, days, left: goal ? Math.max(0, goal - days) : 0, met: goal ? days >= goal : days > 0 };
+  const dates = trainedDays(state).get(weekKey()) || new Set();
+  const days = dates.size;
+  return { goal, days, left: goal ? Math.max(0, goal - days) : 0, met: goal ? days >= goal : days > 0, dates };
 }
 
-// { current, best, thisWeek, recent }
-//   A week counts when its goal was met (with no goal yet: when you trained at all). Rest days never break a
-//   streak; only a week that falls short does.
+// ---------- comodines (streak savers) ----------
+// You start with 1 comodín and earn another for every 4 weeks in a row that meet your goal (you can hold 2).
+// When a finished week falls short of its goal, a comodín is used automatically and the streak lives on.
+// Nothing is stored: it's worked out from the history each time, so it can't drift or be edited by hand.
+export const JOKER_START = 1, JOKER_EVERY = 4, JOKER_MAX = 2;
+
+// Every week from the first one with training (or a goal) up to this one, oldest first, with what happened:
+//   'met'     – goal reached (with no goal yet: trained at all)
+//   'saved'   – fell short, a comodín kept the streak
+//   'missed'  – fell short, streak broken (or no streak to keep)
+//   'pending' – this week, goal not reached yet (it can still be)
+function weekHistory(state) {
+  const days = trainedDays(state);
+  const now = weekKey();
+  const goals = Object.keys(goalHistory(state));
+  const first = [...days.keys(), ...goals].sort()[0];
+  const keys = [];
+  if (first) for (let k = now; k >= first; k = weeksBefore(k)) keys.unshift(k);
+  let jokers = null, run = 0, alive = false;   // run: goal weeks in a row since the last comodín was earned
+  const list = keys.map(key => {
+    const n = (days.get(key) || new Set()).size, goal = weeklyGoalFor(state, key);
+    if (goal && jokers === null) jokers = JOKER_START;
+    let status;
+    if (n > 0 && n >= (goal || 1)) {
+      status = 'met';
+      if (goal && ++run % JOKER_EVERY === 0) jokers = Math.min(JOKER_MAX, jokers + 1);
+    } else if (key === now) status = 'pending';
+    else if (goal && alive && jokers > 0) { status = 'saved'; jokers -= 1; }
+    else { status = 'missed'; run = 0; }
+    if (status !== 'pending') alive = status !== 'missed';
+    return { key, status, days: n, goal };
+  });
+  return { list, jokers: jokers || 0, run, hasGoal: jokers !== null };
+}
+
+// { current, best, thisWeek, recent, jokers, nextJoker, savedLast }
+//   A week counts when its goal was met, or a comodín saved it. Rest days never break a streak.
 //   current   – weeks in a row up to now. This week only adds once it counts; until then the streak from last
 //               week is still alive (thisWeek = false → "train N more days to keep it").
 //   best      – longest run ever (from what's loaded).
-//   recent    – the last 8 weeks, oldest first: [{ key, done, days, goal }] (the last one is this week).
+//   recent    – the last 8 weeks, oldest first: [{ key, done, saved, days, goal }] (the last one is this week).
+//   jokers    – comodines you have now (null without a weekly goal). nextJoker – goal weeks until the next one
+//               (0 when you already hold the most). savedLast – last week was kept by a comodín.
 export function weeklyStreak(state) {
-  const days = trainedDays(state);
-  const counts = k => { const n = (days.get(k) || new Set()).size; const g = weeklyGoalFor(state, k); return n > 0 && n >= (g || 1); };
-  const weeks = new Set([...days.keys()].filter(counts));
-  const now = weekKey();
-  const thisWeek = weeks.has(now);
+  const h = weekHistory(state);
+  const counts = w => w.status === 'met' || w.status === 'saved';
+  const list = h.list;
+  const last = list[list.length - 1];
+  const thisWeek = !!last && last.status === 'met';
   let current = 0;
-  for (let k = thisWeek ? now : weeksBefore(now); weeks.has(k); k = weeksBefore(k)) current++;
-  let best = 0, run = 0, prev = null;
-  for (const k of [...weeks].sort()) {
-    run = prev && weeksBefore(k) === prev ? run + 1 : 1;
-    best = Math.max(best, run);
-    prev = k;
-  }
+  for (let i = list.length - 1 - (thisWeek ? 0 : 1); i >= 0 && counts(list[i]); i--) current++;
+  let best = 0, run = 0;
+  for (const w of list) { run = counts(w) ? run + 1 : 0; best = Math.max(best, run); }
+  const byKey = new Map(list.map(w => [w.key, w]));
+  const now = weekKey();
   const recent = Array.from({ length: 8 }, (_, i) => {
     const key = weeksBefore(now, 7 - i);
-    return { key, done: weeks.has(key), days: (days.get(key) || new Set()).size, goal: weeklyGoalFor(state, key) };
+    const w = byKey.get(key) || { status: 'missed', days: 0, goal: weeklyGoalFor(state, key) };
+    return { key, done: w.status === 'met', saved: w.status === 'saved', days: w.days, goal: w.goal };
   });
-  return { current, best: Math.max(best, current), thisWeek, recent };
+  const prev = list[list.length - 2];
+  return {
+    current, best: Math.max(best, current), thisWeek, recent,
+    jokers: h.hasGoal ? h.jokers : null,
+    nextJoker: h.hasGoal && h.jokers < JOKER_MAX ? JOKER_EVERY - (h.run % JOKER_EVERY) : 0,
+    savedLast: !!prev && prev.status === 'saved' && current > 0,
+  };
 }
 
 // Trained today: a gym session with a checked set, or an activity, dated today.
