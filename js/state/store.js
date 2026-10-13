@@ -192,6 +192,8 @@ export function updateExercise(routineId, exId, data) {
   const ex = r && r.exercises.find(e => e.id === exId); if (!ex) return;
   const old = { target: ex.target, type: ex.type, perSide: ex.perSide };
   ex.name = data.name;
+  if ('video' in data) ex.video = (data.video || '').trim();
+  if ('exerciseId' in data) ex.exerciseId = data.exerciseId || null;
   ex.type = normalizeType(data.type || ex.type);
   ex.perSide = !!data.perSide && ex.type !== 'time';
   ex.target = normalizeTarget(data);

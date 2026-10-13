@@ -178,3 +178,6 @@
 .week-streak{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.95rem;text-align:left}
 .week-streak svg{flex:none;width:24px;height:24px}
 .week-streak b{font-family:var(--display);font-weight:800}
+/* "▶ Ver técnica" inside an open exercise */
+.tech{display:inline-flex;align-items:center;gap:6px;margin:0 0 10px;padding:6px 12px;border:2px solid var(--ink);border-radius:99px;background:var(--card);font-family:var(--display);font-weight:800;font-size:.9rem;color:var(--ink);text-decoration:none}
+.tech span{color:var(--danger)}

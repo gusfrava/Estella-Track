@@ -21,6 +21,10 @@ manifest.webmanifest    App name, colors and icons for "Add to Home Screen".
 sw.js                   Service worker: lets the installed app open offline.
 legal/                  Privacy policy and terms (ES + EN). If you change them meaningfully, bump LEGAL.version in js/config.js.
 icons/                  App icons.
+data/                   The exercise library (same for everyone, shipped with the app). See docs/EXERCISE-LIBRARY.md.
+  exercises.json        359 exercises: names ES/EN, muscle group, equipment, type, per side, muscle weights.
+  exercise-videos.json  One technique video (YouTube link) per exercise. Fill these in over time.
+tools/                  One-off scripts (build-library.mjs made data/exercises.json from the old app). Not loaded by the app.
 
 css/
   tokens.css            Colors and fonts. Change the palette here only.
@@ -34,7 +38,7 @@ js/
   config.js             Firebase keys. The only file you edit to connect Firebase.
 
   i18n/                 All text. es.js and en.js must have the same keys.
-  utils/                Dates, formatting, ids, logging, username rules. No app logic.
+  utils/                Dates, formatting, ids, logging, username rules, YouTube links. No app logic.
 
   state/
     model.js            What a routine / session / exercise history looks like (read this first; full design in docs/DATA-MODEL.md).
@@ -47,6 +51,7 @@ js/
     firebase.js         The ONLY file that talks to Firebase (sign-in + the user's document).
     sync.js             Connects store ↔ phone storage ↔ Firebase: listeners, saving each change, sign-in start/end.
     migrate.js          One-time move of old (v1) data into the v2 structure. Pure function, easy to test.
+    library.js          Loads the exercise library + videos and searches it (Spanish/English, accents, plurals).
 
   controllers/
     auth.js             Sign-in logic: login, create account, reset password, Google.
@@ -60,6 +65,8 @@ js/
   sheets/               The pop-up panels and what their Save buttons do.
     routine-form.js  exercise-form.js  activity-form.js  plus-menu.js  account.js  delete.js  fields.js
     profile-form.js  privacy.js  delete-account.js
+    exercise-picker.js  "Añadir ejercicio" step 1: search the library or browse by muscle group.
+    video.js            "Ver técnica": plays the YouTube video in a sheet (loads only on tap).
 
   ui/
     router.js           Which screen shows (Rutinas tab, Progreso tab, a routine), and the phone's back button.
@@ -76,6 +83,7 @@ js/
 - **Numbers on screen are wrong** (progress, "1/3", "↑ +2.5 kg"): `js/state/selectors.js`
 - **Looks wrong but the data is right:** the screen's file in `js/views/`, then `css/`
 - **A form saves the wrong thing:** its file in `js/sheets/`
+- **An exercise is missing from search, or found under the wrong group/type:** `data/exercises.json` (data) or `searchLibrary()` in `js/services/library.js` (matching)
 - **Sign-in errors:** `js/controllers/auth.js`. Error wording is under `errors` in the i18n files.
 - **Delete account or data download fails:** `js/controllers/account.js`, then `deleteUserData` / `exportUserData` in `firebase.js`. Deleting asks for the password (or Google) again first.
 - **Username won't save / says taken:** `js/controllers/profile.js` and the `usernames` rules. Each taken name is a document in `usernames/` in the Firebase console.

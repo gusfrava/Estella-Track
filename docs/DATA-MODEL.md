@@ -45,6 +45,8 @@ users/{uid}                         PRIVATE settings (owner only)
     exercises: [{ id, exerciseId, name, type, perSide, restSec, note,
                   target: { sets, reps, weight, unit, seconds } }],
     // type: 'weight_reps' | 'reps' | 'time' – what a set measures. perSide: reps logged for left and right.
+    // exerciseId: the library exercise it was picked from (data/exercises.json), null for your own.
+    // video: your own YouTube link ('' = the library's video for exerciseId, else a YouTube search).
     source: { type: 'self'|'group'|'trainer'|'post', id, version },
     assignedBy,                      // trainer uid when assigned
     current: { sessionId, weekKey }  // the session holding this week's check marks (latest one if not recurring)

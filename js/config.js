@@ -26,7 +26,7 @@ export function isFirebaseConfigured() {
 // Legal. Bump LEGAL_VERSION whenever privacy.html or terms.html change in a way people must accept again.
 // ─────────────────────────────────────────────────────────────
 export const LEGAL = {
-  version: '2026-10-12',
+  version: '2026-10-13',          // bump when privacy.html / terms.html change in a meaningful way → everyone re-accepts
   operator: 'TheFaroLab',
   contactEmail: 'info@estellatrack.app',
   minAge: 16,
