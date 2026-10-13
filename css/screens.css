@@ -82,3 +82,10 @@
 .splash{min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-family:var(--display);font-weight:700;color:var(--muted)}
 .splash-star{width:64px;height:64px;animation:spin 1.6s cubic-bezier(.5,0,.5,1) infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* "Verify your email" reminder on the home screen. */
+.notice.verify{display:flex;flex-direction:column;gap:4px;margin:6px 0 18px}
+.notice.verify b{font-family:var(--display);font-weight:800;font-size:1.05rem}
+.verify-msg{font-weight:600;color:var(--teal-ink)}
+.verify-actions{display:flex;gap:16px;flex-wrap:wrap}
+.verify-actions .textbtn{padding:6px 0}

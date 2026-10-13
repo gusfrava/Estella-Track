@@ -47,7 +47,7 @@ service cloud.firestore {
       allow create: if isOwner(uid) && validSharing(request.resource.data) && ownsUsername(request.resource.data);
       allow update: if isOwner(uid) && validSharing(request.resource.data) && keepsSchemaVersion()
                     && (usernameUnchanged() || ownsUsername(request.resource.data));
-      allow delete: if false;   // account deletion runs on the server
+      allow delete: if isOwner(uid);   // "Delete account" in the app (data first, then this, then the sign-in)
 
       // The person's own data.
       match /routines/{id}        { allow read, write: if isOwner(uid); }
@@ -72,9 +72,10 @@ service cloud.firestore {
                     && request.resource.data.uid == request.auth.uid
                     && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('username', null) == name;
       allow update: if false;
-      // Freed only by its owner, and only when their profile no longer uses it (changing username).
+      // Freed only by its owner, when their profile no longer uses it (changing username) or is being deleted.
       allow delete: if signedIn() && resource.data.uid == request.auth.uid
-                    && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('username', null) != name;
+                    && (!existsAfter(/databases/$(database)/documents/users/$(request.auth.uid))
+                        || getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('username', null) != name);
     }
   }
 }

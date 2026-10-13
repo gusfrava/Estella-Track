@@ -3,6 +3,7 @@
 import { ICONS } from '../ui/icons.js';
 import { t, getLang } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
+import { LEGAL } from '../config.js';
 
 export const brand = () => `<div class="brand">${ICONS.star}<span>Estella</span></div>`;
 
@@ -25,4 +26,10 @@ export function editDeleteButtons(kind, id, name, stacked = false) {
 
 export function progressBar(pct, extra = '') {
   return `<div class="bar" ${extra}><span data-w="${pct}" style="width:${pct}%"></span></div>`;
+}
+
+// "Privacy · Terms" links (open in a new tab so the app keeps its place).
+export function legalLinks() {
+  const L = t();
+  return `<p class="legal-links"><a href="${LEGAL.privacyUrl}" target="_blank" rel="noopener">${L.privacyPolicy}</a> · <a href="${LEGAL.termsUrl}" target="_blank" rel="noopener">${L.terms}</a></p>`;
 }

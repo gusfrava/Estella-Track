@@ -1,11 +1,13 @@
 // Sign-in logic: holds what the sign-in screens show and runs login / sign-up / reset / Google.
 // It calls the Firebase layer; when sign-in succeeds, Firebase notifies main.js, which starts the session.
 import * as fb from '../services/firebase.js';
+import { setPendingConsent } from './account.js';
+import { passwordOk } from '../utils/password.js';
 import { t } from '../i18n/index.js';
 import { logger } from '../utils/log.js';
 
 const log = logger('auth');
-const fresh = () => ({ screen: 'login', error: '', info: '', busy: false, showPw: false, name: '', email: '', password: '' });
+const fresh = () => ({ screen: 'login', error: '', info: '', busy: false, showPw: false, name: '', email: '', password: '', consent: false });
 let ui = fresh();
 const listeners = new Set();
 
@@ -18,14 +20,18 @@ function set(patch) {
 }
 
 // Typing updates the values silently (no re-render, so the cursor never jumps).
-export function rememberInput(id, value) {
-  if (id === 'a-name') ui.name = value;
+export function rememberInput(id, value, el) {
+  if (id === 'a-consent') ui.consent = !!(el && el.checked);
+  else if (id === 'a-name') ui.name = value;
   else if (id === 'a-email') ui.email = value;
   else if (id === 'a-pw') ui.password = value;
 }
 
 // After sign-out: back to the login tab, keep the email for convenience.
-export function resetAuthUI() { ui = { ...fresh(), email: ui.email }; }
+export function resetAuthUI() { ui = { ...fresh(), email: ui.email, info: ui.info }; }
+
+// A message on the sign-in screen (e.g. after deleting an account).
+export const showInfo = info => set({ screen: 'login', info, error: '' });
 
 export const showScreen = screen => set({ screen, error: '', info: '', password: '' });
 export const togglePassword = () => set({ showPw: !ui.showPw });
@@ -45,14 +51,17 @@ export async function submitLogin() {
   if (signup && !name) return set({ error: L.nameReq });
   if (!email) return set({ error: L.emailReq });
   if (!pw) return set({ error: L.pwReq });
+  if (signup && !passwordOk(pw)) return set({ error: L.pwWeak });
+  if (signup && !ui.consent) return set({ error: L.consentReq });
   if (!fb.isLoaded()) return set({ error: L.errors['not-configured'] });
   set({ busy: true, error: '' });
   try {
-    if (signup) await fb.signUp(name, email, pw);
+    if (signup) { setPendingConsent(true); await fb.signUp(name, email, pw); }
     else await fb.signIn(email, pw);
     log.debug(signup ? 'account created' : 'signed in', email);
     set({ busy: false, password: '' });
   } catch (err) {
+    if (signup) setPendingConsent(false);
     showError(err);
   }
 }

@@ -3,7 +3,9 @@
 import { ICONS } from '../ui/icons.js';
 import { t } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
-import { brand, langToggle } from './partials.js';
+import { brand, langToggle, legalLinks } from './partials.js';
+import { LEGAL, PASSWORD_POLICY } from '../config.js';
+import { passwordChecks } from '../utils/password.js';
 
 export function authView(ui, { configured, fatal }) {
   const L = t();
@@ -22,7 +24,7 @@ export function authView(ui, { configured, fatal }) {
       ${ui.info ? `<div class="formmsg ok-box" role="status">${esc(ui.info)}</div>` : ''}
       <button class="btn" type="submit" ${ui.busy ? 'disabled' : ''}>${ui.busy ? L.sending : L.sendLink}</button>
     </form>
-    <button class="textbtn link center" data-action="auth-screen" data-screen="login">${L.backToLogin}</button>`;
+    <button class="textbtn link center" data-action="auth-screen" data-screen="login">${L.backToLogin}</button>${legalLinks()}`;
   }
 
   const signup = ui.screen === 'signup';
@@ -41,13 +43,22 @@ export function authView(ui, { configured, fatal }) {
         <input id="a-pw" class="input" type="${ui.showPw ? 'text' : 'password'}" autocomplete="${signup ? 'new-password' : 'current-password'}" placeholder="${esc(signup ? L.passwordPh : '')}" value="${esc(ui.password)}">
         <button type="button" class="eye" data-action="toggle-pw" aria-label="${ui.showPw ? L.hidePw : L.showPw}" aria-pressed="${ui.showPw}">${ui.showPw ? ICONS.eyeOff : ICONS.eye}</button>
       </div>
-      ${signup ? '' : `<button type="button" class="textbtn link right" data-action="auth-screen" data-screen="reset">${L.forgot}</button>`}
+      ${signup ? `<ul class="pw-rules" id="pw-rules" aria-live="polite">${pwRulesHTML(ui.password)}</ul>` : `<button type="button" class="textbtn link right" data-action="auth-screen" data-screen="reset">${L.forgot}</button>`}
     </div>
+    ${signup ? `<label class="check-row"><input type="checkbox" id="a-consent" ${ui.consent ? 'checked' : ''}><span>${L.consentCheck(LEGAL.minAge, LEGAL.termsUrl, LEGAL.privacyUrl)}</span></label>` : ''}
     ${error}
+    ${!signup && ui.info ? `<div class="formmsg ok-box" role="status">${esc(ui.info)}</div>` : ''}
     <button class="btn" type="submit" ${ui.busy ? 'disabled' : ''}>${ui.busy ? (signup ? L.signingUp : L.loggingIn) : (signup ? L.signup : L.login)}</button>
   </form>
   <div class="or"><span>${L.or}</span></div>
-  <button class="btn secondary" data-action="google" ${ui.busy ? 'disabled' : ''}>${L.google}</button>`;
+  <button class="btn secondary" data-action="google" ${ui.busy ? 'disabled' : ''}>${L.google}</button>
+  <p class="fine">${L.googleConsent(LEGAL.termsUrl, LEGAL.privacyUrl)}</p>`;
   if (!configured) h += `<button class="textbtn link center" data-action="local-mode">${L.tryLocal}</button>`;
-  return h;
+  return h + legalLinks();
+}
+
+// Live password checklist on "Create account" (updated in place while typing, see main.js).
+export function pwRulesHTML(pw) {
+  const R = t().pwRules;
+  return passwordChecks(pw).map(c => `<li class="${c.ok ? 'ok' : ''}">${c.ok ? '✓' : '•'} ${c.key === 'min' ? R.min(PASSWORD_POLICY.minLength) : R[c.key]}</li>`).join('');
 }

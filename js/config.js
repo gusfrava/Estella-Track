@@ -21,3 +21,19 @@ export function isFirebaseConfigured() {
   const c = FIREBASE_CONFIG;
   return !!(c.apiKey && !/PEGA_AQUI/.test(c.apiKey) && c.projectId);
 }
+
+// ─────────────────────────────────────────────────────────────
+// Legal. Bump LEGAL_VERSION whenever privacy.html or terms.html change in a way people must accept again.
+// ─────────────────────────────────────────────────────────────
+export const LEGAL = {
+  version: '2026-10-12',
+  operator: 'TheFaroLab',
+  contactEmail: 'info@estellatrack.app',
+  minAge: 16,
+  privacyUrl: 'legal/privacy.html',
+  termsUrl: 'legal/terms.html',
+};
+
+// Password rules for email sign-up. Must match Firebase console → Authentication → Settings → Password policy.
+// (Firebase enforces them; the app shows them as a live checklist so people know before they submit.)
+export const PASSWORD_POLICY = { minLength: 8, uppercase: true, lowercase: false, number: true, special: true };

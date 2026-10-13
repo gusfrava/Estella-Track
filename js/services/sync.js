@@ -163,6 +163,13 @@ function stopListeners() {
   unsubs = [];
 }
 
+// Account deletion: stop listening so the profile listener doesn't recreate the account while it's being deleted.
+export function stopSyncForDeletion() {
+  stopListeners();
+  clearTimeout(saveTimer);
+  migrating = true;   // blocks any migration from starting
+}
+
 export function endUserSession() {
   log.debug('session end');
   stopListeners();
