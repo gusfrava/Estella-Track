@@ -38,6 +38,12 @@ Trainers don't use these levels. Each trainer gets their own permission from the
 users/{uid}                         PRIVATE settings (owner only)
   username, displayName, lang, units, goal, createdAt, discoverable,
   sharing: { profile, routines, workouts, body },       // 'private' | 'friends' | 'public'
+  units: 'kg' | 'lb',                                   // chosen in onboarding; default for new exercises
+  onboarding: { version, character, goal, experience, place, daysPerWeek, minutes, source,
+                startedAt, completedAt, skippedAt },    // saved after every answer (js/controllers/onboarding.js)
+    // goal: strength|muscle|fat|athletic|health · experience: never|beginner|intermediate|advanced
+    // place: gym|small|home|body · daysPerWeek: 1–7 (the weekly goal) · minutes: 30|45|60|90
+    // source: instagram|tiktok|youtube|friend|search|ad|other
   legal: { version, acceptedAt, minAgeConfirmed }       // accepted privacy policy + terms (re-asked when LEGAL.version changes)
 
   routines/{routineId}              the plan
@@ -72,7 +78,8 @@ users/{uid}                         PRIVATE settings (owner only)
                                         // weight (per side: the weaker side), t = longest time (time exercises only)
     (later: lastSets[], best: { weight, e1rm, volume, date })
 
-  body/{date}                       weight, measurements
+  body/{date}                       { date, weight, weightUnit: 'kg'|'lb', heightCm, source: 'onboarding'|'manual', updatedAt }
+                                    // health data: private, only if the person enters it; height always stored in cm
   friends/{friendUid}               since
   customExercises/{id}              exercises not in the library
   mascot/state                      SERVER ONLY: level, xp, energy, muscles{…}, shape

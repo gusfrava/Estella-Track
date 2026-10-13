@@ -3,10 +3,11 @@
 //   user: the Firebase user, or null
 //   localMode: true when using the app without an account (only while Firebase isn't configured)
 //   fatal: i18n key of a blocking error shown on the sign-in screen (e.g. 'loadFailed')
+//   synced: { routines, sessions } – true once Firestore's server (not this device's cache) has answered
 import { logger } from '../utils/log.js';
 
 const log = logger('session');
-let session = { mode: 'loading', user: null, localMode: false, fatal: '' };
+let session = { mode: 'loading', user: null, localMode: false, fatal: '', synced: {} };
 const listeners = new Set();
 
 export const getSession = () => session;

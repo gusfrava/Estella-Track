@@ -97,7 +97,7 @@ export const signOut = () => FB.a.signOut(FB.auth);
 
 // ---------- user data (v2: one document per routine / session / exercise history) ----------
 // Firestore collection names for the store's collections.
-export const COLLECTIONS = { routines: 'routines', sessions: 'sessions', stats: 'exerciseStats' };
+export const COLLECTIONS = { routines: 'routines', sessions: 'sessions', stats: 'exerciseStats', body: 'body' };
 const MAX_BATCH = 450;   // Firestore allows 500 writes per batch
 
 const userDoc = uid => FB.f.doc(FB.db, 'users', uid);
