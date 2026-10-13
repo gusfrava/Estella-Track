@@ -1,0 +1,37 @@
+/* The mascot (js/ui/mascot.js): which face shows, blinking, breathing, the celebration hop. */
+.mascot{display:block;width:auto;overflow:visible;flex:none}
+.mascot.crop-bust{overflow:hidden;aspect-ratio:1;border-radius:50%;background:var(--yellow-soft);border:2px solid var(--ink)}
+
+/* One expression at a time: the svg's mood-… class picks it. */
+.mascot .expr{display:none}
+.mascot.mood-amused .expr-amused,.mascot.mood-focused .expr-focused,
+.mascot.mood-excited .expr-excited,.mascot.mood-blink .expr-blink{display:inline}
+
+/* Blink: the closed-eyes face flashes on for a moment every ~5 s, the current face flashes off. */
+.mascot.blinks .expr-blink{display:inline;opacity:0;animation:m-blink-on 5.2s infinite 1.4s}
+.mascot.blinks.mood-amused .expr-amused,.mascot.blinks.mood-focused .expr-focused,
+.mascot.blinks.mood-excited .expr-excited{animation:m-blink-off 5.2s infinite 1.4s}
+@keyframes m-blink-on{0%,93.9%{opacity:0}94%,97%{opacity:1}97.1%,100%{opacity:0}}
+@keyframes m-blink-off{0%,93.9%{opacity:1}94%,97%{opacity:0}97.1%,100%{opacity:1}}
+
+/* Breathing: the body grows a hair taller from the feet, the head floats a pixel or two. */
+.mascot .m-body{transform-box:fill-box;transform-origin:50% 100%;animation:m-breathe 4.2s ease-in-out infinite}
+.mascot .m-head{animation:m-head 4.2s ease-in-out infinite}
+@keyframes m-breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.008)}}
+@keyframes m-head{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+
+/* Celebration hop: crouch, jump, land — twice. Works on the whole svg so the crop doesn't matter. */
+.mascot.hop{transform-origin:50% 100%;animation:m-hop .62s cubic-bezier(.3,.7,.4,1) 2}
+@keyframes m-hop{
+  0%{transform:translateY(0) scale(1,1)}
+  18%{transform:translateY(0) scale(1.06,.92)}
+  45%{transform:translateY(-18%) scale(.97,1.04)}
+  75%{transform:translateY(0) scale(1.04,.95)}
+  100%{transform:translateY(0) scale(1,1)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .mascot .m-body,.mascot .m-head,.mascot.hop{animation:none}
+  .mascot.blinks .expr{animation:none}
+  .mascot.blinks .expr-blink{display:none}
+}

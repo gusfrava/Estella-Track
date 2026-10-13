@@ -3,7 +3,8 @@ import { ICONS } from '../ui/icons.js';
 import { t } from '../i18n/index.js';
 import { esc, fmtDay, fmtDuration } from '../utils/format.js';
 import { nextMonday, parseYmd, todayStr } from '../utils/dates.js';
-import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities, weeklyStreak } from '../state/selectors.js';
+import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities, weeklyStreak, trainedToday } from '../state/selectors.js';
+import { mascotHTML } from '../ui/mascot.js';
 import { brand, langToggle, editDeleteButtons, progressBar, tabBar } from './partials.js';
 
 // opts = { user, localMode, highlightId, showOlder, verify: { needed, ui } }
@@ -14,7 +15,10 @@ export function homeView(state, opts) {
 
   let h = `
   ${appHeader(state, opts)}
-  ${name ? `<p class="hello">${esc(L.hello(name))}</p>` : ''}
+  <div class="hello-row">
+    ${mascotHTML({ crop: 'bust', size: '64px', mood: trainedToday(state) ? 'excited' : 'amused' })}
+    <p class="hello">${esc(name ? L.hello(name) : L.helloAnon)}</p>
+  </div>
   ${opts.verify && opts.verify.needed ? verifyBanner(opts.user, opts.verify.ui) : ''}
   <h1>${L.yourRoutines}</h1>
   <p class="sub">${esc(L.weekOf(fmtDay(week.start), fmtDay(week.end)))}</p>`;

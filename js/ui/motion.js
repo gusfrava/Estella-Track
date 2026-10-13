@@ -1,5 +1,5 @@
 // Animations: list reordering (FLIP), confetti, and the "routine complete" card.
-import { ICONS } from './icons.js';
+import { mascotHTML } from './mascot.js';
 import { t } from '../i18n/index.js';
 
 export const reducedMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -66,7 +66,7 @@ export function celebrate(routine, onDone) {
   const el = document.createElement('div');
   el.className = 'celebrate';
   el.setAttribute('role', 'status');
-  el.innerHTML = `<div class="card">${ICONS.star.replace('<svg', '<svg class="star"')}
+  el.innerHTML = `<div class="card">${mascotHTML({ mood: 'excited', hop: true, size: '260px' })}
     <h2>${L.completedTitle}</h2><p>${routine.recurring ? L.completedWeekly : L.completedOnce}</p></div>`;
   document.body.appendChild(el);
   confetti();

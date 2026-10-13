@@ -180,3 +180,10 @@ export function weeklyStreak(state) {
   const recent = Array.from({ length: 8 }, (_, i) => { const key = weeksBefore(now, 7 - i); return { key, done: weeks.has(key) }; });
   return { current, best: Math.max(best, current), thisWeek, recent };
 }
+
+// Trained today: a gym session with a checked set, or an activity, dated today.
+export function trainedToday(state) {
+  const today = todayStr();
+  return Object.values(state.sessions).some(s => s.date === today
+    && (s.kind === 'activity' || s.exercises.some(e => e.sets.some(x => x.done))));
+}

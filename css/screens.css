@@ -41,7 +41,7 @@
 .topbar{display:flex;align-items:center;gap:16px;margin-bottom:30px}
 .count{font-family:var(--display);font-weight:800;font-size:1.1rem}
 .rhead{display:flex;align-items:flex-start;gap:8px}
-.rhead>div:first-child{flex:1;min-width:0}
+.rhead>div:first-child,.rhead>.mascot+div{flex:1;min-width:0}
 .rhead .ibtns{margin-top:6px}
 .rhead h1{overflow-wrap:anywhere}
 .banner{display:flex;align-items:center;gap:12px;margin-top:20px;padding:12px 16px;border:var(--line) solid var(--ink);border-radius:18px;background:var(--teal);font-weight:600}
@@ -93,6 +93,9 @@
 .add-set svg{width:16px;height:16px}
 /* ---------- auth & account ---------- */
 .top-right{display:flex;align-items:center;gap:10px}
+.hello-row{display:flex;align-items:center;gap:12px;margin:0 0 6px}
+.hello-row .hello{margin:0}
+.rhead>.mascot{align-self:center;margin-left:-4px}
 .hello{margin:0 0 4px;font-family:var(--display);font-weight:700;font-size:1.1rem;color:var(--teal-ink)}
 .tabs{display:grid;grid-template-columns:1fr 1fr;margin:26px 0 22px;border:var(--line) solid var(--ink);border-radius:999px;background:var(--card);overflow:hidden}
 .tabs button{padding:12px 8px;font-family:var(--display);font-weight:800;font-size:1.05rem}

@@ -6,6 +6,7 @@ import { esc, fmtDay, fmtNum, fmtClock } from '../utils/format.js';
 import { nextMonday, pad2 } from '../utils/dates.js';
 import { orderedExercises, routineProgress, planChange, isRoutineDone, setsToShow, lastTime } from '../state/selectors.js';
 import { editDeleteButtons, progressBar } from './partials.js';
+import { mascotHTML } from '../ui/mascot.js';
 import { searchUrl } from '../utils/youtube.js';
 import { techniqueVideo, libraryExercise } from '../services/library.js';
 
@@ -21,6 +22,7 @@ export function routineView(state, r, ui = {}) {
     <span class="count num">${pad2(done)}/${pad2(total)}</span>
   </div>
   <div class="rhead">
+    ${mascotHTML({ crop: 'bust', size: '56px', mood: isRoutineDone(r) ? 'excited' : done || anyLogged(r) ? 'focused' : 'amused' })}
     <div><h1>${esc(r.name)}</h1><p class="sub">${esc(L.exercisesN(total))} · ${r.recurring ? L.weekly : L.once}</p></div>
     ${editDeleteButtons('routine', r.id, r.name)}
   </div>`;
@@ -38,6 +40,9 @@ export function routineView(state, r, ui = {}) {
   if (done) h += `<button class="textbtn reset" data-action="reset">${L.resetProgress}</button>`;
   return h;
 }
+
+// Something already logged this session (even a single set) → the mascot looks focused.
+const anyLogged = r => orderedExercises(r).pending.some(i => i.logged && i.logged.sets.some(x => x.done));
 
 // item = { ex: routine exercise, logged: this session's entry or null, done: every set checked }
 function exerciseItem(state, r, item, open) {

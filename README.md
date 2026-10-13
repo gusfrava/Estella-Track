@@ -24,7 +24,9 @@ icons/                  App icons.
 data/                   The exercise library (same for everyone, shipped with the app). See docs/EXERCISE-LIBRARY.md.
   exercises.json        359 exercises: names ES/EN, muscle group, equipment, type, per side, muscle weights.
   exercise-videos.json  One technique video (YouTube link) per exercise. Fill these in over time.
-tools/                  One-off scripts (build-library.mjs made data/exercises.json from the old app). Not loaded by the app.
+tools/                  One-off scripts (build-library.mjs made data/exercises.json from the old app;
+                        build-character.mjs turns a Figma character export into js/ui/characters/*.js). Not loaded by the app.
+design/figma/           Figma exports the characters are built from (SVG with layer ids). Not loaded by the app.
 
 css/
   tokens.css            Colors and fonts. Change the palette here only.
@@ -73,6 +75,8 @@ js/
     sheet.js            Opening/closing bottom sheets, and the "are you sure?" sheet.
     motion.js           List reordering animation, confetti, the completion card.
     toast.js            The short message at the top ("¡Nuevo récord!").
+    mascot.js           Draws the mascot (mood, full body or bust, hop). characters/ holds each character's drawing.
+                        Its animations (blink, breathing, hop) are in css/mascot.css.
     icons.js            SVG icons.
 ```
 
@@ -98,3 +102,10 @@ Add `?debug` to the URL (for example `…github.io/estella-track/?debug`) and op
 - `estella.view()` shows the current screen inside the app
 
 Warnings and errors always print, even without `?debug`.
+
+## Updating the mascot from Figma
+1. In Figma select the character's part library frame → Export → **SVG**, with **"Include 'id' attribute" ON**.
+2. Save it over `design/figma/estella-part-library.svg`.
+3. Run `node tools/build-character.mjs design/figma/estella-part-library.svg js/ui/characters/estella.js` (or ask Claude to).
+Layer names the script relies on: "Estella / Character / Starter", "Expression / face features", "Expression=Amused|Focused|Excited|Blink",
+"Neck_2" and "Hair / front fringe_2". If they're renamed in Figma, update the names at the top of the script.

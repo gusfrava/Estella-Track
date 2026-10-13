@@ -68,6 +68,7 @@ export default {
   videoBad:'That link doesn’t look like a YouTube video.', watchTechnique:'Watch technique', openInYouTube:'Open in YouTube',
   videoNote:'The video loads from YouTube.', close:'Close',
   videoAdd:'Add video', videoChange:'Change video',
+  helloAnon:'Hi!',
   setN:n=>`Set ${n}`, addSet:'Add set', removeSet:'Remove', lastTime:'Last time',
   setsDoneOf:(d,n)=>`${d} of ${n} sets done`,
   today:'Today',
