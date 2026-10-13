@@ -3,7 +3,8 @@
 //
 // social = { ready, friends: { uid: { since, username, displayName } }, incoming: [Request], outgoing: [Request],
 //            cards: { uid: { state: 'ok'|'none'|'hidden'|'error', card } },
-//            cheers: { received: [Cheer], sent: [Cheer] } }   // newest first, the latest 30 of each
+//            cheers: { received: [Cheer] },   // newest first, the latest 30
+//            myCheers: { 'friendUid|date': Cheer | null } }   // the cheer I sent for a friend's workout (cards that are open)
 // Cheer = { id, from, to, fromUsername, fromName, kind: 'fire'|'strong'|'clap', date, workout, createdAt }
 //   card = profileCards/{uid}, written by the server (functions/card.js). 'none' = not built yet (it's built when
 //   they open the app), 'hidden' = they share their profile with nobody.
@@ -11,7 +12,7 @@
 import { streakFrom, goalAt } from './selectors.js';
 import { parseYmd, ymd, weekKey } from '../utils/dates.js';
 
-const blank = () => ({ ready: false, friends: {}, incoming: [], outgoing: [], cards: {}, cheers: { received: [], sent: [] } });
+const blank = () => ({ ready: false, friends: {}, incoming: [], outgoing: [], cards: {}, cheers: { received: [] }, myCheers: {} });
 let social = blank();
 const listeners = new Set();
 
@@ -23,7 +24,8 @@ export function setFriends(friends) { social = { ...social, friends, ready: true
 export function setRequests({ incoming, outgoing }) { social = { ...social, incoming, outgoing }; changed(); }
 export function setCard(uid, entry) { social = { ...social, cards: { ...social.cards, [uid]: entry } }; changed(); }
 export function dropCard(uid) { const cards = { ...social.cards }; delete cards[uid]; social = { ...social, cards }; changed(); }
-export function setCheers(cheers) { social = { ...social, cheers }; changed(); }
+export function setCheers(received) { social = { ...social, cheers: { received } }; changed(); }
+export function setMyCheer(uid, date, cheer) { social = { ...social, myCheers: { ...social.myCheers, [`${uid}|${date}`]: cheer } }; changed(); }
 export function clearSocial() { social = blank(); changed(); }
 
 // ---------- reading ----------
@@ -69,7 +71,7 @@ export function friendWeek(uid) {
 
 // ---------- cheers ----------
 // The cheer I sent this friend for their workout on `date`, or null.
-export const myCheerFor = (uid, date) => social.cheers.sent.find(c => c.to === uid && c.date === date) || null;
+export const myCheerFor = (uid, date) => social.myCheers[`${uid}|${date}`] || null;
 
 // Cheers I received in the last `days` days (newest first), only from people who are still my friends.
 export function recentCheers(days = 7) {

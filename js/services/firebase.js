@@ -287,16 +287,17 @@ export async function sendCheer(me, to, { kind, date, workout }) {
 }
 export const deleteCheer = id => FB.f.deleteDoc(FB.f.doc(FB.db, 'cheers', id));
 
-// The latest cheers I received and sent. cb({ received, sent }) each time either changes.
-export function watchCheers(uid, cb, onError) {
-  const col = FB.f.collection(FB.db, 'cheers');
-  const lists = { received: null, sent: null };
-  const emit = () => { if (lists.received && lists.sent) cb({ received: lists.received, sent: lists.sent }); };
-  const read = key => snap => { lists[key] = snap.docs.map(d => ({ id: d.id, ...d.data() })); emit(); };
-  const q = field => FB.f.query(col, FB.f.where(field, '==', uid), FB.f.orderBy('createdAt', 'desc'), FB.f.limit(CHEERS_SHOWN));
-  const u1 = FB.f.onSnapshot(q('to'), read('received'), onError);
-  const u2 = FB.f.onSnapshot(q('from'), read('sent'), onError);
-  return () => { u1(); u2(); };
+// The latest cheers I received (newest first). cb(list) each time it changes. Needs the (to, createdAt) index.
+export function watchCheersToMe(uid, cb, onError) {
+  const q = FB.f.query(FB.f.collection(FB.db, 'cheers'), FB.f.where('to', '==', uid), FB.f.orderBy('createdAt', 'desc'), FB.f.limit(CHEERS_SHOWN));
+  return FB.f.onSnapshot(q, snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))), onError);
+}
+
+// One cheer by id (the one I sent a friend for one workout): cb(cheer | null). No index needed.
+export function watchCheer(id, cb) {
+  return FB.f.onSnapshot(FB.f.doc(FB.db, 'cheers', id),
+    snap => cb(snap.exists() ? { id, ...snap.data() } : null),
+    () => cb(null));
 }
 
 // ---------- your data: export and delete ----------

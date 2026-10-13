@@ -110,7 +110,7 @@ sharedRoutines/{uid}                SERVER ONLY (functions/routines.js): routine
 cheers/{from}_{to}_{date}           { from, to, fromUsername, fromName, kind: 'fire'|'strong'|'clap', date, workout, createdAt }
                                     // a reaction to a friend's workout of that date; one per friend per workout day (another kind
                                     // replaces it). Only friends can send; only the two people can read; either can delete.
-                                    // Indexes: (to, createdAt desc) and (from, createdAt desc) in firestore.indexes.json
+                                    // Index (to, createdAt desc) for "Te animaron". The cheer I sent is read by its id (no index).
 
 usernames/{username}                { uid }
 directory/{uid}                     { username, displayName, nameKey, lastKey, character, updatedAt }   // friend search; only while

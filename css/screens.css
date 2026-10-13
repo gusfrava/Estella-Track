@@ -225,7 +225,11 @@
 .cheer-btn svg{width:26px;height:26px}
 .cheer-btn[aria-pressed="true"]{background:var(--orange);color:var(--ink)}
 .cheer-btn:active{transform:translate(1px,1px);box-shadow:1px 2px 0 var(--ink)}
-.cheer-btn:disabled{opacity:.6}
+.cheer-btn.pop{animation:cheer-pop .45s cubic-bezier(.3,1.6,.5,1)}
+.cheer-btn.pop svg{animation:cheer-wiggle .45s ease}
+@keyframes cheer-pop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes cheer-wiggle{0%,100%{transform:rotate(0)}30%{transform:rotate(-14deg)}60%{transform:rotate(10deg)}}
+@media (prefers-reduced-motion:reduce){.cheer-btn.pop,.cheer-btn.pop svg{animation:none}}
 .fr-routines-box .section-head{margin-top:4px}
 .fr-routines{margin-bottom:14px}
 .fr-copy{display:flex;flex-direction:column;gap:6px;padding:0 14px 14px}

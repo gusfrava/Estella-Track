@@ -80,6 +80,7 @@ export default {
     copy:'Copiar a mis rutinas', copied:'Ya la copiaste', copyAgain:'Copiar otra vez', copiedToast:'Rutina copiada',
     copyHint:'Se copian los ejercicios, series y repeticiones. Los pesos los pones tú.',
     badgeLabel:n=>n===1?'1 novedad en Amigos':`${n} novedades en Amigos`,
+    cheerSentToast:k=>`Le mandaste ${k}`, cheerRemoved:'Ánimo quitado',
     sentToast:'Solicitud enviada', failed:'No se pudo. Revisa tu conexión e inténtalo otra vez.',
   },
   tabsLabel:'Secciones', tabRoutines:'Rutinas', tabProgress:'Progreso',
