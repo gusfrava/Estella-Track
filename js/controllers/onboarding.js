@@ -3,10 +3,17 @@
 // users/{uid}/body/{date} (private health data), never into the profile.
 //
 // profile.onboarding = { version, character, goal, experience, place, daysPerWeek, minutes, source,
-//                        startedAt, completedAt, skippedAt }
+//                        startedAt, completedAt, skippedAt,
+//                        starterPlan: { version, choice: 'saved'|'skipped', routines: ['fbA', …], at } }
 // profile.units = 'kg' | 'lb'  (default for new exercises)
-import { getState, updateProfile, saveBody } from '../state/store.js';
+//
+// The last screen proposes a starter plan (services/starter-plan.js) built from the answers:
+// "Guardar mi plan" creates those routines, "Prefiero armarlas yo" goes home without them.
+import { getState, updateProfile, saveBody, addRoutines } from '../state/store.js';
 import { getSession } from '../state/session.js';
+import { loadLibrary } from '../services/library.js';
+import { buildStarterPlan, PLAN_VERSION } from '../services/starter-plan.js';
+import { t, getLang } from '../i18n/index.js';
 import { logger } from '../utils/log.js';
 
 const log = logger('onboarding');
@@ -26,7 +33,8 @@ export const CHOICES = {
 export const AVAILABLE_CHARACTERS = new Set(['estella']);   // Diego appears once his art is in the app
 
 // ---------- UI state (this device only) ----------
-let ui = null;          // { step, answers, body: { unit, weight, height, ft, inch }, error }
+let ui = null;          // { step, answers, body: { unit, weight, height, ft, inch }, error, plan }
+                        // plan: null (not asked yet) | 'loading' | 'failed' | [routines] (empty = can't build one)
 let forced = false;     // "Repetir introducción" from the account menu
 const listeners = new Set();
 export const onOnboardingChange = fn => listeners.add(fn);
@@ -54,9 +62,42 @@ export function getOnboardingUI() {
       answers: { character: 'estella', ...pick(saved) },
       body: { unit: p.units === 'lb' ? 'lb' : 'kg', weight: '', height: '', ft: '', inch: '' },
       error: '',
+      plan: null,
     };
   }
   return ui;
+}
+
+// ---------- starter plan (last screen) ----------
+// Built when the last screen opens: the exercise library has to be loaded first.
+function preparePlan() {
+  if (Array.isArray(ui.plan) || ui.plan === 'loading') return;
+  ui.plan = 'loading';
+  const mine = ui;
+  loadLibrary().then(() => {
+    if (ui !== mine) return;
+    const unit = getState().profile?.units === 'lb' ? 'lb' : 'kg';
+    ui.plan = buildStarterPlan(ui.answers, { lang: getLang(), unit, names: t().ob.planNames });
+    log.debug('starter plan', ui.plan.map(r => `${r.key}:${r.exercises.length}`).join(' '));
+    changed();
+  }, err => {
+    if (ui !== mine) return;
+    log.warn('starter plan: library failed', err);
+    ui.plan = 'failed';
+    changed();
+  });
+}
+
+const planRoutines = () => (ui && Array.isArray(ui.plan) ? ui.plan.filter(r => r.exercises.length) : []);
+
+// "Guardar mi plan": creates the routines and goes home. Returns how many were created.
+export function savePlan() {
+  const list = planRoutines();
+  if (!list.length) { finish(); return 0; }
+  addRoutines(list.map(r => ({ name: r.name, exercises: r.exercises })));
+  save({ starterPlan: { version: PLAN_VERSION, choice: 'saved', routines: list.map(r => r.key), at: Date.now() } });
+  finish();
+  return list.length;
 }
 
 export function resetOnboardingUI() { ui = null; forced = false; }
@@ -131,6 +172,7 @@ export function next() {
   if (STEPS[ui.step + 1] === 'done') save({ completedAt: Date.now() });
   ui.step = Math.min(STEPS.length - 1, ui.step + 1);
   log.debug('step', STEPS[ui.step]);
+  if (stepName() === 'done') preparePlan();
   changed();
 }
 
@@ -142,6 +184,7 @@ export function skipStep() {
   ui.error = '';
   if (STEPS[ui.step + 1] === 'done') save({ completedAt: Date.now() });
   ui.step += 1;
+  if (stepName() === 'done') preparePlan();
   changed();
 }
 
@@ -159,8 +202,11 @@ export function skipAll() {
   changed();
 }
 
-// Last screen's button → home.
+// Last screen: "Prefiero armarlas yo" (or "Ir a mis rutinas" when there's no plan) → home.
 export function finish() {
+  if (ui && stepName() === 'done' && planRoutines().length && !getState().profile?.onboarding?.starterPlan?.at) {
+    save({ starterPlan: { version: PLAN_VERSION, choice: 'skipped', routines: [], at: Date.now() } });
+  }
   forced = false;
   ui = null;
   changed();

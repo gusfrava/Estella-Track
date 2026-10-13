@@ -357,5 +357,10 @@
   "curl_femoral_sentado_lento_excentrico": { "name": "Curl femoral sentado excéntrico lento", "video": "" },
   "curl_femoral_acostado_lento_excentrico": { "name": "Curl femoral acostado excéntrico lento", "video": "" },
   "isometric_hamstring_bridge_heel_dig": { "name": "Puente isométrico con talones clavados", "video": "" },
-  "single_leg_hamstring_bridge_heel_dig": { "name": "Puente femoral unilateral con talón", "video": "" }
+  "single_leg_hamstring_bridge_heel_dig": { "name": "Puente femoral unilateral con talón", "video": "" },
+  "sentadilla_con_peso_corporal": { "name": "Sentadilla con peso corporal", "video": "" },
+  "flexion_inclinada": { "name": "Flexión inclinada (manos elevadas)", "video": "" },
+  "flexion_pica": { "name": "Flexión pica", "video": "" },
+  "superman": { "name": "Superman", "video": "" },
+  "remo_con_banda": { "name": "Remo con banda", "video": "" }
 }

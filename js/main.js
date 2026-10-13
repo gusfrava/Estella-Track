@@ -75,9 +75,10 @@ function render() {
   // New accounts: a few questions (goal, days, weight…), saved as they're answered.
   if (!s.localMode && s.user && profile && onboarding.needsOnboarding()) {
     const ui = onboarding.getOnboardingUI();
-    const step = onboarding.STEPS[ui.step];
+    let step = onboarding.STEPS[ui.step];
+    if (step === 'done' && (ui.plan === null || ui.plan === 'loading')) step = 'done-loading';   // confetti once the plan shows
     app.innerHTML = onboardingView(ui);
-    if (step !== lastObStep) { window.scrollTo(0, 0); if (step === 'done') confetti(); }
+    if (step !== lastObStep) { if (lastObStep !== 'done-loading') window.scrollTo(0, 0); if (step === 'done') confetti(); }
     lastObStep = step;
     return;
   }
@@ -177,6 +178,11 @@ const ACTIONS = {
   'ob-skip-all': () => onboarding.skipAll(),
   'ob-unit': d => onboarding.setBodyField('unit', d.unit),
   'ob-finish': () => { onboarding.finish(); resetRoute(); },
+  'ob-save-plan': () => {
+    const n = onboarding.savePlan();
+    resetRoute();
+    if (n) toast(`${ICONS.check}<span><b>${esc(t().ob.planSaved(n))}</b></span>`);
+  },
   // consent screen + email verification
   'accept-legal': () => {
     const box = document.getElementById('c-accept');

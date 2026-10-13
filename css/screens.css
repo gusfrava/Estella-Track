@@ -249,3 +249,26 @@
 .ob-summary li{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border:2px solid var(--ink);border-radius:14px;background:var(--card);text-align:left}
 .ob-summary span{color:var(--muted)}
 .ob-s-welcome .mascot,.ob-s-done .mascot{max-width:100%}
+/* starter plan (last screen) */
+.ob-plan-head{display:flex;align-items:center;gap:14px;margin:4px 0 16px}
+.ob-plan-head .mascot{flex:none}
+.ob-plan-head h1{margin:0 0 4px}
+.ob-plan-head .sub{margin:0}
+.ob-plan{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.ob-plan-r{border:var(--line) solid var(--ink);border-radius:20px;background:var(--card);box-shadow:3px 4px 0 var(--ink);overflow:hidden}
+.ob-plan-r summary{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;list-style:none}
+.ob-plan-r summary::-webkit-details-marker{display:none}
+.ob-plan-n{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);background:var(--yellow);display:grid;place-items:center;font-family:var(--display);font-weight:800}
+.ob-plan-t{flex:1;min-width:0;display:flex;flex-direction:column}
+.ob-plan-t b{font-family:var(--display);font-weight:800;font-size:1.08rem;line-height:1.2}
+.ob-plan-t span{color:var(--muted);font-size:.9rem}
+.ob-plan-chev{flex:none;width:22px;height:22px;transform:rotate(-90deg);transition:transform .2s}
+.ob-plan-chev svg{width:100%;height:100%}
+.ob-plan-r[open] .ob-plan-chev{transform:rotate(90deg)}
+.ob-plan-ex{margin:0;padding:2px 14px 12px 14px;list-style:none;border-top:2px dashed var(--hairline)}
+.ob-plan-ex li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-bottom:1px solid var(--hairline);font-size:.95rem}
+.ob-plan-ex li:last-child{border-bottom:0}
+.ob-plan-ex span{min-width:0}
+.ob-plan-ex b{flex:none;font-family:var(--display);font-weight:800;color:var(--teal-ink);white-space:nowrap}
+.ob-plan-note{margin:14px 2px 0;color:var(--muted);font-size:.9rem}
+@media (prefers-reduced-motion:reduce){.ob-plan-chev{transition:none}}

@@ -40,7 +40,9 @@ users/{uid}                         PRIVATE settings (owner only)
   sharing: { profile, routines, workouts, body },       // 'private' | 'friends' | 'public'
   units: 'kg' | 'lb',                                   // chosen in onboarding; default for new exercises
   onboarding: { version, character, goal, experience, place, daysPerWeek, minutes, source,
-                startedAt, completedAt, skippedAt },    // saved after every answer (js/controllers/onboarding.js)
+                startedAt, completedAt, skippedAt,      // saved after every answer (js/controllers/onboarding.js)
+                starterPlan: { version, choice: 'saved'|'skipped', routines: ['fbA', …], at } },
+                                                        // the plan proposed on the last screen; saved = its routines were created
     // goal: strength|muscle|fat|athletic|health · experience: never|beginner|intermediate|advanced
     // place: gym|small|home|body · daysPerWeek: 1–7 (the weekly goal) · minutes: 30|45|60|90
     // source: instagram|tiktok|youtube|friend|search|ad|other
@@ -105,7 +107,7 @@ leaderboards/{metric_period}        SERVER ONLY: top entries { uid, username, va
 (future) posts/{id}, posts/{id}/comments, posts/{id}/reactions, reports/{id}
 ```
 
-**The exercise library (359 exercises)** ships as a static file, `js/data/exercises.json`, not as database documents. That makes it free, available offline and instant.
+**The exercise library (364 exercises)** ships as a static file, `js/data/exercises.json`, not as database documents. That makes it free, available offline and instant.
 
 ## Who can read what
 - **Owner:** everything of their own.
