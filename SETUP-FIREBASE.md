@@ -38,3 +38,24 @@ Opening `index.html` by double-clicking it won't work. Use the GitHub Pages URL,
 - The app also keeps a copy on the phone, so it opens fast and works offline at the gym. It syncs when you're back online.
 - The first time someone signs in on a phone that already has routines from the version without accounts, those routines move into their account.
 - Signing out removes that account's copy from the phone.
+
+## 8. Emails, passwords and the Google sign-in screen (before inviting people)
+- **Send emails from your domain:** go to **Authentication → Templates → Customize domain** and add `estellatrack.app`. Firebase gives you 4 DNS records: 2 TXT (on `@`) and 2 CNAME (`firebase1._domainkey`, `firebase2._domainkey`).
+  - Add them in Cloudflare with TTL **Auto** and the CNAMEs set to **DNS only** (grey cloud).
+  - Only one `v=spf1` TXT record is allowed. If one already exists, add `include:_spf.firebasemail.com` to it instead of creating a second one.
+  - Then click **Verify**.
+- **Templates:** for "Email address verification" and "Password reset", set:
+  - Sender: `noreply@estellatrack.app`, name **Estella**
+  - Reply-to: `info@estellatrack.app`
+
+  The app sends them in the user's language (ES/EN).
+- **Receiving email:** make sure `info@estellatrack.app` actually receives mail (Cloudflare → Email → Email Routing can forward it for free). The privacy policy promises it.
+- **Password policy:** go to **Authentication → Settings → Password policy**. It's currently 8+ characters with an uppercase letter, a number and a symbol, and "Force upgrade on sign-in" is off. If you change it, update `PASSWORD_POLICY` in `js/config.js` to match, because that's the checklist the app shows.
+- **Project settings → General:**
+  - Public-facing name: **Estella**
+  - Environment type: **Production**
+  - Support email: shown to everyone who signs in with Google. To use `info@estellatrack.app`, first make it a Google account (accounts.google.com/signup → "Use your existing email"), then add it under **Users and permissions** as Owner.
+- **Google sign-in consent screen:** in Google Cloud Console (same project), go to **APIs & Services → OAuth consent screen** and add these links:
+  - Privacy policy: `https://gusfrava.github.io/Estella-Track/legal/privacy.html`
+  - Terms: `https://gusfrava.github.io/Estella-Track/legal/terms.html`
+- **Check the Firestore location** (Firestore Database → the region shown at the top). The privacy policy says "United States". If yours is in Europe, update both language versions in `legal/privacy.html`.

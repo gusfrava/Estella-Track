@@ -14,14 +14,16 @@ import * as store from './state/store.js';
 import { getSession, setSession, onSessionChange } from './state/session.js';
 import * as auth from './controllers/auth.js';
 import * as profileForm from './controllers/profile.js';
+import * as account from './controllers/account.js';
 import { getView, onRouteChange, openRoutine, goHome, resetRoute, initRouter } from './ui/router.js';
 import { closeSheet } from './ui/sheet.js';
 import { capturePositions, animateMoves, celebrate } from './ui/motion.js';
 import { splashView } from './views/splash.js';
-import { authView } from './views/auth.js';
+import { authView, pwRulesHTML } from './views/auth.js';
 import { homeView } from './views/home.js';
 import { routineView } from './views/routine.js';
 import { usernameView, statusHTML, errorHTML } from './views/username.js';
+import { consentView } from './views/consent.js';
 import { openPlusMenu } from './sheets/plus-menu.js';
 import { openRoutineForm } from './sheets/routine-form.js';
 import { openExerciseForm } from './sheets/exercise-form.js';
@@ -35,6 +37,7 @@ const app = document.getElementById('app');
 // Screen-only state (not saved anywhere).
 let highlightId = null;   // routine card that "pops" after completing it
 let showOlder = false;    // older activities expanded
+let consentError = '';    // "tick the box" message on the consent screen
 
 // ---------- render ----------
 function render() {
@@ -42,8 +45,12 @@ function render() {
   const s = getSession();
   if (s.mode === 'loading') { app.innerHTML = splashView(); return; }
   if (s.mode === 'auth') { app.innerHTML = authView(auth.getAuthUI(), { configured: isFirebaseConfigured(), fatal: s.fatal }); return; }
-  // One-time gate: signed-in accounts need a username before using the app.
+  // One-time gates for signed-in accounts: accept the privacy policy/terms, then pick a username.
   const profile = store.getState().profile;
+  if (!s.localMode && s.user && profile && !account.hasCurrentConsent(profile)) {
+    app.innerHTML = consentView({ error: consentError });
+    return;
+  }
   if (!s.localMode && s.user && profile && !profile.username) {
     app.innerHTML = usernameView(profileForm.ensureProfileForm());
     return;
@@ -52,10 +59,12 @@ function render() {
   const routine = view.name === 'routine' ? store.findRoutine(view.id) : null;
   app.innerHTML = routine
     ? routineView(store.getState(), routine)
-    : homeView(store.getState(), { user: s.user, localMode: s.localMode, highlightId, showOlder });
+    : homeView(store.getState(), { user: s.user, localMode: s.localMode, highlightId, showOlder,
+        verify: { needed: account.needsVerification(), ui: account.getVerifyUI() } });
 }
 
-store.subscribe(render);
+store.subscribe(() => { account.recordPendingConsent(); render(); });
+account.onVerifyChange(render);
 // The name/username form updates its status line in place (a full re-render would move the cursor).
 profileForm.onProfileFormChange((form, kind) => {
   const status = document.getElementById('u-status');
@@ -70,7 +79,7 @@ onRouteChange(render);
 auth.onAuthUIChange(render);
 onLangChange(lang => { fb.setAuthLanguage(lang); render(); });
 onSessionChange((s, prev) => {
-  if (s.user !== prev.user) profileForm.resetProfileForm();
+  if (s.user !== prev.user) { profileForm.resetProfileForm(); account.resetVerifyUI(); consentError = ''; }
   if (s.mode === 'app' && prev.mode !== 'app') resetRoute();
   if (s.mode !== 'app') closeSheet(true);
   render();
@@ -103,6 +112,15 @@ const ACTIONS = {
   'toggle-pw': () => { auth.togglePassword(); const pw = document.getElementById('a-pw'); if (pw) pw.focus(); },
   google: () => auth.google(),
   'local-mode': () => sync.enterLocalMode(),
+  // consent screen + email verification
+  'accept-legal': () => {
+    const box = document.getElementById('c-accept');
+    if (!box || !box.checked) { consentError = t().consentReq; render(); return; }
+    consentError = '';
+    account.acceptLegal();
+  },
+  'verify-resend': () => account.resendVerification(),
+  'verify-check': () => account.checkVerified(),
   // home
   open: d => openRoutine(d.id),
   older: () => { showOlder = !showOlder; render(); },
@@ -128,7 +146,12 @@ app.addEventListener('click', e => {
   fn(el.dataset, el);
 });
 
-app.addEventListener('input', e => auth.rememberInput(e.target.id, e.target.value));
+app.addEventListener('input', e => {
+  auth.rememberInput(e.target.id, e.target.value, e.target);
+  const rules = e.target.id === 'a-pw' && document.getElementById('pw-rules');
+  if (rules) rules.innerHTML = pwRulesHTML(e.target.value);
+});
+app.addEventListener('change', e => { if (e.target.id === 'a-consent') auth.rememberInput(e.target.id, e.target.value, e.target); });
 // Name/username fields live on the gate screen (#app) or in the Edit profile sheet (#layer).
 document.addEventListener('input', e => {
   if (e.target.id === 'u-display' || e.target.id === 'u-name') profileForm.onProfileInput(e.target.id, e.target.value, e.target);

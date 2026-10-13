@@ -19,6 +19,7 @@ Screens never change data directly, and the store never touches the screen or Fi
 index.html              Page shell: loads the styles and js/main.js. No logic.
 manifest.webmanifest    App name, colors and icons for "Add to Home Screen".
 sw.js                   Service worker: lets the installed app open offline.
+legal/                  Privacy policy and terms (ES + EN). If you change them meaningfully, bump LEGAL.version in js/config.js.
 icons/                  App icons.
 
 css/
@@ -50,13 +51,14 @@ js/
   controllers/
     auth.js             Sign-in logic: login, create account, reset password, Google.
     profile.js          Name + username form: live "is it free?" check and saving (claims the name atomically).
+    account.js          Accepting policy/terms, email verification, "Download my data", "Delete account".
 
   views/                Build the HTML for each screen. No logic, no data changes.
-    home.js  routine.js  auth.js  username.js  splash.js  partials.js
+    home.js  routine.js  auth.js  username.js  consent.js  splash.js  partials.js
 
   sheets/               The pop-up panels and what their Save buttons do.
     routine-form.js  exercise-form.js  activity-form.js  plus-menu.js  account.js  delete.js  fields.js
-    profile-form.js  privacy.js
+    profile-form.js  privacy.js  delete-account.js
 
   ui/
     router.js           Home vs routine screen, and the phone's back button.
@@ -73,6 +75,7 @@ js/
 - **Looks wrong but the data is right:** the screen's file in `js/views/`, then `css/`
 - **A form saves the wrong thing:** its file in `js/sheets/`
 - **Sign-in errors:** `js/controllers/auth.js`. Error wording is under `errors` in the i18n files.
+- **Delete account or data download fails:** `js/controllers/account.js`, then `deleteUserData` / `exportUserData` in `firebase.js`. Deleting asks for the password (or Google) again first.
 - **Username won't save / says taken:** `js/controllers/profile.js` and the `usernames` rules. Each taken name is a document in `usernames/` in the Firebase console.
 - **Data isn't saving or syncing between phones:** `js/services/sync.js`, then `firebase.js`. Also check the Firestore rules. With `?debug`, every save logs `[sync] saved N doc(s)`.
 - **Old data looks wrong after updating:** `js/services/migrate.js`. The original data is still in `users/{uid}.state` in the Firebase console.

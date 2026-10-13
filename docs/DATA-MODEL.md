@@ -37,7 +37,8 @@ Trainers don't use these levels. Each trainer gets their own permission from the
 ```
 users/{uid}                         PRIVATE settings (owner only)
   username, displayName, lang, units, goal, createdAt, discoverable,
-  sharing: { profile, routines, workouts, body }        // 'private' | 'friends' | 'public'
+  sharing: { profile, routines, workouts, body },       // 'private' | 'friends' | 'public'
+  legal: { version, acceptedAt, minAgeConfirmed }       // accepted privacy policy + terms (re-asked when LEGAL.version changes)
 
   routines/{routineId}              the plan
     name, order, days[0-6], recurring, archived, updatedAt,
@@ -127,7 +128,7 @@ There are two separate things:
 
 ## Server functions (needs the Blaze plan)
 - `onSessionDone`: updates points, mascot growth, streak, the weekly card and leaderboards.
-- `onUserDeleted`: deletes all of the user's data and frees their username.
+- `onUserDeleted`: a safety net that deletes anything left behind. (Today "Delete account" runs in the app: it deletes every document, frees the username, then deletes the sign-in.)
 - Later: push notifications, AI features, moderation.
 
 ## Migration from v1

@@ -46,6 +46,7 @@ export async function signIn(email, password) {
 export async function signUp(name, email, password) {
   const cred = await FB.a.createUserWithEmailAndPassword(FB.auth, email, password);
   await FB.a.updateProfile(cred.user, { displayName: name });
+  try { await FB.a.sendEmailVerification(cred.user); } catch (e) { log.warn('verification email not sent', e); }
   return cred.user;
 }
 
@@ -67,6 +68,29 @@ export async function signInWithGoogle() {
     throw err;
   }
 }
+
+// ---------- email verification ----------
+// Signed in with email + password and hasn't clicked the link yet. (Google accounts are already verified.)
+export function needsEmailVerification(user) {
+  return !!user && !user.emailVerified && (user.providerData || []).some(p => p.providerId === 'password');
+}
+export const sendVerificationEmail = () => FB.a.sendEmailVerification(FB.auth.currentUser);
+// Asks Firebase again whether the email is verified now. Returns the fresh value.
+export async function refreshUser() {
+  await FB.a.reload(FB.auth.currentUser);
+  return FB.auth.currentUser;
+}
+
+// ---------- re-authentication (needed right before deleting an account) ----------
+export const signInMethod = user => ((user.providerData || []).some(p => p.providerId === 'password') ? 'password' : 'google');
+export async function reauthenticate(user, password) {
+  if (signInMethod(user) === 'password') {
+    await FB.a.reauthenticateWithCredential(user, FB.a.EmailAuthProvider.credential(user.email, password));
+  } else {
+    await FB.a.reauthenticateWithPopup(user, new FB.a.GoogleAuthProvider());
+  }
+}
+export const deleteAuthUser = user => FB.a.deleteUser(user);
 
 export const consumeRedirectResult = () => FB.a.getRedirectResult(FB.auth);
 export const signOut = () => FB.a.signOut(FB.auth);
@@ -133,4 +157,52 @@ export async function claimUsername(uid, { username, displayName, previous }) {
   batch.set(userDoc(uid), { username, displayName }, { merge: true });
   if (previous && previous !== username) batch.delete(FB.f.doc(FB.db, 'usernames', previous));
   await batch.commit();
+}
+
+// ---------- your data: export and delete ----------
+// Every collection under users/{uid} that holds the person's data.
+const USER_SUBCOLLECTIONS = ['routines', 'sessions', 'exerciseStats', 'body', 'customExercises', 'friends'];
+
+async function readCollection(uid, name) {
+  const snap = await FB.f.getDocs(FB.f.collection(FB.db, 'users', uid, name));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// Everything stored about this person, as one plain object (for "Download my data").
+export async function exportUserData(user) {
+  const profileSnap = await FB.f.getDoc(userDoc(user.uid));
+  const out = {
+    exportedAt: new Date().toISOString(),
+    account: {
+      uid: user.uid, email: user.email, emailVerified: !!user.emailVerified,
+      signInMethods: (user.providerData || []).map(p => p.providerId),
+      createdAt: user.metadata && user.metadata.creationTime, lastSignIn: user.metadata && user.metadata.lastSignInTime,
+    },
+    profile: profileSnap.exists() ? profileSnap.data() : null,
+  };
+  for (const name of USER_SUBCOLLECTIONS) out[name] = await readCollection(user.uid, name);
+  return out;
+}
+
+// Deletes every document of this person (their data, their username, their profile). Auth account is separate.
+export async function deleteUserData(user) {
+  const uid = user.uid;
+  const refs = [];
+  for (const name of USER_SUBCOLLECTIONS) {
+    const snap = await FB.f.getDocs(FB.f.collection(FB.db, 'users', uid, name));
+    snap.docs.forEach(d => refs.push(FB.f.doc(FB.db, 'users', uid, name, d.id)));
+  }
+  const profileSnap = await FB.f.getDoc(userDoc(uid));
+  const username = profileSnap.exists() ? profileSnap.data().username : null;
+  // Data first, in batches; the profile and the username go together in the very last batch.
+  for (let i = 0; i < refs.length; i += MAX_BATCH) {
+    const batch = FB.f.writeBatch(FB.db);
+    refs.slice(i, i + MAX_BATCH).forEach(r => batch.delete(r));
+    await batch.commit();
+  }
+  const last = FB.f.writeBatch(FB.db);
+  last.delete(userDoc(uid));
+  if (username) last.delete(FB.f.doc(FB.db, 'usernames', username));
+  await last.commit();
+  log.debug('deleted', refs.length, 'documents + profile');
 }

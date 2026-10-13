@@ -6,7 +6,7 @@ import { nextMonday, parseYmd, todayStr } from '../utils/dates.js';
 import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities } from '../state/selectors.js';
 import { brand, langToggle, editDeleteButtons, progressBar } from './partials.js';
 
-// opts = { user, localMode, highlightId, showOlder }
+// opts = { user, localMode, highlightId, showOlder, verify: { needed, ui } }
 export function homeView(state, opts) {
   const L = t();
   const week = weekSummary(state);
@@ -19,6 +19,7 @@ export function homeView(state, opts) {
     </div>
   </header>
   ${name ? `<p class="hello">${esc(L.hello(name))}</p>` : ''}
+  ${opts.verify && opts.verify.needed ? verifyBanner(opts.user, opts.verify.ui) : ''}
   <h1>${L.yourRoutines}</h1>
   <p class="sub">${esc(L.weekOf(fmtDay(week.start), fmtDay(week.end)))}</p>`;
 
@@ -31,6 +32,22 @@ export function homeView(state, opts) {
   if (hasActivities) h += activitiesSection(week, opts.showOlder);
   h += `<button class="fab" data-action="plus" aria-label="${L.add}">${ICONS.plus}</button>`;
   return h;
+}
+
+// "Verify your email" reminder for email + password accounts.
+function verifyBanner(user, ui) {
+  const L = t();
+  const msg = ui.error === 'notYet' ? L.verifyNotYet : ui.error === 'tooMany' ? L.errors['auth/too-many-requests']
+    : ui.error === 'failed' ? L.errors.default : ui.sent ? L.verifySent : '';
+  return `<div class="notice verify" role="status">
+    <b>${L.verifyTitle}</b>
+    <span>${esc(L.verifyBody(user.email || ''))}</span>
+    ${msg ? `<span class="verify-msg">${esc(msg)}</span>` : ''}
+    <span class="verify-actions">
+      <button class="textbtn link" data-action="verify-resend">${L.verifyResend}</button>
+      <button class="textbtn link" data-action="verify-check" ${ui.checking ? 'disabled' : ''}>${L.verifyDone}</button>
+    </span>
+  </div>`;
 }
 
 function weekCard(week) {
