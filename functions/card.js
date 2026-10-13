@@ -11,7 +11,7 @@
 //   pts:   { 'YYYY-MM-DD': '13' },             // the part of `weeks` that came only from exercise history (accounts
 //                                               // from the old app); kept so updating a week doesn't lose it
 //   last:  { kind: 'gym'|'activity', name, sport, date } | null   // only when sharing.workouts isn't 'private'
-//   updatedAt
+//   updatedAt, builtAt                  // builtAt = last full rebuild (index.js limits rebuilds on request)
 // }
 // The app works out "this week", the streak and the comodines from goals + weeks with the same rules as your
 // own Progreso screen (js/state/selectors.js → streakFrom), so a card never goes stale when someone stops training.

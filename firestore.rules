@@ -50,10 +50,26 @@ service cloud.firestore {
         && d.kind in ['fire', 'strong', 'clap']
         && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && d.workout is string && d.workout.size() <= 60
-        && d.fromName is string && d.fromName.size() <= 60
+        && validName(d.fromName)
         && d.fromUsername == myUsername()
-        && d.createdAt is int;
+        && nowish(d.createdAt);
     }
+
+    // A display name: text, at most 60 characters, not only spaces ('' is allowed: the app then shows @username).
+    function validName(v) { return v is string && v.size() <= 60 && (v.size() == 0 || v.matches('.*[^ ].*')); }
+
+    // A friend-list entry { since, username, displayName } for person fid: the username must be theirs for real,
+    // so nobody can show up in someone's list as "@admin" or with someone else's name.
+    function validFriendEntry(fid) {
+      return request.resource.data.keys().hasOnly(['since', 'username', 'displayName'])
+        && request.resource.data.since is int
+        && request.resource.data.username == usernameOf(fid)
+        && validName(request.resource.data.displayName);
+    }
+
+    // A time the app sets with Date.now(): not in the future (5 min of clock slack) and not older than a day
+    // (a phone that was offline can send it late). Stops cheers/requests dated in the future to stay "new" forever.
+    function nowish(ms) { return ms is int && ms < request.time.toMillis() + 300000 && ms > request.time.toMillis() - 86400000; }
 
     function usernameUnchanged() {
       return request.resource.data.get('username', null) == resource.data.get('username', null);
@@ -87,10 +103,10 @@ service cloud.firestore {
       //  - either of the two can remove the entry (unfriending clears both lists).
       match /friends/{fid} {
         allow read: if isOwner(uid);
-        allow create: if request.resource.data.keys().hasOnly(['since', 'username', 'displayName'])
+        allow create: if validFriendEntry(fid)
           && ((isOwner(uid) && (acceptedRequest(fid, uid) || acceptedRequest(uid, fid)))
               || (signedIn() && request.auth.uid == fid && acceptedRequest(uid, fid)));
-        allow update: if isOwner(uid) && request.resource.data.keys().hasOnly(['since', 'username', 'displayName']);
+        allow update: if isOwner(uid) && validFriendEntry(fid);
         allow delete: if isOwner(uid) || (signedIn() && request.auth.uid == fid);
       }
 
@@ -108,7 +124,9 @@ service cloud.firestore {
       allow create, update: if isOwner(uid)
         && request.resource.data.keys().hasOnly(['username', 'displayName', 'nameKey', 'lastKey', 'character', 'updatedAt'])
         && request.resource.data.username == myUsername()
-        && request.resource.data.displayName is string && request.resource.data.displayName.size() <= 60
+        && validName(request.resource.data.displayName)
+        && request.resource.data.character is string && request.resource.data.character.matches('^[a-z]{1,20}$')
+        && request.resource.data.updatedAt is int
         && request.resource.data.nameKey is string && request.resource.data.nameKey.size() <= 60
         && request.resource.data.lastKey is string && request.resource.data.lastKey.size() <= 60;
       allow delete: if isOwner(uid);
@@ -127,10 +145,13 @@ service cloud.firestore {
         && request.resource.data.status == 'pending'
         && request.resource.data.fromUsername == myUsername()
         && request.resource.data.toUsername == usernameOf(request.resource.data.to)
+        && validName(request.resource.data.fromName) && validName(request.resource.data.toName)
+        && nowish(request.resource.data.createdAt)
         && !exists(/databases/$(database)/documents/users/$(request.auth.uid)/friends/$(request.resource.data.to));
       allow update: if signedIn() && resource.data.to == request.auth.uid && resource.data.status == 'pending'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'respondedAt'])
-        && request.resource.data.status == 'accepted';
+        && request.resource.data.status == 'accepted'
+        && nowish(request.resource.data.respondedAt);
       allow delete: if signedIn() && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
     }
 

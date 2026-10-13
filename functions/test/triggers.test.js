@@ -104,10 +104,15 @@ test('profile write builds the card, sessions update it, deleting the account re
   await fns.cardOnProfile.run(ev({ uid: 'u1' }, p2, p3));
   assert.deepStrictEqual(store.get('profileCards/u1').goals, { '2026-10-05': 3, '2026-10-12': 5 });
 
-  // the app asks for a rebuild
+  // the app asks for a rebuild: ignored when the card was rebuilt less than an hour ago…
   store.get('profileCards/u1').weeks = {};
   const p4 = { ...p3, cardRefreshAt: 5 };
   await fns.cardOnProfile.run(ev({ uid: 'u1' }, p3, p4));
+  assert.deepStrictEqual(store.get('profileCards/u1').weeks, {});
+  // …and done when it's older
+  store.get('profileCards/u1').builtAt = Date.now() - 2 * 3600000;
+  const p5 = { ...p4, cardRefreshAt: 6 };
+  await fns.cardOnProfile.run(ev({ uid: 'u1' }, p4, p5));
   assert.deepStrictEqual(store.get('profileCards/u1').weeks, { '2026-10-05': '1', '2026-08-31': '1' });
 
   // shared routines were built with the card
@@ -115,7 +120,7 @@ test('profile write builds the card, sessions update it, deleting the account re
 
   // account deleted
   store.delete('users/u1');
-  await fns.cardOnProfile.run(ev({ uid: 'u1' }, p4, null));
+  await fns.cardOnProfile.run(ev({ uid: 'u1' }, p5, null));
   assert.ok(!store.has('profileCards/u1'));
   assert.ok(!store.has('sharedRoutines/u1'));
   // a late session delete doesn't bring it back
