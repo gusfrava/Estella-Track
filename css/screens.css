@@ -116,6 +116,23 @@
 .verify-msg{font-weight:600;color:var(--teal-ink)}
 .verify-actions{display:flex;gap:16px;flex-wrap:wrap}
 .verify-actions .textbtn{padding:6px 0}
+/* Reps-only rows: # [reps] reps ✓ × */
+.t-reps .set-head,.t-reps .set{grid-template-columns:22px minmax(0,90px) 1fr 42px 30px}
+.set-u.left{text-align:left}
+/* Per side rows: # [L] [R] [weight] ✓ ×  and  # [L] [R] ✓ × */
+.t-side .set-head,.t-side .set{grid-template-columns:22px minmax(0,1fr) minmax(0,1fr) minmax(0,1.3fr) 42px 30px}
+.t-side-reps .set-head,.t-side-reps .set{grid-template-columns:22px minmax(0,80px) minmax(0,80px) 1fr 42px 30px}
+.t-side .set-head span,.t-side-reps .set-head span{text-align:center}
+/* Drop set: indented under its set, a little smaller. */
+.set.drop{position:relative}
+.set.drop .set-n{color:var(--orange);font-size:1.1rem}
+.set.drop .set-in{height:40px;font-size:1.05rem;border-style:dashed}
+.set.drop .set-check{width:38px;height:38px;justify-self:center}
+/* + Serie / ↓ Drop */
+.set-actions{display:grid;gap:8px;margin-top:10px}
+.set-actions.two{grid-template-columns:1fr 1fr}
+.set-actions .add-set{margin-top:0}
+.add-set.drop span[aria-hidden]{font-size:1.1rem;color:var(--orange)}
 /* Small phones (iPhone SE): tighter set rows so "102,5" still fits. */
 @media (max-width:360px){
   .set-head,.set{grid-template-columns:16px minmax(0,1fr) 10px minmax(0,1.4fr) 18px 38px 22px;gap:4px}

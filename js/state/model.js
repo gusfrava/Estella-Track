@@ -10,7 +10,10 @@
 // Routine = { id, name, order, recurring, archived, exercises: RoutineExercise[],
 //             current: { sessionId, weekKey } | null,   // the session that holds this week's (or, if not recurring, the latest) check marks
 //             createdAt, updatedAt }
-// RoutineExercise = { id, exerciseId, name, type: 'weight_reps', target: { sets, reps, weight, unit } }
+// RoutineExercise = { id, exerciseId, name, type: 'weight_reps'|'reps'|'time', perSide, target: { sets, reps, weight, unit, seconds } }
+//   perSide = unilateral (lunges, one-arm rows): reps are logged for the left and right side separately.
+//   type = how a set is measured: weight × reps (squat), reps only (pull-ups), or time (plank). The target keeps
+//   every field so switching type and back loses nothing; only the fields of the current type are shown and logged.
 //
 // Session (gym)      = { id, kind: 'gym', routineId, routineName, date, weekKey, status: 'in_progress'|'done',
 //                        startedAt, finishedAt, updatedAt,
@@ -18,9 +21,14 @@
 //                      An exercise entry is "done" when it has sets and every set is done (see entryDone).
 //                      An entry with unchecked sets is in progress: the values typed so far, kept while you train.
 // Session (activity) = { id, kind: 'activity', date, weekKey, status: 'done', activity: { sport, minutes, note }, createdAt, updatedAt }
-// Set = { kind: 'normal'|'drop'|'warmup', reps, weight, unit, done }   // done missing in older data = true
+// Set = { kind: 'normal'|'drop'|'warmup', reps, repsR, weight, unit, seconds, done }   // done missing in older data = true
+//   reps-only sets have weight 0; time sets have reps 0, weight 0 and the time in seconds.
+//   Unilateral: reps = left side, repsR = right side (null when the exercise isn't per side).
+//   Drop set: a set with kind 'drop' right after the set it belongs to (lower weight, no rest). It isn't counted
+//   as an extra set: "3 series" with a drop on the last one is 3 normal sets + 1 drop.
 //
-// ExerciseStat = { id /* routine exercise id */, name, points: [{ d: 'YYYY-MM-DD', s: sets, r: reps, w: weight, u: unit }] }
+// ExerciseStat = { id /* routine exercise id */, name, points: [{ d: 'YYYY-MM-DD', s: sets, r: reps, w: weight, u: unit, t?: seconds }] }
+//   t is only there for time exercises.
 //
 // Times are milliseconds (Date.now()), dates are local 'YYYY-MM-DD', weekKey is that week's Monday.
 
@@ -31,6 +39,8 @@ export const SCHEMA_VERSION = 2;
 export const SHARING_LEVELS = ['private', 'friends', 'public'];
 export const DEFAULT_SHARING = { profile: 'friends', routines: 'friends', workouts: 'friends', body: 'private' };
 export const MAX_POINTS = 500;   // history points kept per exercise
+export const EX_TYPES = ['weight_reps', 'reps', 'time'];
+export const normalizeType = v => (EX_TYPES.includes(v) ? v : 'weight_reps');
 
 export const blankState = () => ({ profile: null, routines: {}, sessions: {}, stats: {} });
 
@@ -38,14 +48,18 @@ export const blankState = () => ({ profile: null, routines: {}, sessions: {}, st
 const num = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 
 export function normalizeTarget(t = {}) {
-  return { sets: Math.max(1, Math.round(num(t.sets, 3))), reps: Math.max(1, Math.round(num(t.reps, 10))), weight: Math.max(0, num(t.weight, 0)), unit: t.unit === 'lb' ? 'lb' : 'kg' };
+  return {
+    sets: Math.max(1, Math.round(num(t.sets, 3))), reps: Math.max(1, Math.round(num(t.reps, 10))),
+    weight: Math.max(0, num(t.weight, 0)), unit: t.unit === 'lb' ? 'lb' : 'kg', seconds: Math.max(1, Math.round(num(t.seconds, 60))),
+  };
 }
 
 export function normalizeRoutine(id, d = {}) {
   return {
     id, name: d.name || '', order: num(d.order, 0), recurring: d.recurring !== false, archived: !!d.archived,
     exercises: (Array.isArray(d.exercises) ? d.exercises : []).map(e => ({
-      id: e.id, exerciseId: e.exerciseId || null, name: e.name || '', type: e.type || 'weight_reps', target: normalizeTarget(e.target),
+      id: e.id, exerciseId: e.exerciseId || null, name: e.name || '', type: normalizeType(e.type), perSide: !!e.perSide && e.type !== 'time',
+      target: normalizeTarget(e.target),
     })),
     current: d.current && d.current.sessionId ? { sessionId: d.current.sessionId, weekKey: d.current.weekKey || null } : null,
     createdAt: num(d.createdAt, 0), updatedAt: num(d.updatedAt, 0),
@@ -54,7 +68,10 @@ export function normalizeRoutine(id, d = {}) {
 
 export const MAX_SETS = 50;
 export const normalizeSet = (s = {}) => ({
-  kind: s.kind || 'normal', reps: Math.max(0, Math.round(num(s.reps))), weight: Math.max(0, num(s.weight)), unit: s.unit === 'lb' ? 'lb' : 'kg', done: s.done !== false,
+  kind: s.kind === 'drop' || s.kind === 'warmup' ? s.kind : 'normal',
+  reps: Math.max(0, Math.round(num(s.reps))), repsR: s.repsR == null ? null : Math.max(0, Math.round(num(s.repsR))),
+  weight: Math.max(0, num(s.weight)), unit: s.unit === 'lb' ? 'lb' : 'kg',
+  seconds: Math.max(0, Math.round(num(s.seconds))), done: s.done !== false,
 });
 
 export function normalizeSession(id, d = {}) {
@@ -89,8 +106,9 @@ export const makeRoutine = ({ name, recurring, order }) => ({
   id: uid(), name, order, recurring: !!recurring, archived: false, exercises: [], current: null, createdAt: Date.now(), updatedAt: Date.now(),
 });
 
-export const makeRoutineExercise = ({ name, sets, reps, weight, unit }) => ({
-  id: uid(), exerciseId: null, name, type: 'weight_reps', target: normalizeTarget({ sets, reps, weight, unit }),
+export const makeRoutineExercise = ({ name, type, perSide, sets, reps, weight, unit, seconds }) => ({
+  id: uid(), exerciseId: null, name, type: normalizeType(type), perSide: !!perSide && type !== 'time',
+  target: normalizeTarget({ sets, reps, weight, unit, seconds }),
 });
 
 export const makeGymSession = routine => ({
@@ -102,19 +120,38 @@ export const makeActivitySession = ({ sport, minutes, date, note }) => ({
   id: uid(), kind: 'activity', date, weekKey: weekKeyOf(date), status: 'done', createdAt: Date.now(), updatedAt: Date.now(), activity: { sport, minutes, note },
 });
 
-// The sets an exercise starts with: the routine's target, one entry per set. done = checked off already.
-export const setsFromTarget = (t, done = true) =>
-  Array.from({ length: Math.min(MAX_SETS, t.sets) }, () => ({ kind: 'normal', reps: t.reps, weight: t.weight, unit: t.unit, done }));
+// The sets an exercise starts with: the routine's target, one entry per set, only the fields its type uses.
+// done = checked off already. planSets(ex, done) is the same from a routine exercise.
+export const planSets = (ex, done = true) => setsFromTarget(ex.target, done, ex.type, ex.perSide);
+export function setsFromTarget(t, done = true, type = 'weight_reps', perSide = false) {
+  const set = {
+    kind: 'normal', unit: t.unit, done,
+    reps: type === 'time' ? 0 : t.reps,
+    repsR: perSide && type !== 'time' ? t.reps : null,
+    weight: type === 'weight_reps' ? t.weight : 0,
+    seconds: type === 'time' ? t.seconds : 0,
+  };
+  return Array.from({ length: Math.min(MAX_SETS, t.sets) }, () => ({ ...set }));
+}
 
 // A logged exercise counts as done when every one of its sets is checked.
 export const entryDone = e => !!(e && e.sets.length && e.sets.every(s => s.done));
 
-// The history point an exercise's sets produce: heaviest weight, best reps at that weight, number of sets done.
-export function pointFromSets(date, sets) {
+// Reps a set counts for: per side, the weaker side ("10/8" counts as 8).
+export const repsOf = x => (x.repsR == null ? x.reps : Math.min(x.reps, x.repsR));
+
+// The history point an exercise's sets produce (one per day): number of sets done plus the best set –
+// heaviest weight (then most reps) for weight × reps, most reps for reps only, longest time for time.
+export function pointFromSets(date, sets, type = 'weight_reps') {
   const done = sets.filter(s => s.done);
   if (!done.length) return null;
-  const top = done.reduce((a, b) => (b.weight > a.weight || (b.weight === a.weight && b.reps > a.reps) ? b : a));
-  return { d: date, s: done.length, r: top.reps, w: top.weight, u: top.unit };
+  const better = type === 'time' ? (a, b) => b.seconds > a.seconds
+    : type === 'reps' ? (a, b) => repsOf(b) > repsOf(a)
+    : (a, b) => b.weight > a.weight || (b.weight === a.weight && repsOf(b) > repsOf(a));
+  const top = done.reduce((a, b) => (better(a, b) ? b : a));
+  const p = { d: date, s: done.filter(x => x.kind !== 'drop').length, r: repsOf(top), w: top.weight, u: top.unit };
+  if (type === 'time') p.t = top.seconds;
+  return p;
 }
 
 // ---------- whole state from plain data (device cache, local mode) ----------

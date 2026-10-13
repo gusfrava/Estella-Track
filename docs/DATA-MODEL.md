@@ -42,8 +42,9 @@ users/{uid}                         PRIVATE settings (owner only)
 
   routines/{routineId}              the plan
     name, order, days[0-6], recurring, archived, updatedAt,
-    exercises: [{ id, exerciseId, name, type, restSec, note,
+    exercises: [{ id, exerciseId, name, type, perSide, restSec, note,
                   target: { sets, reps, weight, unit, seconds } }],
+    // type: 'weight_reps' | 'reps' | 'time' – what a set measures. perSide: reps logged for left and right.
     source: { type: 'self'|'group'|'trainer'|'post', id, version },
     assignedBy,                      // trainer uid when assigned
     current: { sessionId, weekKey }  // the session holding this week's check marks (latest one if not recurring)
@@ -54,7 +55,9 @@ users/{uid}                         PRIVATE settings (owner only)
     routineId, routineName,
     exercises: [{ id /* routine exercise id */, exerciseId, name, type, note, doneAt,
                   sets: [{ kind: 'normal'|'drop'|'warmup', side: null|'L'|'R',
-                           reps, weight, unit, seconds, done }] }],
+                           reps, repsR, weight, unit, seconds, done }] }],
+    // repsR = right-side reps for per-side exercises (reps = left), null otherwise.
+    // kind 'drop' = a drop set; it follows the set it belongs to and isn't counted as an extra set.
     // Per-set logging: an exercise entry is done when every set has done: true (older data without the
     // flag counts as done). Unchecked sets hold the values typed so far, while the workout is in progress.
     // doneAt is set when the last set is checked.
@@ -63,7 +66,8 @@ users/{uid}                         PRIVATE settings (owner only)
 
   exerciseStats/{exerciseId}        summary per exercise (prefill + charts)
     name, points: [{ d, s, r, w, u }]   // one point per day it was done, capped at 500:
-                                        // s = sets done, w = heaviest weight, r = best reps at that weight
+                                        // s = sets done (drops not counted), w = heaviest weight, r = best reps at that
+                                        // weight (per side: the weaker side), t = longest time (time exercises only)
     (later: lastSets[], best: { weight, e1rm, volume, date })
 
   body/{date}                       weight, measurements

@@ -2,7 +2,7 @@
 // "Done this week" is never stored: it comes from the routine's current session.
 import { ymd, weekRange, todayStr } from '../utils/dates.js';
 import { currentSession } from './store.js';
-import { entryDone, setsFromTarget } from './model.js';
+import { entryDone, planSets } from './model.js';
 
 export const routinesList = state =>
   Object.values(state.routines).filter(r => !r.archived).sort((a, b) => a.order - b.order || a.createdAt - b.createdAt);
@@ -42,7 +42,7 @@ export function orderedExercises(r) {
 }
 
 // The sets shown when an exercise is opened: what's logged this session, or the plan (nothing checked yet).
-export const setsToShow = item => (item.logged ? item.logged.sets : setsFromTarget(item.ex.target, false));
+export const setsToShow = item => (item.logged ? item.logged.sets : planSets(item.ex, false));
 
 // What you did last time (before this session): { date, sets } from the newest earlier session,
 // or { date, point } from the history if that session is older than what's loaded. null if never done.
@@ -92,10 +92,16 @@ export function previousEntry(state, exId) {
   return past.length ? past[past.length - 1] : null;
 }
 
-export function weightChange(state, ex) {
+// The plan compared with the last time it was done ("↑ +2.5 kg", "↑ +2 reps", "↑ +15 s"): { diff, kind }.
+// kind = 'weight' | 'reps' | 'time'. diff 0 when there's nothing to compare (or the last point was another type).
+export function planChange(state, ex) {
   const prev = previousEntry(state, ex.id);
-  if (!prev || prev.u !== ex.target.unit) return 0;
-  return Number(ex.target.weight) - Number(prev.w);
+  const tg = ex.target;
+  if (!prev) return { diff: 0, kind: 'weight' };
+  if (ex.type === 'time') return { diff: prev.t != null ? tg.seconds - prev.t : 0, kind: 'time' };
+  if (prev.t != null) return { diff: 0, kind: 'weight' };
+  if (ex.type === 'reps') return { diff: tg.reps - prev.r, kind: 'reps' };
+  return { diff: prev.u === tg.unit ? Number(tg.weight) - Number(prev.w) : 0, kind: 'weight' };
 }
 
 export function lastUsedUnit(state) {
