@@ -6,6 +6,8 @@ import { esc, fmtDay, fmtNum, fmtClock } from '../utils/format.js';
 import { nextMonday, pad2 } from '../utils/dates.js';
 import { orderedExercises, routineProgress, planChange, isRoutineDone, setsToShow, lastTime } from '../state/selectors.js';
 import { editDeleteButtons, progressBar } from './partials.js';
+import { youTubeId, searchUrl } from '../utils/youtube.js';
+import { libraryVideoId, libraryExercise } from '../services/library.js';
 
 export function routineView(state, r, ui = {}) {
   const L = t();
@@ -112,6 +114,18 @@ function lastTimeLine(last, type) {
   return `<p class="last"><b>${L.lastTime}</b> (${esc(when)}): <span class="num">${esc(what)}</span></p>`;
 }
 
+// "▶ Ver técnica": your own video, else the library's, both play in a sheet; otherwise a YouTube search (new tab).
+function techniqueButton(ex) {
+  const L = t();
+  const id = youTubeId(ex.video) || libraryVideoId(ex.exerciseId);
+  const label = `<span aria-hidden="true">▶</span> ${L.watchTechnique}`;
+  if (id) return `<button class="tech" data-action="video" data-id="${ex.id}">${label}</button>`;
+  const lib = libraryExercise(ex.exerciseId);
+  const en = getLang() === 'en';
+  const q = `${en && lib ? lib.en : ex.name} ${en ? 'proper form' : 'técnica'}`;
+  return `<a class="tech" href="${esc(searchUrl(q))}" target="_blank" rel="noopener">${label}</a>`;
+}
+
 // Number for an input box: no thousands separator; decimal comma in Spanish (both are accepted when reading).
 const inputNum = n => String(n).replace('.', getLang() === 'es' ? ',' : '.');
 
@@ -164,6 +178,7 @@ function setsPanel(state, r, ex, sets) {
   const layout = type === 'time' ? 't-time' : perSide ? (type === 'reps' ? 't-side-reps' : 't-side') : `t-${type}`;
   const canDrop = type === 'weight_reps' && sets.length < 50;
   return `<div class="sets ${layout}" id="sets-${ex.id}">
+    ${techniqueButton(ex)}
     ${lastTimeLine(lastTime(state, r, ex.id), type)}
     <div class="set-head" aria-hidden="true"><span>#</span>${head.map(h => `<span>${h}</span>`).join('')}<span></span><span></span></div>
     <ol class="setlist">${rows}</ol>

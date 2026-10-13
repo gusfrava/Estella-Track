@@ -10,7 +10,9 @@
 // Routine = { id, name, order, recurring, archived, exercises: RoutineExercise[],
 //             current: { sessionId, weekKey } | null,   // the session that holds this week's (or, if not recurring, the latest) check marks
 //             createdAt, updatedAt }
-// RoutineExercise = { id, exerciseId, name, type: 'weight_reps'|'reps'|'time', perSide, target: { sets, reps, weight, unit, seconds } }
+// RoutineExercise = { id, exerciseId, name, type: 'weight_reps'|'reps'|'time', perSide, video, target: { sets, reps, weight, unit, seconds } }
+//   exerciseId = the exercise in the library (data/exercises.json) it was picked from, or null for your own.
+//   video = your own YouTube link for its technique ('' = use the library's video or a YouTube search).
 //   perSide = unilateral (lunges, one-arm rows): reps are logged for the left and right side separately.
 //   type = how a set is measured: weight × reps (squat), reps only (pull-ups), or time (plank). The target keeps
 //   every field so switching type and back loses nothing; only the fields of the current type are shown and logged.
@@ -59,6 +61,7 @@ export function normalizeRoutine(id, d = {}) {
     id, name: d.name || '', order: num(d.order, 0), recurring: d.recurring !== false, archived: !!d.archived,
     exercises: (Array.isArray(d.exercises) ? d.exercises : []).map(e => ({
       id: e.id, exerciseId: e.exerciseId || null, name: e.name || '', type: normalizeType(e.type), perSide: !!e.perSide && e.type !== 'time',
+      video: typeof e.video === 'string' ? e.video.trim() : '',
       target: normalizeTarget(e.target),
     })),
     current: d.current && d.current.sessionId ? { sessionId: d.current.sessionId, weekKey: d.current.weekKey || null } : null,
@@ -106,8 +109,8 @@ export const makeRoutine = ({ name, recurring, order }) => ({
   id: uid(), name, order, recurring: !!recurring, archived: false, exercises: [], current: null, createdAt: Date.now(), updatedAt: Date.now(),
 });
 
-export const makeRoutineExercise = ({ name, type, perSide, sets, reps, weight, unit, seconds }) => ({
-  id: uid(), exerciseId: null, name, type: normalizeType(type), perSide: !!perSide && type !== 'time',
+export const makeRoutineExercise = ({ name, type, perSide, sets, reps, weight, unit, seconds, exerciseId, video }) => ({
+  id: uid(), exerciseId: exerciseId || null, name, type: normalizeType(type), perSide: !!perSide && type !== 'time', video: (video || '').trim(),
   target: normalizeTarget({ sets, reps, weight, unit, seconds }),
 });
 

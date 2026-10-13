@@ -33,6 +33,10 @@ import { consentView } from './views/consent.js';
 import { openPlusMenu } from './sheets/plus-menu.js';
 import { openRoutineForm } from './sheets/routine-form.js';
 import { openExerciseForm } from './sheets/exercise-form.js';
+import { openExercisePicker } from './sheets/exercise-picker.js';
+import { openVideoSheet } from './sheets/video.js';
+import { loadLibrary, libraryVideoId } from './services/library.js';
+import { youTubeId } from './utils/youtube.js';
 import { openActivityForm } from './sheets/activity-form.js';
 import { openAccountSheet } from './sheets/account.js';
 import { confirmDeleteRoutine, confirmDeleteExercise, confirmDeleteActivity } from './sheets/delete.js';
@@ -173,7 +177,12 @@ const ACTIONS = {
   'set-add': d => logChange(d.id, rid => store.addSet(rid, d.id)),
   'set-drop': d => logChange(d.id, rid => store.addDrop(rid, d.id)),
   'set-del': d => logChange(d.id, rid => store.removeSet(rid, d.id, Number(d.i))),
-  'new-ex': () => openExerciseForm(routineId(), null),
+  'new-ex': () => openExercisePicker(routineId()),
+  video: d => {
+    const ex = store.findRoutine(routineId()).exercises.find(e => e.id === d.id);
+    const id = ex && (youTubeId(ex.video) || libraryVideoId(ex.exerciseId));
+    if (id) openVideoSheet(ex.name, id);
+  },
   'edit-ex': d => openExerciseForm(routineId(), d.id),
   'del-ex': d => confirmDeleteExercise(routineId(), d.id),
   reset: () => store.resetRoutine(routineId()),
@@ -259,6 +268,8 @@ function registerServiceWorker() {
 // ---------- start ----------
 async function boot() {
   initRouter({ onBack: () => closeSheet(true) });
+  // The exercise library loads in the background; once its videos are known the routine screen can use them.
+  loadLibrary().then(() => { if (getView().name === 'routine') render(); }, () => {});
   registerServiceWorker();
 
   if (DEBUG) {

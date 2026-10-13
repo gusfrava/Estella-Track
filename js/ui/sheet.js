@@ -49,6 +49,17 @@ export function openSheet(html, mount) {
   return sheetEl;
 }
 
+// Swaps what the open sheet shows (e.g. a two-step form) without closing and re-opening it.
+export function replaceSheet(html, mount) {
+  if (!sheetEl) return openSheet(html, mount);
+  sheetEl.innerHTML = `<div class="grab" aria-hidden="true"></div>${html}`;
+  sheetEl.scrollTop = 0;
+  if (mount) mount(sheetEl);
+  const first = sheetEl.querySelector('[autofocus]');
+  if (first) setTimeout(() => first.focus({ preventScroll: true }), 30);
+  return sheetEl;
+}
+
 export function closeSheet(instant) {
   if (!sheetEl) return;
   const s = sheetEl, sc = scrimEl;

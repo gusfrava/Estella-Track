@@ -1,31 +1,41 @@
-// Add / edit an exercise: name, type (weight × reps / reps only / time), per side or not, sets and the target.
-// Editing also shows its history.
-import { openSheet, closeSheet } from '../ui/sheet.js';
-import { t } from '../i18n/index.js';
+// Add / edit an exercise: name, type (weight × reps / reps only / time), per side or not, sets and the target,
+// and an optional technique video. Editing also shows its history.
+// Adding starts in the library picker (exercise-picker.js), which opens this form with the picked exercise.
+import { openSheet, replaceSheet, closeSheet } from '../ui/sheet.js';
+import { t, getLang } from '../i18n/index.js';
+import { youTubeId, searchUrl } from '../utils/youtube.js';
+import { libraryExercise } from '../services/library.js';
+import { openExercisePicker } from './exercise-picker.js';
 import { esc, fmtDay, fmtNum, fmtClock } from '../utils/format.js';
 import { parseYmd } from '../utils/dates.js';
 import { getState, findRoutine, addExercise, updateExercise } from '../state/store.js';
 import { lastUsedUnit, exerciseHistory } from '../state/selectors.js';
 import { stepper, wireSteppers, readNumber } from './fields.js';
 
-// exerciseId = null to add a new one.
-export function openExerciseForm(routineId, exerciseId) {
+// exerciseId = null to add a new one. prefill (new only) = { name, type, perSide, exerciseId, sets, reps, seconds }
+// from the picker. replace = swap the open sheet's content instead of opening a new sheet.
+export function openExerciseForm(routineId, exerciseId, prefill = null, { replace = false } = {}) {
   const L = t();
   const routine = findRoutine(routineId);
   if (!routine) return;
   const ex = exerciseId ? routine.exercises.find(e => e.id === exerciseId) : null;
   const isNew = !ex;
+  const p = prefill || {};
   const tg = ex ? ex.target : null;
   let unit = tg ? tg.unit : lastUsedUnit(getState());
-  let type = ex ? ex.type : 'weight_reps';
-  let perSide = ex ? ex.perSide : false;
-  const secs = tg ? tg.seconds : 60;
+  let type = ex ? ex.type : (p.type || 'weight_reps');
+  let perSide = ex ? ex.perSide : !!p.perSide;
+  const libId = ex ? ex.exerciseId : (p.exerciseId || null);
+  const fromLib = libraryExercise(libId);
+  const secs = tg ? tg.seconds : (p.seconds || 60);
   const typeBtn = (v, label) => `<button type="button" data-type="${v}" aria-pressed="${type === v}">${label}</button>`;
+  const name = ex ? ex.name : (p.name || '');
 
-  openSheet(`<h2>${isNew ? L.newExercise : L.editExercise}</h2>
+  (replace ? replaceSheet : openSheet)(`<h2>${isNew ? L.newExercise : L.editExercise}</h2>
+    ${isNew && fromLib ? `<div class="lib-picked">${L.libFromLibrary}<button type="button" class="textbtn link" data-k="change">${L.libChange}</button></div>` : ''}
     <form id="f-ex" novalidate>
       <div class="field"><label for="f-exname">${L.exName}</label>
-        <input id="f-exname" class="input" maxlength="60" autocomplete="off" placeholder="${esc(L.exPh)}" value="${esc(ex ? ex.name : '')}" ${isNew ? 'autofocus' : ''}>
+        <input id="f-exname" class="input" maxlength="60" autocomplete="off" placeholder="${esc(L.exPh)}" value="${esc(name)}" ${isNew && !name ? 'autofocus' : ''}>
         <span class="err" hidden id="f-exname-err">${L.nameRequired}</span></div>
       <div class="field"><span class="flabel">${L.exType}</span>
         <div class="seg seg-3" role="group" aria-label="${L.exType}">
@@ -34,8 +44,8 @@ export function openExerciseForm(routineId, exerciseId) {
       <div class="field" data-for-type="weight_reps reps"><button type="button" class="switch" role="switch" id="f-side" aria-checked="${perSide}">
         <span><b>${L.perSide}</b><span>${L.perSideHint}</span></span><span class="track" aria-hidden="true"></span></button></div>
       <div class="row">
-        <div class="field"><label for="f-sets">${L.sets}</label>${stepper('f-sets', tg ? tg.sets : 3, 1, 1)}</div>
-        <div class="field" data-for-type="weight_reps reps"><label for="f-reps">${L.reps}</label>${stepper('f-reps', tg ? tg.reps : 10, 1, 1)}</div>
+        <div class="field"><label for="f-sets">${L.sets}</label>${stepper('f-sets', tg ? tg.sets : (p.sets || 3), 1, 1)}</div>
+        <div class="field" data-for-type="weight_reps reps"><label for="f-reps">${L.reps}</label>${stepper('f-reps', tg ? tg.reps : (p.reps || 10), 1, 1)}</div>
       </div>
       <div class="row" data-for-type="time">
         <div class="field"><label for="f-min">${L.minutes}</label>${stepper('f-min', Math.floor(secs / 60), 1, 0)}</div>
@@ -50,6 +60,10 @@ export function openExerciseForm(routineId, exerciseId) {
             <button type="button" data-unit="lb" aria-pressed="${unit === 'lb'}">lb</button>
           </div></div>
       </div>
+      <div class="field"><label for="f-video">${L.videoLabel}</label>
+        <input id="f-video" class="input" type="url" inputmode="url" autocomplete="off" placeholder="${L.videoPh}" value="${esc(ex ? ex.video : '')}">
+        <span class="hint">${L.videoHint} <a href="#" target="_blank" rel="noopener" data-k="yt-search">${L.videoSearch}</a></span>
+        <span class="err" hidden id="f-video-err">${L.videoBad}</span></div>
       ${isNew ? '' : historyBlock(exerciseHistory(getState(), ex.id))}
       <div class="actions"><button class="btn" type="submit">${isNew ? L.addExercise : L.save}</button></div>
     </form>`,
@@ -72,6 +86,13 @@ export function openExerciseForm(routineId, exerciseId) {
     const side = s.querySelector('#f-side');
     side.onclick = () => { perSide = !perSide; side.setAttribute('aria-checked', perSide); };
     showType();
+    const change = s.querySelector('[data-k=change]');
+    if (change) change.onclick = () => openExercisePicker(routineId, { replace: true });
+    // "Buscar en YouTube" searches for whatever name is typed right now (opens in a new tab).
+    s.querySelector('[data-k=yt-search]').onclick = e => {
+      const typed = s.querySelector('#f-exname').value.trim() || name;
+      e.currentTarget.href = searchUrl(`${typed} ${getLang() === 'en' ? 'proper form' : 'técnica'}`);
+    };
     s.querySelectorAll('[data-unit]').forEach(b => b.onclick = () => {
       unit = b.dataset.unit;
       s.querySelectorAll('[data-unit]').forEach(x => x.setAttribute('aria-pressed', x.dataset.unit === unit));
@@ -82,8 +103,11 @@ export function openExerciseForm(routineId, exerciseId) {
       if (!name) { s.querySelector('#f-exname-err').hidden = false; s.querySelector('#f-exname').focus(); return; }
       const seconds = readTime();
       if (type === 'time' && seconds < 1) { s.querySelector('#f-time-err').hidden = false; return; }
+      const video = s.querySelector('#f-video').value.trim();
+      if (video && !youTubeId(video)) { s.querySelector('#f-video-err').hidden = false; s.querySelector('#f-video').focus(); return; }
       const data = {
-        name, type, perSide: perSide && type !== 'time', seconds: Math.max(1, seconds),
+        name, type, perSide: perSide && type !== 'time', seconds: Math.max(1, seconds), video,
+        ...(isNew ? { exerciseId: libId } : {}),
         sets: Math.round(readNumber(s, 'f-sets', 1)),
         reps: Math.round(readNumber(s, 'f-reps', 1)),
         weight: readNumber(s, 'f-weight', 0),

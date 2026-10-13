@@ -52,3 +52,24 @@ body.scroll-locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 .toast b{display:block;font-family:var(--display);font-weight:800;font-size:1.05rem;white-space:nowrap}
 .toast span{min-width:0;overflow-wrap:anywhere}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
+/* ---------- exercise library picker ("Añadir ejercicio") ---------- */
+.lib-q{margin-bottom:12px}
+.lib-groups{display:flex;gap:8px;overflow-x:auto;margin:0 -20px 14px;padding:2px 20px 6px;scrollbar-width:none}
+.lib-groups::-webkit-scrollbar{display:none}
+.lib-chip{flex:none;padding:6px 14px;border:2px solid var(--ink);border-radius:99px;background:var(--card);font-family:var(--display);font-weight:800;font-size:.92rem}
+.lib-chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.lib-results{min-height:120px}
+.lib-title{margin:0 0 8px}
+.lib-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.lib-item{width:100%;text-align:left;display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:2px solid var(--ink);border-radius:16px;background:var(--card)}
+.lib-item:active{background:var(--yellow-soft)}
+.lib-name{font-family:var(--display);font-weight:800;font-size:1.05rem;line-height:1.2}
+.lib-meta{color:var(--muted);font-size:.86rem}
+.lib-tags{display:flex;gap:6px;margin-top:4px}
+.lib-tags span{padding:1px 8px;border-radius:99px;background:var(--bg);border:1.5px solid var(--ink);font-size:.75rem;font-weight:700}
+.lib-custom{margin-top:16px}
+.lib-picked{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-6px 0 16px;padding:8px 14px;border-radius:14px;background:var(--yellow-soft);border:2px solid var(--ink);font-weight:600;font-size:.92rem}
+/* ---------- technique video ---------- */
+.video-frame{position:relative;width:100%;aspect-ratio:16/9;border:var(--line) solid var(--ink);border-radius:18px;overflow:hidden;background:var(--ink)}
+.video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video-note{margin:10px 0 4px}
