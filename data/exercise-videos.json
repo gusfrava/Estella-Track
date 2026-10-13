@@ -362,5 +362,6 @@
   "flexion_inclinada": { "name": "Flexión inclinada (manos elevadas)", "video": "" },
   "flexion_pica": { "name": "Flexión pica", "video": "" },
   "superman": { "name": "Superman", "video": "" },
-  "remo_con_banda": { "name": "Remo con banda", "video": "" }
+  "remo_con_banda": { "name": "Remo con banda", "video": "" },
+  "remo_invertido_en_mesa": { "name": "Remo invertido bajo una mesa", "video": "" }
 }

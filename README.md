@@ -92,7 +92,7 @@ js/
 - **Numbers on screen are wrong** (progress, "1/3", "↑ +2.5 kg"): `js/state/selectors.js`
 - **Looks wrong but the data is right:** the screen's file in `js/views/`, then `css/`
 - **A form saves the wrong thing:** its file in `js/sheets/`
-- **The starter plan picks a wrong exercise, or the wrong sets × reps:** the tables at the top of `js/services/starter-plan.js` (SPLITS, ROUTINES, SLOTS, DOSE)
+- **The starter plan picks a wrong exercise, or the wrong sets × reps:** the tables at the top of `js/services/starter-plan.js` (SPLITS, ROUTINES, SLOTS, DOSE; FOCUS and the weekly-volume targets TARGET / SHARE)
 - **An exercise is missing from search, or found under the wrong group/type:** `data/exercises.json` (data) or `searchLibrary()` in `js/services/library.js` (matching)
 - **Sign-in errors:** `js/controllers/auth.js`. Error wording is under `errors` in the i18n files.
 - **Delete account or data download fails:** `js/controllers/account.js`, then `deleteUserData` / `exportUserData` in `firebase.js`. Deleting asks for the password (or Google) again first.
