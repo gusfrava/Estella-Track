@@ -5,6 +5,16 @@ import en from './en.js';
 import { KEYS, lsGet, lsSet, readJSON } from '../services/storage.js';
 
 const STRINGS = { es, en };
+
+// A routine name the app wrote (the starter plan's "Torso A" / "Upper A") shows in the current language.
+// Names people typed themselves are shown as they are.
+export function routineName(r) {
+  const name = (r && r.name) || '';
+  for (const k of Object.keys(es.ob.planNames)) {
+    if (name === es.ob.planNames[k] || name === en.ob.planNames[k]) return STRINGS[lang].ob.planNames[k];
+  }
+  return name;
+}
 const listeners = new Set();
 
 let lang = (() => {

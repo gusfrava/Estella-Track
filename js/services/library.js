@@ -6,6 +6,7 @@
 //                     s /* popularity score, higher first */, sv, cw /* muscle weights, for muscle maps later */ }
 // Videos file: { [id]: { name, video /* YouTube link, '' = none yet */ } }
 import { youTubeId, isShort } from '../utils/youtube.js';
+import { getLang } from '../i18n/index.js';
 import { logger } from '../utils/log.js';
 
 const log = logger('library');
@@ -75,6 +76,16 @@ export function indexLibrary(list, videos = {}) {
 export function setLibraryForTests(list, videos) { lib = list ? indexLibrary(list, videos) : null; }
 
 export const libraryExercise = id => (lib && id && lib.byId[id]) || null;
+
+// The name to show for a routine exercise: a library exercise still called by its library name (Spanish or
+// English) shows in the current language; a name the person changed is shown as they wrote it.
+export function exerciseName(ex) {
+  if (!ex) return '';
+  const e = libraryExercise(ex.exerciseId);
+  const name = (ex.name || '').trim();
+  if (!e || (name !== e.n && name !== e.en)) return ex.name || '';
+  return getLang() === 'en' ? e.en : e.n;
+}
 
 // The library's technique video for an exercise id → YouTube id, or ''.
 export function libraryVideoId(id) {

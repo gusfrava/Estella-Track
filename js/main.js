@@ -37,7 +37,7 @@ import { openRoutineForm } from './sheets/routine-form.js';
 import { openExerciseForm } from './sheets/exercise-form.js';
 import { openExercisePicker } from './sheets/exercise-picker.js';
 import { openVideoSheet } from './sheets/video.js';
-import { loadLibrary, techniqueVideo } from './services/library.js';
+import { loadLibrary, techniqueVideo, exerciseName } from './services/library.js';
 import { openActivityForm } from './sheets/activity-form.js';
 import { openAccountSheet } from './sheets/account.js';
 import { confirmDeleteRoutine, confirmDeleteExercise, confirmDeleteActivity } from './sheets/delete.js';
@@ -153,7 +153,7 @@ function logChange(exId, change) {
 function celebrateRecord(ex, before) {
   const after = personalRecord(store.getState(), ex);
   if (!beatsRecord(ex, after, before) || after.point.d !== todayStr()) return;
-  toast(`${ICONS.trophy}<span><b>${t().newRecordToast}</b>${esc(ex.name)}</span>`);
+  toast(`${ICONS.trophy}<span><b>${t().newRecordToast}</b>${esc(exerciseName(ex))}</span>`);
 }
 
 const isExerciseDone = (rid, exId) => orderedExercises(store.findRoutine(rid)).done.some(i => i.ex.id === exId);
@@ -212,7 +212,7 @@ const ACTIONS = {
   video: d => {
     const ex = store.findRoutine(routineId()).exercises.find(e => e.id === d.id);
     const video = techniqueVideo(ex);
-    if (video) openVideoSheet(ex.name, video, () => openExerciseForm(routineId(), ex.id, null, { replace: true, focus: 'video' }));
+    if (video) openVideoSheet(exerciseName(ex), video, () => openExerciseForm(routineId(), ex.id, null, { replace: true, focus: 'video' }));
   },
   'edit-video': d => openExerciseForm(routineId(), d.id, null, { focus: 'video' }),
   'edit-ex': d => openExerciseForm(routineId(), d.id),
@@ -305,8 +305,9 @@ function registerServiceWorker() {
 // ---------- start ----------
 async function boot() {
   initRouter({ onBack: () => closeSheet(true) });
-  // The exercise library loads in the background; once its videos are known the routine screen can use them.
-  loadLibrary().then(() => { if (getView().name === 'routine') render(); }, () => {});
+  // The exercise library loads in the background; once it's there, screens can show exercise names in the
+  // current language and the technique videos.
+  loadLibrary().then(() => { const f = document.activeElement; if (!f || !f.matches('input, textarea')) render(); }, () => {});
   registerServiceWorker();
 
   if (DEBUG) {

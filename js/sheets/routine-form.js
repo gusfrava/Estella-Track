@@ -1,6 +1,6 @@
 // Create / edit a routine (name + "repeats every week").
 import { openSheet, closeSheet } from '../ui/sheet.js';
-import { t } from '../i18n/index.js';
+import { t, routineName } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
 import { addRoutine, updateRoutine } from '../state/store.js';
 import { openRoutine } from '../ui/router.js';
@@ -14,7 +14,7 @@ export function openRoutineForm(routine) {
   openSheet(`<h2>${isNew ? L.newRoutine : L.editRoutine}</h2>
     <form id="f-routine" novalidate>
       <div class="field"><label for="f-rname">${L.routineName}</label>
-        <input id="f-rname" class="input" maxlength="60" autocomplete="off" placeholder="${esc(L.routinePh)}" value="${esc(routine ? routine.name : '')}" autofocus>
+        <input id="f-rname" class="input" maxlength="60" autocomplete="off" placeholder="${esc(L.routinePh)}" value="${esc(routine ? routineName(routine) : '')}" autofocus>
         <span class="err" hidden id="f-rname-err">${L.nameRequired}</span></div>
       <div class="field"><button type="button" class="switch" role="switch" id="f-recur" aria-checked="${recurring}">
         <span><b>${L.repeatWeekly}</b><span>${L.repeatWeeklyHint}</span></span><span class="track" aria-hidden="true"></span></button></div>

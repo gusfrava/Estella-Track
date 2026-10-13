@@ -2,7 +2,8 @@
 // Buttons carry data-action; main.js maps them to controllers/onboarding.js.
 import { ICONS } from '../ui/icons.js';
 import { OI } from '../ui/onboarding-icons.js';
-import { t, getLang } from '../i18n/index.js';
+import { t, getLang, routineName } from '../i18n/index.js';
+import { exerciseName } from '../services/library.js';
 import { esc, fmtClock } from '../utils/format.js';
 import { mascotHTML } from '../ui/mascot.js';
 import { progressBar } from './partials.js';
@@ -143,9 +144,9 @@ function planScreen(ui, plan, L) {
     ? (e.sets > 1 ? `${e.sets} × ${time(e.seconds)}` : time(e.seconds))
     : `${e.sets} × ${e.reps}${e.perSide ? ` ${L.ob.planPerSide}` : ''}`);
   const card = (r, i) => `<li><details class="ob-plan-r"${i === 0 ? ' open' : ''}>
-      <summary><span class="ob-plan-n num">${i + 1}</span><span class="ob-plan-t"><b>${esc(r.name)}</b>
+      <summary><span class="ob-plan-n num">${i + 1}</span><span class="ob-plan-t"><b>${esc(routineName(r))}</b>
         <span>${esc(L.ob.planCount(r.exercises.length))}</span></span><span class="ob-plan-chev" aria-hidden="true">${ICONS.back}</span></summary>
-      <ol class="ob-plan-ex">${r.exercises.map(e => `<li><span>${esc(e.name)}</span><b class="num">${esc(dose(e))}</b></li>`).join('')}</ol>
+      <ol class="ob-plan-ex">${r.exercises.map(e => `<li><span>${esc(exerciseName(e))}</span><b class="num">${esc(dose(e))}</b></li>`).join('')}</ol>
     </details></li>`;
   return `<div class="ob-plan-head">
       ${mascotHTML({ mood: 'excited', hop: true, crop: 'bust', size: '88px', label: 'Estella' })}

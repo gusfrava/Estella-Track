@@ -1,6 +1,6 @@
 // Home screen: greeting, weekly summary, routine cards, other activities, + button.
 import { ICONS } from '../ui/icons.js';
-import { t } from '../i18n/index.js';
+import { t, routineName } from '../i18n/index.js';
 import { esc, fmtDay, fmtDuration } from '../utils/format.js';
 import { nextMonday, parseYmd, todayStr } from '../utils/dates.js';
 import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities, weeklyStreak, trainedToday } from '../state/selectors.js';
@@ -89,10 +89,10 @@ function routineCard(r, highlightId) {
     : (total ? `<div class="mini"><span style="width:${pct}%"></span></div>` : '');
   return `<li class="rcard${isDone ? ' done' : ''}${highlightId === r.id ? ' pop' : ''}">
     <button class="rcard-open" data-action="open" data-id="${r.id}">
-      <span class="rcard-text"><h3>${esc(r.name)}</h3><p class="meta">${esc(meta)}</p>${status}</span>
+      <span class="rcard-text"><h3>${esc(routineName(r))}</h3><p class="meta">${esc(meta)}</p>${status}</span>
       <span class="badge num" aria-hidden="true">${isDone ? ICONS.check : `${done}/${total}`}</span>
     </button>
-    ${editDeleteButtons('routine', r.id, r.name, true)}
+    ${editDeleteButtons('routine', r.id, routineName(r), true)}
   </li>`;
 }
 
