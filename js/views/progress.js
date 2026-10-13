@@ -5,7 +5,7 @@ import { t, routineName } from '../i18n/index.js';
 import { exerciseName } from '../services/library.js';
 import { esc, fmtDay, fmtNum, fmtClock } from '../utils/format.js';
 import { parseYmd, daysAgo } from '../utils/dates.js';
-import { recordsByRoutine, weeklyStreak } from '../state/selectors.js';
+import { recordsByRoutine, weeklyStreak, weekGoalProgress } from '../state/selectors.js';
 import { tabBar } from './partials.js';
 import { appHeader } from './home.js';
 
@@ -22,7 +22,7 @@ export function progressView(state, opts) {
   let h = `${appHeader(state, opts)}
   <h1>${L.progressTitle}</h1>
   <p class="sub">${L.recordsSub}</p>
-  ${streakCard(weeklyStreak(state))}`;
+  ${streakCard(weeklyStreak(state), weekGoalProgress(state))}`;
 
   if (!groups.length) {
     h += `<div class="empty" style="margin-top:26px">${ICONS.trophy}<h3>${L.noRecordsTitle}</h3><p>${L.noRecordsBody}</p></div>`;
@@ -38,12 +38,18 @@ export function progressView(state, opts) {
 }
 
 // "5 semanas seguidas" + the last 8 weeks as dots. s = selectors.weeklyStreak().
-function streakCard(s) {
+// g = selectors.weekGoalProgress(): with a weekly goal, a week counts once it's reached.
+function streakCard(s, g) {
   const L = t();
-  const msg = !s.current ? L.streakStart : s.thisWeek ? L.streakKept : L.streakKeepIt;
+  const msg = s.thisWeek ? L.streakKept
+    : g.goal ? (s.current ? L.streakLeft(g.left) : g.days ? L.streakStartLeft(g.left) : L.streakStartGoal(g.goal))
+    : !s.current ? L.streakStart : L.streakKeepIt;
+  // dots: full = goal reached, half = trained but short of the goal
   const dots = s.recent.map((w, i) => {
     const now = i === s.recent.length - 1;
-    return `<span class="sdot${w.done ? ' on' : ''}${now ? ' now' : ''}" title="${esc(fmtDay(parseYmd(w.key)))}"></span>`;
+    const part = !w.done && w.days > 0;
+    const title = `${fmtDay(parseYmd(w.key))}${w.goal ? ` · ${w.days}/${w.goal}` : ''}`;
+    return `<span class="sdot${w.done ? ' on' : part ? ' part' : ''}${now ? ' now' : ''}" title="${esc(title)}"></span>`;
   }).join('');
   return `<section class="streak" aria-label="${L.streakLabel}">
     <div class="streak-top">${ICONS.flame}

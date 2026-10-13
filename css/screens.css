@@ -177,6 +177,12 @@
 .sdot{height:14px;border:2px solid var(--ink);border-radius:99px;background:var(--bg)}
 .sdot.on{background:var(--orange)}
 .sdot.now:not(.on){border-style:dashed}
+.sdot.part{background:linear-gradient(to right,var(--orange) 50%,var(--bg) 50%)}
+.week-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.week-goal{padding:4px 10px;border:2px solid var(--ink);border-radius:99px;background:var(--card);font-family:var(--display);font-weight:800;font-size:.85rem;white-space:nowrap}
+.week-met{margin:8px 0 0;font-family:var(--display);font-weight:800}
+.goal-label{min-height:44px;display:flex;flex-direction:column;margin:14px 0 4px}
+.goal-label b{font-family:var(--display);font-weight:800;font-size:1.1rem}
 .streak-best{margin:10px 0 0;font-size:.88rem;font-weight:600;color:var(--muted)}
 .week-streak{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.95rem;text-align:left}
 .week-streak svg{flex:none;width:24px;height:24px}

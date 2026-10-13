@@ -126,6 +126,14 @@ export function updateProfile(patch) {
 
 // ---------- body data (users/{uid}/body/{date}) ----------
 // One entry per day; saving again the same day updates it. Only what's given is stored (null = not given).
+// Weekly goal (days a week). Applies from this week on; earlier weeks keep theirs (see selectors.weeklyGoalFor).
+export function setWeeklyGoal(days) {
+  const n = Math.min(7, Math.max(1, Math.round(Number(days) || 0)));
+  const goals = { ...((state.profile && state.profile.weeklyGoals) || {}) };
+  goals[weekKey()] = n;
+  updateProfile({ weeklyGoals: goals });
+}
+
 export function saveBody({ weight = null, weightUnit = 'kg', heightCm = null, source = 'manual' }) {
   if (!weight && !heightCm) return;
   const date = todayStr();

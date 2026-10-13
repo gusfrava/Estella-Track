@@ -3,7 +3,7 @@ import { ICONS } from '../ui/icons.js';
 import { t, routineName } from '../i18n/index.js';
 import { esc, fmtDay, fmtDuration } from '../utils/format.js';
 import { nextMonday, parseYmd, todayStr } from '../utils/dates.js';
-import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities, weeklyStreak, trainedToday } from '../state/selectors.js';
+import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities, weeklyStreak, trainedToday, weekGoalProgress } from '../state/selectors.js';
 import { mascotHTML } from '../ui/mascot.js';
 import { brand, langToggle, editDeleteButtons, progressBar, tabBar } from './partials.js';
 
@@ -24,7 +24,7 @@ export function homeView(state, opts) {
   <p class="sub">${esc(L.weekOf(fmtDay(week.start), fmtDay(week.end)))}</p>`;
 
   const hasRoutines = routinesList(state).length > 0, hasActivities = activities(state).length > 0;
-  if (hasRoutines || hasActivities) h += weekCard(week, weeklyStreak(state));
+  if (hasRoutines || hasActivities) h += weekCard(week, weeklyStreak(state), weekGoalProgress(state));
   h += `<div class="section-head"></div>`;
   h += hasRoutines
     ? `<ul class="list">${orderedRoutines(state).map(r => routineCard(r, opts.highlightId)).join('')}</ul>`
@@ -61,20 +61,29 @@ function verifyBanner(user, ui) {
   </div>`;
 }
 
-function weekCard(week, streak) {
+// This week: trained days against the weekly goal ("2/4 entrenos"), activities, and the streak.
+// Without a goal yet it shows routines done and a button to choose one.
+function weekCard(week, streak, g) {
   const L = t();
   const n = week.weekActivities.length;
   // Streak line (only once there is one): tapping it opens the Progreso tab.
+  const keep = streak.thisWeek ? '' : ` · ${esc(g.goal ? L.streakLeft(g.left) : L.streakKeepIt)}`;
   const streakLine = streak.current
-    ? `<button class="week-streak" data-action="tab" data-tab="progress">${ICONS.flame}<span><b>${esc(L.streakWeeks(streak.current))}</b>${streak.thisWeek ? '' : ` · ${esc(L.streakKeepIt)}`}</span></button>`
+    ? `<button class="week-streak" data-action="tab" data-tab="progress">${ICONS.flame}<span><b>${esc(L.streakWeeks(streak.current))}</b>${keep}</span></button>`
     : '';
+  const main = g.goal
+    ? `<div class="week-stat"><b class="num">${g.days}/${g.goal}</b><span>${L.workoutsDone(g.goal)}</span></div>`
+    : `<div class="week-stat"><b class="num">${week.doneCount}/${week.total}</b><span>${L.routinesDone}</span></div>`;
+  const pct = g.goal ? Math.min(100, Math.round((g.days / g.goal) * 100)) : week.pct;
   return `<section class="week" aria-label="${L.thisWeek}">
-    <div class="label">${L.thisWeek}</div>
+    <div class="week-head"><div class="label">${L.thisWeek}</div>
+      <button class="week-goal" data-action="weekly-goal">${esc(g.goal ? L.goalChip(g.goal) : L.goalSet)}</button></div>
     <div class="week-stats">
-      <div class="week-stat"><b class="num">${week.doneCount}/${week.total}</b><span>${L.routinesDone}</span></div>
+      ${main}
       <div class="week-stat"><b class="num">${n}</b><span>${L.activitiesN(n)}</span></div>
     </div>
-    ${progressBar(week.pct)}
+    ${progressBar(pct)}
+    ${g.goal && g.met ? `<p class="week-met">${esc(L.goalMet)}</p>` : ''}
     ${streakLine}
   </section>`;
 }

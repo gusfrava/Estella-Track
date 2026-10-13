@@ -40,6 +40,7 @@ import { openVideoSheet } from './sheets/video.js';
 import { loadLibrary, techniqueVideo, exerciseName } from './services/library.js';
 import { openActivityForm } from './sheets/activity-form.js';
 import { openAccountSheet } from './sheets/account.js';
+import { openWeeklyGoalSheet } from './sheets/weekly-goal.js';
 import { confirmDeleteRoutine, confirmDeleteExercise, confirmDeleteActivity } from './sheets/delete.js';
 
 const log = logger('ui');
@@ -162,6 +163,7 @@ const ACTIONS = {
   // general
   lang: d => setLang(d.lang),
   account: () => openAccountSheet(),
+  'weekly-goal': () => openWeeklyGoalSheet(),
   plus: () => openPlusMenu(),
   // sign-in screens
   'auth-screen': d => auth.showScreen(d.screen),

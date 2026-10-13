@@ -38,6 +38,8 @@ Trainers don't use these levels. Each trainer gets their own permission from the
 users/{uid}                         PRIVATE settings (owner only)
   username, displayName, lang, units, goal, createdAt, discoverable,
   sharing: { profile, routines, workouts, body },       // 'private' | 'friends' | 'public'
+  weeklyGoals: { 'YYYY-MM-DD': days },                // weekly goal by the Monday it started (onboarding days, or "Meta semanal" on home);
+                                                       // a week counts for the streak when its goal is met
   units: 'kg' | 'lb',                                   // chosen in onboarding; default for new exercises
   onboarding: { version, character, goal, focus: 'balanced'|'legs'|'upper'|'arms', experience, place, daysPerWeek, minutes, source,
                 startedAt, completedAt, skippedAt,      // saved after every answer (js/controllers/onboarding.js)
@@ -107,7 +109,7 @@ leaderboards/{metric_period}        SERVER ONLY: top entries { uid, username, va
 (future) posts/{id}, posts/{id}/comments, posts/{id}/reactions, reports/{id}
 ```
 
-**The exercise library (364 exercises)** ships as a static file, `js/data/exercises.json`, not as database documents. That makes it free, available offline and instant.
+**The exercise library (365 exercises)** ships as a static file, `js/data/exercises.json`, not as database documents. That makes it free, available offline and instant.
 
 ## Who can read what
 - **Owner:** everything of their own.
