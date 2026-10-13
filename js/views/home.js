@@ -89,11 +89,12 @@ function weekCard(week, streak, g) {
 }
 
 // Monday–Sunday, filled on days you trained (a checked set or an activity), today outlined.
-function dayStrip(start, dates) {
+// label(n) = what a screen reader says (default: "Entrenaste n días esta semana"); friends' cards pass their own.
+export function dayStrip(start, dates, label) {
   const L = t(), today = todayStr();
   const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(start); d.setDate(d.getDate() + i); return ymd(d); });
   const n = days.filter(d => dates.has(d)).length;
-  return `<div class="wdays" role="img" aria-label="${esc(L.daysTrainedLabel(n))}">${days.map((d, i) =>
+  return `<div class="wdays" role="img" aria-label="${esc((label || L.daysTrainedLabel)(n))}">${days.map((d, i) =>
     `<span class="wday${dates.has(d) ? ' on' : ''}${d === today ? ' today' : ''}"><i>${dates.has(d) ? ICONS.check : ''}</i><b>${L.dayLetters[i]}</b></span>`).join('')}</div>`;
 }
 

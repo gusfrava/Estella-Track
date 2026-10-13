@@ -1,8 +1,8 @@
 # Estella: data model v2
 
 **Status: approved design, built in phases.**
-- **Built:** `users/{uid}` profile and sharing settings, `routines`, `sessions`, `exerciseStats`, the automatic v1 → v2 migration, usernames (`usernames/{name}`, claimed in one batch with the profile) and the privacy settings screen, with matching `firestore.rules`. Friends part 1: search directory, friend requests and friend lists (see Friends below).
-- **Not built yet:** friends seeing each other's data (part 2), groups, trainers, mascot and leaderboards. Each piece arrives with its feature. Until then, sharing settings are saved but nobody else can read anything.
+- **Built:** `users/{uid}` profile and sharing settings, `routines`, `sessions`, `exerciseStats`, the automatic v1 → v2 migration, usernames (`usernames/{name}`, claimed in one batch with the profile) and the privacy settings screen, with matching `firestore.rules`. Friends part 1: search directory, friend requests and friend lists. Friends part 2: friend cards (`profileCards/{uid}`), written by the server (`functions/`, see docs/SERVER.md).
+- **Not built yet:** cheers, copying a friend's routine, groups, trainers, mascot and leaderboards. Each piece arrives with its feature. Friends can read only the friend card; routines and workouts themselves aren't readable by anyone else yet.
 
 ## Principles
 1. **Data lives under its owner. Sharing is a setting.** Nothing is locked away for good. Each kind of data has a "who can see this" level that the owner chooses.
@@ -91,10 +91,17 @@ users/{uid}                         PRIVATE settings (owner only)
   mascot/state                      SERVER ONLY: level, xp, energy, muscles{…}, shape
   wallet/main                       SERVER ONLY: points, inventory[]
 
-publicProfiles/{uid}                profile card (follows sharing.profile)
-  username, displayName, mascot: { look, equipped, level }, streak
-  weeks/{weekKey}                   SERVER ONLY: routinesDone, routinesPlanned, sessions[], activities[], minutes
-  cheers/{id}                       from, sessionId, createdAt
+profileCards/{uid}                  SERVER ONLY (functions/card.js): what friends see. Readable by the owner; by friends when
+                                    visibility is 'friends'; by anyone signed in when 'public'.
+  v, visibility: sharing.profile, username, displayName, character,
+  goals: { weekKey: days },         // weekly goal history (same as profile.weeklyGoals)
+  weeks: { weekKey: '024' },        // days trained that week, 0 = Monday … 6 = Sunday (a checked set or an activity)
+  pts:   { weekKey: '1' },          // days known only from old exercise history (v1 accounts), kept when a week is recomputed
+  last:  { kind, name, sport, date } | null,   // last workout; null when sharing.workouts is 'private'
+  updatedAt
+  // The app works out this week, the streak and comodines from goals + weeks (selectors.streakFrom), so cards never go
+  // stale. The app writes users/{uid}.cardRefreshAt to ask for a rebuild when its own card is missing or outdated.
+  (later) cheers/{id}               from, sessionId, createdAt · mascot: { look, equipped, level }
 
 usernames/{username}                { uid }
 directory/{uid}                     { username, displayName, nameKey, lastKey, character, updatedAt }   // friend search; only while
@@ -122,7 +129,7 @@ leaderboards/{metric_period}        SERVER ONLY: top entries { uid, username, va
 - **Any signed-in user:** categories set to `public`, plus username lookup and friend search (`directory`: name, @username, character only).
 - **Trainer:** only what the `coaching/{client_trainer}` document allows. A trainer can write routines into the client's list only with `routines: 'assign'`. Seeing body data needs its own explicit yes, because the EU treats health data as special.
 - **Group members** read the group's routines. Trainers and admins write them.
-- **Server only:** mascot state, wallet, weekly cards, streaks and leaderboards.
+- **Server only:** friend cards (`profileCards`), mascot state, wallet, streak rewards and leaderboards.
 - Removing a friend or a trainer cuts their access immediately.
 
 ## Assigned routines
