@@ -3,7 +3,7 @@ import { ICONS } from '../ui/icons.js';
 import { t } from '../i18n/index.js';
 import { esc, fmtDay, fmtDuration } from '../utils/format.js';
 import { nextMonday, parseYmd, todayStr } from '../utils/dates.js';
-import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities } from '../state/selectors.js';
+import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities, weeklyStreak } from '../state/selectors.js';
 import { brand, langToggle, editDeleteButtons, progressBar, tabBar } from './partials.js';
 
 // opts = { user, localMode, highlightId, showOlder, verify: { needed, ui } }
@@ -20,7 +20,7 @@ export function homeView(state, opts) {
   <p class="sub">${esc(L.weekOf(fmtDay(week.start), fmtDay(week.end)))}</p>`;
 
   const hasRoutines = routinesList(state).length > 0, hasActivities = activities(state).length > 0;
-  if (hasRoutines || hasActivities) h += weekCard(week);
+  if (hasRoutines || hasActivities) h += weekCard(week, weeklyStreak(state));
   h += `<div class="section-head"></div>`;
   h += hasRoutines
     ? `<ul class="list">${orderedRoutines(state).map(r => routineCard(r, opts.highlightId)).join('')}</ul>`
@@ -57,9 +57,13 @@ function verifyBanner(user, ui) {
   </div>`;
 }
 
-function weekCard(week) {
+function weekCard(week, streak) {
   const L = t();
   const n = week.weekActivities.length;
+  // Streak line (only once there is one): tapping it opens the Progreso tab.
+  const streakLine = streak.current
+    ? `<button class="week-streak" data-action="tab" data-tab="progress">${ICONS.flame}<span><b>${esc(L.streakWeeks(streak.current))}</b>${streak.thisWeek ? '' : ` · ${esc(L.streakKeepIt)}`}</span></button>`
+    : '';
   return `<section class="week" aria-label="${L.thisWeek}">
     <div class="label">${L.thisWeek}</div>
     <div class="week-stats">
@@ -67,6 +71,7 @@ function weekCard(week) {
       <div class="week-stat"><b class="num">${n}</b><span>${L.activitiesN(n)}</span></div>
     </div>
     ${progressBar(week.pct)}
+    ${streakLine}
   </section>`;
 }
 

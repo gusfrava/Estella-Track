@@ -10,6 +10,7 @@ export const ICONS = {
   star:'<svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#2B1B12" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.8l2.75 5.6 6.15.9-4.45 4.35 1.05 6.12L12 16.9l-5.5 2.87 1.05-6.12L3.1 9.3l6.15-.9z"/></svg>',
   dumbbell:'<svg viewBox="0 0 24 24" fill="none" stroke="#2B1B12" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M3.5 9v6M17.5 6.5v11M20.5 9v6M6.5 12h11"/></svg>',
   dumbbellTab:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11M3.5 9v6M17.5 6.5v11M20.5 9v6M6.5 12h11"/></svg>',
+  flame:'<svg viewBox="0 0 24 24" fill="#FF6A2B" stroke="#2B1B12" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.5c.6 3.2 4.3 5.3 5.6 8.6 1.6 4.2-1.2 9.4-5.6 9.4s-7.2-3.4-6.2-7.6c.5-2 1.9-3.3 2.8-4.3.2 1.6.9 2.8 2 3.3C10.3 9.3 10.6 5.6 12 2.5z"/><path d="M12 20.5c-1.9 0-3-1.5-2.6-3.2.3-1.3 1.6-2.2 2.1-3.6.9 1 3.3 2.4 3 4.3-.2 1.4-1.2 2.5-2.5 2.5z" fill="#FFC94D"/></svg>',
   trophy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4.5v1.5A3.5 3.5 0 0 0 8 11M17 6h2.5v1.5A3.5 3.5 0 0 1 16 11"/><path d="M12 14v3.5M8.5 20.5h7M9.5 17.5h5v3h-5z"/></svg>',
   bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="#2B1B12" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.5L5 13.5h6l-1 8 8-11h-6z"/></svg>'
 };
