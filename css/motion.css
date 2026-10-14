@@ -1,0 +1,81 @@
+/* Motion (js/ui/motion.js + js/ui/feel.js): how screens come in, cards appear, buttons press, checks pop,
+   numbers bump and stars sparkle. Everything here switches off with "reduce motion" (bottom of the file). */
+:root{
+  --ease-out:cubic-bezier(.2,.8,.2,1);
+  --ease-spring:cubic-bezier(.3,1.45,.5,1);
+}
+
+/* ---------- screens ---------- */
+/* The screen's content moves, never #app itself: a transform there would drag the fixed tab bar and + button along. */
+#app.enter-forward>:not(.tabbar):not(.fab){animation:screen-forward .34s var(--ease-out) both}
+#app.enter-back>:not(.tabbar):not(.fab){animation:screen-back .34s var(--ease-out) both}
+#app.enter-tab>:not(.tabbar):not(.fab){animation:screen-tab .28s var(--ease-out) both}
+#app.enter-fade>:not(.tabbar):not(.fab){animation:screen-fade .3s ease-out both}
+@keyframes screen-forward{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes screen-back{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@keyframes screen-tab{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes screen-fade{from{opacity:0}to{opacity:1}}
+
+/* cards and list rows appear one after another */
+#app.stagger [style*="--i"],#app.stagger>[style*="--i"]:not(.tabbar):not(.fab){animation:rise .42s var(--ease-out) both;animation-delay:calc(var(--i) * 40ms + 60ms)}
+@keyframes rise{from{opacity:0;transform:translate(var(--dx,0),var(--dy,14px))}to{opacity:1;transform:none}}
+/* which way the cards come from: sideways into a routine / back out of it, from below on tabs */
+#app.enter-forward{--dx:26px;--dy:0px}
+#app.enter-back{--dx:-26px;--dy:0px}
+#app.enter-tab{--dx:0px;--dy:12px}
+#app.enter-fade{--dx:0px;--dy:8px}
+
+/* ---------- pressing things ---------- */
+.rcard,.person.tap,.lib-item,.tab,.week-goal,.week-streak,.pill-btn,.chip,.textbtn,.ob-opt,.ob-char,.ob-day,.check,.set-check,.recap-card,.rewards .rw-row li{
+  transition:transform .14s var(--ease-out),box-shadow .14s var(--ease-out),background-color .15s}
+.rcard:active,.pill-btn:active,.week-goal:active,.week-streak:active,.recap-card:active{transform:scale(.98)}
+.tab:active{transform:scale(.92)}
+.check:active,.set-check:active{transform:scale(.9)}
+.ob-char:active,.ob-day:active{transform:scale(.95)}
+.btn{transition:transform .12s var(--ease-out),box-shadow .12s var(--ease-out)}
+
+/* ---------- a set / exercise just checked ---------- */
+.set-check.pop,.check.pop{animation:check-pop .42s var(--ease-spring)}
+.set-check.pop svg path,.check.pop svg path{stroke-dasharray:24;animation:check-draw .32s .06s var(--ease-out) both}
+@keyframes check-pop{0%{transform:scale(.82)}55%{transform:scale(1.14)}100%{transform:scale(1)}}
+@keyframes check-draw{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
+
+/* an answer just picked (onboarding) / an exercise picked */
+.ob-opt.pop,.ob-char.pop,.ob-day.pop,.cheer-btn.pop{animation:pick-pop .38s var(--ease-spring)}
+@keyframes pick-pop{0%{transform:scale(.96)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+
+/* numbers that changed give a little bump while they count */
+.bump{display:inline-block;animation:bump .45s var(--ease-spring)}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+
+/* tab icon bounces when chosen */
+#app.enter-tab .tab[aria-current="page"] svg{animation:tab-pick .4s var(--ease-spring)}
+@keyframes tab-pick{0%{transform:scale(.8)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+
+/* ---------- sheets: a springier entrance ---------- */
+.sheet{transition:transform .38s var(--ease-spring)}
+.sheet:not(.open){transition:transform .26s var(--ease-out)}
+
+/* toasts drop in with a small bounce */
+.toast{transition:transform .42s var(--ease-spring)}
+
+/* ---------- sparkles (badges, "Reclamar") ---------- */
+.sparkles{position:fixed;inset:0;pointer-events:none;z-index:60}
+.sparkles i{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;opacity:0;animation:spark 1s var(--d) var(--ease-out) forwards}
+.sparkles svg{width:100%;height:100%;fill:var(--c);stroke:#2B1B12;stroke-width:1.6;stroke-linejoin:round}
+@keyframes spark{
+  0%{opacity:0;transform:translate(0,0) scale(.2) rotate(0)}
+  25%{opacity:1}
+  60%{opacity:1;transform:translate(var(--x),var(--y)) scale(var(--s)) rotate(70deg)}
+  100%{opacity:0;transform:translate(calc(var(--x) * 1.15),calc(var(--y) * 1.15)) scale(.1) rotate(140deg)}}
+
+/* ---------- onboarding ---------- */
+.ob-opt[aria-pressed="true"],.ob-char[aria-pressed="true"],.ob-day[aria-pressed="true"]{transition:transform .14s,background-color .2s,box-shadow .2s}
+
+@media (prefers-reduced-motion:reduce){
+  #app[class*=enter-]>*,#app.stagger [style*="--i"],
+  .set-check.pop,.check.pop,.set-check.pop svg path,.check.pop svg path,.ob-opt.pop,.ob-char.pop,.ob-day.pop,.cheer-btn.pop,
+  .bump,#app.enter-tab .tab[aria-current="page"] svg{animation:none}
+  .sheet,.toast{transition:none}
+  .sparkles{display:none}
+}

@@ -112,6 +112,7 @@ export default {
     share:'Share', preparing:'Preparing image…', shareText:'My week on Estella 💪', downloaded:'Image downloaded',
     shareFailed:'Couldn’t create the image.', fromProgress:'Last week’s recap', imgTitle:'My week',
   },
+  feelSound:'Sounds', feelSoundHint:'Soft sounds when you check sets, finish and earn badges', feelHaptics:'Vibration', feelHapticsHint:'A short buzz when you tap and complete things',
   tabsLabel:'Sections', tabRoutines:'Routines', tabProgress:'Progress',
   progressTitle:'Progress', recordsSub:'Your personal records: the best you’ve done on each exercise.',
   noRecordsTitle:'No records yet', noRecordsBody:'Finish exercises in your routines and your best for each one shows up here.',

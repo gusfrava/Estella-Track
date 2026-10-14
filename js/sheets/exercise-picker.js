@@ -12,6 +12,7 @@ import { getState, findRoutine, addExercises } from '../state/store.js';
 import { lastUsedUnit } from '../state/selectors.js';
 import { toast } from '../ui/toast.js';
 import { ICONS } from '../ui/icons.js';
+import { feel } from '../ui/feel.js';
 
 // opts.replace = swap the open sheet's content (coming back from the form).
 export function openExercisePicker(routineId, { replace = false, change = false } = {}) {
@@ -74,6 +75,7 @@ export function openExercisePicker(routineId, { replace = false, change = false 
       if (i >= 0) picked.splice(i, 1); else picked.push(id);
       btn.setAttribute('aria-pressed', i < 0);
       btn.classList.toggle('pop', i < 0);
+      if (i < 0) feel('select');
       drawBar();
     });
     if (bar) {
@@ -81,6 +83,7 @@ export function openExercisePicker(routineId, { replace = false, change = false 
         const unit = lastUsedUnit(getState());
         const list = picked.map(libraryExercise).filter(Boolean).map(e => ({ ...prefillFor(e), weight: 0, unit }));
         addExercises(routineId, list);
+        feel('done');
         closeSheet();
         toast(`${ICONS.check}<span><b>${esc(L.libAdded(list.length))}</b></span>`);
       };

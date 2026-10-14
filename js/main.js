@@ -17,7 +17,8 @@ import * as profileForm from './controllers/profile.js';
 import * as account from './controllers/account.js';
 import { getView, onRouteChange, openRoutine, goHome, showTab, resetRoute, initRouter } from './ui/router.js';
 import { closeSheet } from './ui/sheet.js';
-import { capturePositions, animateMoves, celebrate, confetti } from './ui/motion.js';
+import { capturePositions, animateMoves, celebrate, confetti, enterScreen, settleScreen, pop } from './ui/motion.js';
+import { feel } from './ui/feel.js';
 import { toast } from './ui/toast.js';
 import { ICONS } from './ui/icons.js';
 import { esc } from './utils/format.js';
@@ -66,23 +67,44 @@ let renderLater = false;  // a set value changed while typing → re-render once
 let lastObStep = null;    // onboarding screen last shown (scroll to top / confetti only when it changes)
 
 // ---------- render ----------
+// paint() draws the current screen and returns a key for it ('home', 'routine:<id>', 'ob:goal'…);
+// when the key changes, the new screen slides/fades in (ui/motion.js → enterScreen).
+let lastScreen = null;
 function render() {
+  const key = paint();
+  if (key !== lastScreen) { enterScreen(app, navDirection(lastScreen, key)); lastScreen = key; }
+  else settleScreen(app);
+  if (/^(home|progress|friends|routine)/.test(key)) openInviteOnce();   // only once the app itself is showing
+}
+
+// forward = going deeper (a routine, the next onboarding step), back = the opposite, tab = between tabs.
+function navDirection(from, to) {
+  if (!from) return 'none';
+  const [fa, fb] = from.split(':'), [ta, tb] = to.split(':');
+  if (fa === 'ob' && ta === 'ob') return onboarding.STEPS.indexOf(tb) < onboarding.STEPS.indexOf(fb) ? 'back' : 'forward';
+  if (ta === 'routine') return 'forward';
+  if (fa === 'routine') return 'back';
+  if (['home', 'progress', 'friends'].includes(fa) && ['home', 'progress', 'friends'].includes(ta)) return 'tab';
+  return 'fade';
+}
+
+function paint() {
   renderLater = false;
   document.documentElement.lang = getLang();
   const s = getSession();
-  if (s.mode === 'loading') { app.innerHTML = splashView(); return; }
+  if (s.mode === 'loading') { app.innerHTML = splashView(); return 'loading'; }
   // Very first screen on a phone that hasn't picked a language yet.
-  if (s.mode === 'auth' && !hasChosenLang()) { app.innerHTML = languageView(); return; }
-  if (s.mode === 'auth') { app.innerHTML = authView(auth.getAuthUI(), { configured: isFirebaseConfigured(), fatal: s.fatal }); return; }
+  if (s.mode === 'auth' && !hasChosenLang()) { app.innerHTML = languageView(); return 'lang'; }
+  if (s.mode === 'auth') { app.innerHTML = authView(auth.getAuthUI(), { configured: isFirebaseConfigured(), fatal: s.fatal }); return `auth:${auth.getAuthUI().screen}`; }
   // One-time gates for signed-in accounts: accept the privacy policy/terms, then pick a username.
   const profile = store.getState().profile;
   if (!s.localMode && s.user && profile && !account.hasCurrentConsent(profile)) {
     app.innerHTML = consentView({ error: consentError });
-    return;
+    return 'consent';
   }
   if (!s.localMode && s.user && profile && !profile.username) {
     app.innerHTML = usernameView(profileForm.ensureProfileForm());
-    return;
+    return 'username';
   }
   // New accounts: a few questions (goal, days, weight…), saved as they're answered.
   if (!s.localMode && s.user && profile && onboarding.needsOnboarding()) {
@@ -92,7 +114,7 @@ function render() {
     app.innerHTML = onboardingView(ui);
     if (step !== lastObStep) { if (lastObStep !== 'done-loading') window.scrollTo(0, 0); if (step === 'done') confetti(); }
     lastObStep = step;
-    return;
+    return `ob:${onboarding.STEPS[ui.step]}`;
   }
   lastObStep = null;
   const view = getView();
@@ -105,7 +127,7 @@ function render() {
   }
   else app.innerHTML = homeView(store.getState(), { user: s.user, localMode: s.localMode, highlightId, showOlder,
     verify: { needed: account.needsVerification(), ui: account.getVerifyUI() } });
-  openInviteOnce();
+  return routine ? `routine:${routine.id}` : (['progress', 'friends'].includes(view.name) ? view.name : 'home');
 }
 
 // Opened from an invite link (?add=username): once the app is showing, go to Amigos and show that person.
@@ -136,6 +158,7 @@ onRewardsChange((w, prev) => {
   if (gained > 0) {
     const why = t().pts.why[(w.log && w.log[0] && w.log[0].why) || ''] || '';
     toast(`${ICONS.star}<span><b>${esc(t().pts.gained(gained))}</b>${esc(why)}</span>`);
+    feel('points');
   }
   if (fresh.length) setTimeout(() => celebrateBadges(fresh), gained > 0 ? 1200 : 0);
 });
@@ -148,6 +171,7 @@ onSocialChange(() => {
   cheersShownUpTo = Math.max(...fresh.map(c => c.createdAt));
   const c = fresh[0], f = getSocial().friends[c.from] || { username: c.fromUsername, displayName: c.fromName };
   toast(`${CHEER_ICONS[c.kind] || CHEER_ICONS.fire}<span><b>${esc(t().fr.cheerToast(personName(f)))}</b>${esc(routineName({ name: c.workout }))}</span>`);
+  feel('cheer');
 });
 onboarding.onOnboardingChange(render);
 // The name/username form updates its status line in place (a full re-render would move the cursor).
@@ -195,7 +219,8 @@ const routineId = () => getView().id;
 
 // Runs a store change that can move cards (an exercise finishing goes to the bottom), animates it,
 // and celebrates when it finished the routine. change() returns { completed, exerciseDone, setDone }.
-function logChange(exId, change) {
+// popSel = the button that was tapped (it pops after the re-draw, when it turned on).
+function logChange(exId, change, popSel = '') {
   const rid = routineId();
   const wasDone = !!(store.findRoutine(rid) && isExerciseDone(rid, exId));
   const before = capturePositions(app);
@@ -209,6 +234,13 @@ function logChange(exId, change) {
   }
   render();
   animateMoves(app, before);
+  // Feel: a set checked → pop + tick; the exercise finished → a little chime; the routine → celebration below.
+  const justDone = result.exerciseDone && !wasDone;
+  if (result.completed) feel('complete');
+  else if (justDone) feel('done');
+  else if (result.setDone) feel('check');
+  if (popSel && (result.setDone || justDone)) pop(app.querySelector(popSel));
+  if (justDone) pop(app.querySelector(`[data-action="toggle"][data-id="${exId}"]`));
   if (result.exerciseDone && ex) celebrateRecord(ex, recordBefore);
   // (Phase 1 · rest timer) result.setDone && !result.exerciseDone → start the rest countdown here.
   if (result.completed) {
@@ -225,6 +257,7 @@ function celebrateRecord(ex, before) {
   const after = personalRecord(store.getState(), ex);
   if (!beatsRecord(ex, after, before) || after.point.d !== todayStr()) return;
   toast(`${ICONS.trophy}<span><b>${t().newRecordToast}</b>${esc(exerciseName(ex))}</span>`);
+  setTimeout(() => feel('points'), 250);
 }
 
 const isExerciseDone = (rid, exId) => orderedExercises(store.findRoutine(rid)).done.some(i => i.ex.id === exId);
@@ -253,9 +286,9 @@ const ACTIONS = {
   google: () => auth.google(),
   'local-mode': () => sync.enterLocalMode(),
   // first screen (language) + onboarding
-  'pick-lang': d => previewLang(d.lang),
+  'pick-lang': d => { previewLang(d.lang); feel('select'); },
   'lang-continue': () => chooseLang(getLang()),
-  'ob-pick': d => onboarding.choose(d.key, d.value),
+  'ob-pick': d => { onboarding.choose(d.key, d.value); feel('select'); pop(app.querySelector(`[data-action="ob-pick"][data-key="${d.key}"][data-value="${d.value}"]`)); },
   'ob-next': () => onboarding.next(),
   'ob-back': () => onboarding.back(),
   'ob-skip': () => onboarding.skipStep(),
@@ -286,10 +319,10 @@ const ACTIONS = {
   'del-act': d => confirmDeleteActivity(d.id),
   // routine screen
   home: () => goHome(),
-  toggle: d => logChange(d.id, rid => store.toggleExercise(rid, d.id)),
+  toggle: d => logChange(d.id, rid => store.toggleExercise(rid, d.id), `[data-action="toggle"][data-id="${d.id}"]`),
   repeat: () => { store.repeatRoutine(routineId()); openId = null; window.scrollTo({ top: 0, behavior: 'smooth' }); },
   expand: d => { openId = openId === d.id ? null : d.id; render(); },
-  'set-tick': d => logChange(d.id, rid => store.toggleSet(rid, d.id, Number(d.i))),
+  'set-tick': d => logChange(d.id, rid => store.toggleSet(rid, d.id, Number(d.i)), `[data-action="set-tick"][data-id="${d.id}"][data-i="${d.i}"]`),
   'set-add': d => logChange(d.id, rid => store.addSet(rid, d.id)),
   'set-drop': d => logChange(d.id, rid => store.addDrop(rid, d.id)),
   'set-del': d => logChange(d.id, rid => store.removeSet(rid, d.id, Number(d.i))),
@@ -304,6 +337,11 @@ const ACTIONS = {
   'del-ex': d => confirmDeleteExercise(routineId(), d.id),
   reset: () => store.resetRoutine(routineId()),
 };
+
+// A very light tap on any button, anywhere (sheets too). Bigger moments call feel() with their own pattern.
+document.addEventListener('click', e => {
+  if (e.target.closest('button:not([disabled]), a.btn, [data-action]')) feel('tap');
+}, true);
 
 app.addEventListener('click', e => {
   const el = e.target.closest('[data-action]');

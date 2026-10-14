@@ -24,7 +24,7 @@ export function rewardsBlock() {
   const list = badgeList().slice(0, 5);
   return `<section class="rewards">
     <div class="rw-head">
-      <span class="rw-pts">${ICONS.star}<b class="num">${esc(fmtNum(points()))}</b><span>${esc(P.pointsWord(points()))}</span></span>
+      <span class="rw-pts">${ICONS.star}<b class="num" data-count-key="points" data-count="${points()}">${esc(fmtNum(points()))}</b><span>${esc(P.pointsWord(points()))}</span></span>
       <button class="textbtn" data-action="badges">${P.seeAll}</button>
     </div>
     <ul class="rw-row">${list.map(b => `<li title="${esc(badgeName(b))}">${medalHTML(b)}<span>${esc(badgeName(b))}</span></li>`).join('')}</ul>
