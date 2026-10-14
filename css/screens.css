@@ -405,3 +405,39 @@
 .ob-more ul{margin:0;padding:0 0 4px 18px;display:flex;flex-direction:column;gap:8px;color:var(--ink);font-size:.93rem;line-height:1.4}
 @media (prefers-reduced-motion:reduce){.ob-plan-chev{transition:none}}
 .cheer-item.new .ptext b::after{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--orange);border:1.5px solid var(--ink);margin-left:6px;vertical-align:middle}
+
+/* ---------- weekly recap ---------- */
+.recap-card{position:relative;display:flex;align-items:flex-start;gap:12px;margin:4px 0 14px;padding:12px 12px 12px 14px;border:var(--line) solid var(--ink);border-radius:20px;background:var(--yellow-soft);box-shadow:3px 4px 0 var(--ink)}
+.recap-card .mascot{flex:none}
+.recap-card-t{flex:1;min-width:0;display:flex;flex-direction:column;padding-right:22px}
+.recap-card-t span{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.recap-card-t b{font-family:var(--display);font-weight:800;font-size:1.08rem;line-height:1.2}
+.recap-card-t small{color:var(--muted)}
+.recap-card-t .pill-btn{align-self:flex-start;margin-top:8px}
+.recap-card .icon-btn{position:absolute;top:6px;right:6px;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;color:var(--muted)}
+.recap-card .icon-btn svg{width:18px;height:18px}
+.recap{display:flex;flex-direction:column;gap:14px}
+.recap-head{display:flex;align-items:center;gap:12px}
+.recap-head .mascot{flex:none}
+.recap-head h2{margin:2px 0 4px;line-height:1.15}
+.recap-head p{margin:0;color:var(--muted)}
+.recap-range{font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.recap-days b{font-family:var(--display);font-weight:800;font-size:1.6rem}
+.recap-days span{color:var(--muted);font-weight:600}
+.recap-stats{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.recap-stats li{display:flex;flex-direction:column;padding:12px 14px;border:2px solid var(--ink);border-radius:18px;background:var(--card)}
+.recap-stats li:first-child{background:var(--yellow)}
+.recap-stats b{font-family:var(--display);font-weight:800;font-size:1.8rem;line-height:1}
+.recap-stats span{font-weight:600;font-size:.9rem}
+.recap-recs h3{display:flex;align-items:center;gap:8px;margin:0 0 6px}
+.recap-recs h3 svg{width:22px;height:22px}
+.recap-recs ul{list-style:none;margin:0;padding:0}
+.recap-recs li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--hairline)}
+.recap-recs li:last-child{border-bottom:0}
+.recap-recs b{font-family:var(--display);font-weight:800;color:var(--orange);white-space:nowrap}
+.recap-cheers{display:flex;align-items:center;gap:8px;margin:0;font-weight:600}
+.recap-cheers svg{width:22px;height:22px;flex:none}
+.recap-link{margin:-4px 0 6px}
+.recap + .actions .btn,.sheet .actions .btn svg{vertical-align:middle}
+.sheet .actions .btn[data-k=share]{display:flex;align-items:center;justify-content:center;gap:8px}
+.sheet .actions .btn[data-k=share] svg{width:22px;height:22px}

@@ -266,3 +266,17 @@ export function trainedToday(state) {
   return Object.values(state.sessions).some(s => s.date === today
     && (s.kind === 'activity' || s.exercises.some(e => e.sets.some(x => x.done))));
 }
+
+// What happened to the streak in week `wk`: 'met' | 'saved' (a comodín kept it) | 'missed' | 'pending' (this week).
+export function weekStatusOf(state, wk) {
+  const w = weekHistory(trainedDays(state), goalHistory(state)).list.find(x => x.key === wk);
+  return w ? w.status : 'missed';
+}
+
+// Personal records set in [from, to] (dates 'YYYY-MM-DD'): beating an earlier best, not first-ever entries.
+// [{ ex, record }] newest first.
+export function recordsBetween(state, from, to) {
+  return recordsByRoutine(state).flatMap(g => g.items)
+    .filter(i => i.record.prev && i.record.point.d >= from && i.record.point.d <= to)
+    .sort((a, b) => b.record.point.d.localeCompare(a.record.point.d));
+}
