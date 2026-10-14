@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 128 128" role="img" aria-labelledby="estella-badge-r250-titanium-title">
+  <title id="estella-badge-r250-titanium-title">250 records, titanium tier</title>
+  <defs><linearGradient id="chrome-r250" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#394550"/><stop offset=".24" stop-color="#CBDCE5"/><stop offset=".38" stop-color="#FFFFFF"/><stop offset=".43" stop-color="#647584"/><stop offset=".58" stop-color="#9FDCD9"/><stop offset=".72" stop-color="#C0A6D6"/><stop offset=".83" stop-color="#F3C6D6"/><stop offset="1" stop-color="#52616C"/></linearGradient><filter id="estella-badge-r250-titanium-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-badge-r250-titanium-artwork" filter="url(#estella-badge-r250-titanium-sticker)" stroke="#2B1B12" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-badge-r250-titanium-base"><path d="M43 13H85L111 39V81L85 108H43L17 81V39Z" fill="url(#chrome-r250)" /><path d="M47 25H81L99 44V76L81 96H47L29 76V44Z" fill="#FFF7DD" /><path d="M43 13L47 25H81L85 13M17 39L29 44M111 39L99 44M17 81L29 76M111 81L99 76M43 108L47 96M85 108L81 96" fill="none" stroke="#C8D5DF" stroke-width="3"/><g transform="translate(25 23) scale(.60)"><g class="badge-motion motion-records"><rect x="12" y="18" width="104" height="92" rx="7" fill="#127F73"/><path d="M16 64h96M16 105h96" fill="none" stroke="#FFF1E1" stroke-width="4"/><g transform="translate(16 23) scale(.36)"><path d="M40 33H21V47Q21 66 44 67M88 33H107V47Q107 66 84 67" fill="#FFC94D" /><path d="M39 25H89L86 58Q82 77 64 78Q46 77 42 58Z" fill="#FFC94D" /><rect x="59" y="77" width="10" height="18" rx="3" fill="#FF6A2B"/><path d="M46 94H82L89 105H39Z" fill="#3DC4B3" /><path d="M64 36l5 10l11 2l-8 8l2 11l-10 -5l-10 5l2 -11l-8 -8l11 -2Z" fill="#FFF7DD" /></g><g transform="translate(65 23) scale(.36)"><path d="M40 33H21V47Q21 66 44 67M88 33H107V47Q107 66 84 67" fill="#FFC94D" /><path d="M39 25H89L86 58Q82 77 64 78Q46 77 42 58Z" fill="#FFC94D" /><rect x="59" y="77" width="10" height="18" rx="3" fill="#FF6A2B"/><path d="M46 94H82L89 105H39Z" fill="#3DC4B3" /><path d="M64 36l5 10l11 2l-8 8l2 11l-10 -5l-10 5l2 -11l-8 -8l11 -2Z" fill="#FFF7DD" /></g><g transform="translate(16 65) scale(.36)"><path d="M40 33H21V47Q21 66 44 67M88 33H107V47Q107 66 84 67" fill="#FFC94D" /><path d="M39 25H89L86 58Q82 77 64 78Q46 77 42 58Z" fill="#FFC94D" /><rect x="59" y="77" width="10" height="18" rx="3" fill="#FF6A2B"/><path d="M46 94H82L89 105H39Z" fill="#3DC4B3" /><path d="M64 36l5 10l11 2l-8 8l2 11l-10 -5l-10 5l2 -11l-8 -8l11 -2Z" fill="#FFF7DD" /></g><g transform="translate(65 65) scale(.36)"><path d="M40 33H21V47Q21 66 44 67M88 33H107V47Q107 66 84 67" fill="#FFC94D" /><path d="M39 25H89L86 58Q82 77 64 78Q46 77 42 58Z" fill="#FFC94D" /><rect x="59" y="77" width="10" height="18" rx="3" fill="#FF6A2B"/><path d="M46 94H82L89 105H39Z" fill="#3DC4B3" /><path d="M64 36l5 10l11 2l-8 8l2 11l-10 -5l-10 5l2 -11l-8 -8l11 -2Z" fill="#FFF7DD" /></g><g transform="translate(41 -2) scale(.43)"><path d="M40 33H21V47Q21 66 44 67M88 33H107V47Q107 66 84 67" fill="#FFC94D" /><path d="M39 25H89L86 58Q82 77 64 78Q46 77 42 58Z" fill="#FFC94D" /><rect x="59" y="77" width="10" height="18" rx="3" fill="#FF6A2B"/><path d="M46 94H82L89 105H39Z" fill="#3DC4B3" /><path d="M64 36l5 10l11 2l-8 8l2 11l-10 -5l-10 5l2 -11l-8 -8l11 -2Z" fill="#FFF7DD" /></g></g></g><rect x="43" y="87" width="42" height="24" rx="9" fill="#FFF1E1"/><g transform="translate(48.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M8 1V7" fill="none" /><path d="M1 8H7" fill="none" /><path d="M0 9V15" fill="none" /><path d="M1 16H7" fill="none" /></g><g transform="translate(60.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M0 1V7" fill="none" /><path d="M1 8H7" fill="none" /><path d="M8 9V15" fill="none" /><path d="M1 16H7" fill="none" /></g><g transform="translate(72.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M8 1V7" fill="none" /><path d="M8 9V15" fill="none" /><path d="M1 16H7" fill="none" /><path d="M0 9V15" fill="none" /><path d="M0 1V7" fill="none" /></g></g>
+    <g id="estella-badge-r250-titanium-details"></g>
+  </g>
+<style>
+.badge-motion{transform-box:fill-box;transform-origin:50% 85%;animation:idle 3.6s ease-in-out infinite}
+.motion-workouts{animation-name:flex}
+.motion-records{animation-name:wobble}
+.motion-friends{animation-name:idle}
+.motion-cheersSent{animation-name:hop}
+.motion-cheersReceived{animation-name:wobble}
+.motion-copies{animation-name:sneak}
+@keyframes idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes flex{0%,100%{transform:scale(1)}45%,60%{transform:scale(1.04,1.02)}}
+@keyframes wobble{0%,65%,100%{transform:rotate(0)}75%{transform:rotate(-3deg)}85%{transform:rotate(3deg)}}
+@keyframes hop{0%,65%,100%{transform:translateY(0)}78%{transform:translateY(-4px)}90%{transform:translateY(1px)}}
+@keyframes sneak{0%,100%{transform:translateX(-2px) rotate(-1deg)}50%{transform:translateX(2px) rotate(1deg)}}
+.living-flame{transform-box:fill-box;transform-origin:50% 95%;animation:burn 1.35s ease-in-out infinite alternate}
+@keyframes burn{0%{transform:rotate(-2deg) scale(.97,1.02)}50%{transform:rotate(1deg) scale(1.025,.97)}100%{transform:rotate(2deg) scale(.98,1.03)}}
+.titanium-shine{animation:shine 2.4s ease-in-out infinite}
+@keyframes shine{0%,100%{opacity:.45}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.living-flame,.titanium-shine,.badge-motion{animation:none}}
+</style></svg>

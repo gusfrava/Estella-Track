@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128" role="img" aria-labelledby="estella-badge-w25-gold-title">
+  <title id="estella-badge-w25-gold-title">25 workouts, gold tier</title>
+  <defs><filter id="estella-badge-w25-gold-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-badge-w25-gold-artwork" filter="url(#estella-badge-w25-gold-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-badge-w25-gold-base"><circle cx="64" cy="61" r="48" fill="#E4AB35"/><circle cx="64" cy="61" r="40" fill="#FFF7DD"/><path d="M28 46Q39 19 66 21" fill="none" stroke="#FFF0B0" stroke-width="5"/><path d="M96 68l3 5l-3 5l-3 -5Z" fill="#FFF0B0" /><g transform="translate(25 23) scale(.60)"><g class="badge-motion motion-workouts"><path d="M53 77L48 100L37 105M75 77L80 100L92 105" fill="none" stroke="#2B1B12" stroke-width="13"/><path d="M53 77L48 100M75 77L80 100" fill="none" stroke="#E8A36B" stroke-width="8"/><path d="M46 47L30 59L26 34" fill="none" stroke="#2B1B12" stroke-width="16"/><path d="M46 47L30 59L26 34" fill="none" stroke="#E8A36B" stroke-width="11"/><path d="M82 47L96 64L82 75" fill="none" stroke="#2B1B12" stroke-width="16"/><path d="M82 47L96 64L82 75" fill="none" stroke="#E8A36B" stroke-width="11"/><path d="M46 43Q64 35 82 43L79 80H49Z" fill="#127F73" /><path d="M49 76H79L82 88H66L64 82L62 88H46Z" fill="#2B1B12" /><path d="M49 52l12 4M79 52l-12 4M64 58v12" fill="none" stroke="#FFF1E1" stroke-width="2"/><rect x="53" y="17" width="22" height="25" rx="9" fill="#E8A36B"/><path d="M53 23Q47 9 58 13Q65 3 69 13Q83 9 76 24L69 20L59 24Z" fill="#2B1B12" /><path d="M57 29h4M67 29h4M60 35q5 3 9 -1" fill="none" stroke-width="2"/></g></g><rect x="43" y="87" width="42" height="24" rx="9" fill="#FFF1E1"/><g transform="translate(54.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M8 1V7" fill="none" /><path d="M1 8H7" fill="none" /><path d="M0 9V15" fill="none" /><path d="M1 16H7" fill="none" /></g><g transform="translate(66.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M0 1V7" fill="none" /><path d="M1 8H7" fill="none" /><path d="M8 9V15" fill="none" /><path d="M1 16H7" fill="none" /></g></g>
+    <g id="estella-badge-w25-gold-details"></g>
+  </g>
+</svg>

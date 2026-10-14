@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="estella-badge-c10-gold-title">
+  <title id="estella-badge-c10-gold-title">10 cheers sent, gold tier</title>
+  <defs><filter id="estella-badge-c10-gold-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-badge-c10-gold-artwork" filter="url(#estella-badge-c10-gold-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-badge-c10-gold-base"><circle cx="64" cy="61" r="48" fill="#E4AB35"/><circle cx="64" cy="61" r="40" fill="#FFF7DD"/><path d="M28 46Q39 19 66 21" fill="none" stroke="#FFF0B0" stroke-width="5"/><path d="M96 68l3 5l-3 5l-3 -5Z" fill="#FFF0B0" /><g transform="translate(25 23) scale(.60)"><path d="M23 82L33 101L51 92L45 76Z" fill="#FF6A2B" /><path d="M20 56L50 49L94 25L101 84L54 75L24 80Z" fill="#3DC4B3" /><path d="M50 49l4 26M94 25l7 59" fill="none" /><path d="M103 18l5 -7M110 48h7M109 94l7 5" fill="none" stroke-width="5"/></g><rect x="43" y="87" width="42" height="24" rx="9" fill="#FFF1E1"/><g transform="translate(54.0 91)" stroke-width="2.6"><path d="M8 1V7" fill="none" /><path d="M8 9V15" fill="none" /></g><g transform="translate(66.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M8 1V7" fill="none" /><path d="M8 9V15" fill="none" /><path d="M1 16H7" fill="none" /><path d="M0 9V15" fill="none" /><path d="M0 1V7" fill="none" /></g></g>
+    <g id="estella-badge-c10-gold-details"></g>
+  </g>
+</svg>

@@ -32,7 +32,7 @@ Each artwork directory has the same category folders and filenames:
 | wellbeing | water-bottle, heart, rest-moon |
 | social | friends, cheer |
 
-16 designs × 6 versions = 96 SVG files. SVG is resolution-independent; export sizes set the default display dimensions. Only the 32px export has different detail and stroke treatment. These are static illustrations, not animations.
+28 designs × 6 versions = 168 SVG files. SVG is resolution-independent; export sizes set the default display dimensions. Only the 32px export has different detail and stroke treatment. These are static illustrations, not animations.
 
 ## Art direction
 
@@ -47,3 +47,4 @@ Each SVG contains named base and detail groups. Geometry is editable vector path
 The canonical reproducible geometry lives in `tools/build.py`. Edit that file and run `python tools/build.py` from this folder to regenerate all sizes, masters, preview and manifest. This overwrites generated exports. If editing a master directly in a vector editor, preserve that edit and update the generator before regenerating.
 
 Use 32px for compact badges, 48–64px for cards, 128–256px for empty states and achievement illustrations. These decorative assets do not replace the need for simple back/close/delete controls or accessible text labels. For inline SVG reuse, prefix IDs per instance to avoid duplicate filter/title IDs. With `<img>`, SVG IDs are isolated; provide meaningful alt text or empty alt for decorative usage.
+

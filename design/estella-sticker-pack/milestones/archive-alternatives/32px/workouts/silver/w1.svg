@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 128 128" role="img" aria-labelledby="estella-badge-w1-silver-title">
+  <title id="estella-badge-w1-silver-title">1 workouts, silver tier</title>
+  <defs><filter id="estella-badge-w1-silver-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-badge-w1-silver-artwork" filter="url(#estella-badge-w1-silver-sticker)" stroke="#2B1B12" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-badge-w1-silver-base"><circle cx="64" cy="61" r="48" fill="#B5C0C7"/><circle cx="64" cy="61" r="40" fill="#FFF7DD"/><path d="M28 46Q39 19 66 21" fill="none" stroke="#EEF2F4" stroke-width="5"/><g transform="translate(25 23) scale(.60)"><g transform="rotate(-16 64 64)"><rect x="30" y="56" width="68" height="16" rx="5" fill="#FFF1E1"/><rect x="24" y="37" width="19" height="54" rx="6" fill="#3DC4B3"/><rect x="14" y="47" width="13" height="34" rx="5" fill="#127F73"/><rect x="85" y="37" width="19" height="54" rx="6" fill="#3DC4B3"/><rect x="103" y="47" width="13" height="34" rx="5" fill="#127F73"/></g></g><rect x="43" y="87" width="42" height="24" rx="9" fill="#FFF1E1"/><g transform="translate(60.0 91)" stroke-width="2.6"><path d="M8 1V7" fill="none" /><path d="M8 9V15" fill="none" /></g></g>
+    <g id="estella-badge-w1-silver-details"></g>
+  </g>
+</svg>

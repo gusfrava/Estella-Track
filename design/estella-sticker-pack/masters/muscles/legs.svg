@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="estella-legs-title">
+  <title id="estella-legs-title">Legs</title>
+  <defs><filter id="estella-legs-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-legs-artwork" filter="url(#estella-legs-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-legs-base"><path d="M41 22H87L92 44L83 76L83 100L92 105Q96 111 87 112H70L66 77L64 56L60 77L57 112H39Q31 111 36 105L44 100L43 76L36 44Z" fill="#E8A36B" /><path d="M41 22H87L92 44L68 49L64 40L60 49L36 44Z" fill="#127F73" /><path d="M44 54L49 78L48 98M82 54L76 78L76 98" fill="none" stroke="#FF6A2B" stroke-width="7"/></g>
+    <g id="estella-legs-details"></g>
+  </g>
+</svg>

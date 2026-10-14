@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="estella-badge-f1-bronze-title">
+  <title id="estella-badge-f1-bronze-title">1 friends, bronze tier</title>
+  <defs><filter id="estella-badge-f1-bronze-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-badge-f1-bronze-artwork" filter="url(#estella-badge-f1-bronze-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-badge-f1-bronze-base"><circle cx="64" cy="61" r="48" fill="#B87847"/><circle cx="64" cy="61" r="40" fill="#FFF7DD"/><path d="M28 46Q39 19 66 21" fill="none" stroke="#F5C79C" stroke-width="5"/><g transform="translate(25 23) scale(.60)"><g class="badge-motion motion-friends"><circle cx="44" cy="43" r="14" fill="#E8A36B"/><path d="M34.2 37.4q9.799999999999999 -15.400000000000002 19.599999999999998 0" fill="none" stroke-width="4"/><path d="M39.8 43h1M48.2 43h1M41 48q3 3 6 0" fill="none" stroke-width="2"/><path d="M31 59q13 -5 26 0v12h-26Z" fill="#FF6A2B" /></g></g><rect x="43" y="87" width="42" height="24" rx="9" fill="#FFF1E1"/><g transform="translate(60.0 91)" stroke-width="2.6"><path d="M8 1V7" fill="none" /><path d="M8 9V15" fill="none" /></g></g>
+    <g id="estella-badge-f1-bronze-details"></g>
+  </g>
+<style>
+.badge-motion{transform-box:fill-box;transform-origin:50% 85%;animation:idle 3.6s ease-in-out infinite}
+.motion-workouts{animation-name:flex}
+.motion-records{animation-name:wobble}
+.motion-friends{animation-name:idle}
+.motion-cheersSent{animation-name:hop}
+.motion-cheersReceived{animation-name:wobble}
+.motion-copies{animation-name:sneak}
+@keyframes idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes flex{0%,100%{transform:scale(1)}45%,60%{transform:scale(1.04,1.02)}}
+@keyframes wobble{0%,65%,100%{transform:rotate(0)}75%{transform:rotate(-3deg)}85%{transform:rotate(3deg)}}
+@keyframes hop{0%,65%,100%{transform:translateY(0)}78%{transform:translateY(-4px)}90%{transform:translateY(1px)}}
+@keyframes sneak{0%,100%{transform:translateX(-2px) rotate(-1deg)}50%{transform:translateX(2px) rotate(1deg)}}
+.living-flame{transform-box:fill-box;transform-origin:50% 95%;animation:burn 1.35s ease-in-out infinite alternate}
+@keyframes burn{0%{transform:rotate(-2deg) scale(.97,1.02)}50%{transform:rotate(1deg) scale(1.025,.97)}100%{transform:rotate(2deg) scale(.98,1.03)}}
+.titanium-shine{animation:shine 2.4s ease-in-out infinite}
+@keyframes shine{0%,100%{opacity:.45}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.living-flame,.titanium-shine,.badge-motion{animation:none}}
+</style></svg>

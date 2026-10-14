@@ -227,6 +227,16 @@ export function addExercise(routineId, data) {
   emit('local', 'add-exercise', writes);
 }
 
+// Several at once (the library picker's "Añadir 4 ejercicios"): one save for all of them.
+export function addExercises(routineId, list) {
+  const r = findRoutine(routineId); if (!r || !list.length) return;
+  for (const data of list) r.exercises.push(makeRoutineExercise(data));
+  const writes = [setW('routines', touch(r))];
+  const s = currentSession(r);
+  if (s && s.status === 'done') { s.status = 'in_progress'; s.finishedAt = null; writes.push(setW('sessions', touch(s))); }
+  emit('local', 'add-exercises', writes);
+}
+
 // Pen icon: changes the plan (name + target). Sets already logged this session keep what you actually did,
 // unless they still match the old plan exactly – then they follow the new plan (fixing a typo after a quick check-off).
 export function updateExercise(routineId, exId, data) {

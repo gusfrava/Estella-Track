@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 128 128" role="img" aria-labelledby="estella-mobility-title">
+  <title id="estella-mobility-title">Mobility</title>
+  <defs><filter id="estella-mobility-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-mobility-artwork" filter="url(#estella-mobility-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-mobility-base"><circle cx="66" cy="27" r="11" fill="#E8A36B"/><path d="M55 43L75 43L81 72L102 96L90 105L66 81L44 105L32 95L53 71Z" fill="#3DC4B3" /><path d="M56 47L33 61L24 49M76 47L94 33L100 20" fill="none" stroke="#2B1B12" stroke-width="12"/><path d="M56 47L33 61L24 49M76 47L94 33L100 20" fill="none" stroke="#E8A36B" stroke-width="7"/></g>
+    <g id="estella-mobility-details"></g>
+  </g>
+</svg>
