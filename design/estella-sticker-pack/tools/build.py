@@ -51,6 +51,27 @@ add('social','friends','Training friends',
 add('social','cheer','Encouragement',
     path('M23 82L33 101L51 92L45 76Z','orange')+path('M20 56L50 49L94 25L101 84L54 75L24 80Z','teal')+path('M50 49l4 26M94 25l7 59')+path('M103 18l5 -7M110 48h7M109 94l7 5','none','stroke-width="5"'),path('M29 61l11 -3','none','stroke="#FFF7DD"'))
 
+# Muscle stickers share body silhouettes; colored regions communicate the target.
+# They are category illustrations, not anatomical teaching diagrams.
+torso = path('M49 22H79L81 33L96 40Q105 44 108 61L96 67L88 57L84 101H44L40 57L32 67L20 61Q23 44 32 40L47 33Z','peach')
+legs = path('M41 22H87L92 44L83 76L83 100L92 105Q96 111 87 112H70L66 77L64 56L60 77L57 112H39Q31 111 36 105L44 100L43 76L36 44Z','peach')
+shorts = path('M41 22H87L92 44L68 49L64 40L60 49L36 44Z','deep')
+add('muscles','chest','Chest',torso+path('M44 43Q54 38 62 45V63Q49 68 42 57ZM66 45Q76 38 84 43L86 57Q79 68 66 63Z','orange'),path('M64 70v22M52 32l12 6l12 -6'))
+add('muscles','back','Back',torso+path('M44 43L60 48L60 88L48 74ZM68 48L84 43L80 74L68 88Z','teal')+path('M64 38v57'),path('M48 33l16 9l16 -9'))
+add('muscles','shoulders','Shoulders',torso+path('M43 37Q22 37 22 59L33 64L42 51ZM85 37Q106 37 106 59L95 64L86 51Z','orange'),path('M48 48l14 5M80 48l-14 5'))
+arm = path('M30 87L36 55L42 28Q44 21 51 24L62 29Q67 33 63 39L53 42L50 65Q63 52 77 65Q92 59 101 73Q116 101 88 106H51Q35 105 25 97Z','peach')
+add('muscles','arms','Arms',arm+path('M50 78Q58 56 74 69Q84 77 78 88Q64 95 50 87Z','orange'),path('M86 91q9 -6 6 -13M43 32l10 4'))
+add('muscles','legs','Legs',legs+shorts+path('M44 54L49 78L48 98M82 54L76 78L76 98','none','stroke="#FF6A2B" stroke-width="7"'))
+add('muscles','quads','Quads',legs+shorts+path('M42 51L58 54L53 75Q43 79 42 51ZM70 54L86 51Q85 79 75 75Z','orange'))
+add('muscles','hamstrings','Hamstrings',legs+shorts+path('M42 51L58 54L53 75Q43 79 42 51ZM70 54L86 51Q85 79 75 75Z','teal')+path('M45 30l10 6M83 30l-10 6'),path('M47 59l3 10M81 59l-3 10','none','stroke="#FFF7DD"'))
+add('muscles','calves','Calves',legs+shorts+path('M45 79Q54 74 56 83L54 100L47 99ZM72 83Q74 74 82 79L81 99L74 100Z','orange'))
+add('muscles','core','Core',torso+path('M51 55Q64 50 77 55L75 92Q64 99 53 92Z','orange')+path('M64 57v35M53 68h22M54 80h20'),path('M44 69l4 17M84 69l-4 17'))
+add('muscles','glutes-plum','Glutes — plum',
+    path('M64 42Q32 26 23 56Q14 93 49 107Q61 114 73 108Q107 100 105 66Q103 30 73 40Z','#8B638C')+path('M64 41Q68 22 62 16','none','stroke-width="5"')+path('M66 30Q79 10 97 23Q88 41 66 30Z','teal'),
+    path('M69 47Q79 74 66 99','none','stroke="#624361"')+path('M36 51Q29 61 31 71','none','stroke="#FFF1E1" stroke-width="5"'))
+add('muscles','cardio','Cardio',path('M64 104Q13 72 22 44Q31 23 52 34L64 45L76 34Q97 23 106 44Q115 73 64 104Z','orange')+path('M70 40L46 71H62L57 91L83 59H67Z','yellow'))
+add('muscles','mobility','Mobility',circle(66,27,11,'peach')+path('M55 43L75 43L81 72L102 96L90 105L66 81L44 105L32 95L53 71Z','teal')+path('M56 47L33 61L24 49M76 47L94 33L100 20','none','stroke="#2B1B12" stroke-width="12"')+path('M56 47L33 61L24 49M76 47L94 33L100 20','none','stroke="#E8A36B" stroke-width="7"'))
+
 def svg(icon, size, master=False):
     uid = 'estella-'+icon['name']
     # Filter uses only vector alpha; no embedded raster, fonts or external dependencies.
@@ -69,7 +90,9 @@ def svg(icon, size, master=False):
   </g>
 </svg>'''
 
-manifest = dict(name='Estella Sticker Pack',version='1.0.0',palette=P,sizes=[32,48,64,128,256],icons=[])
+manifest = dict(name='Estella Sticker Pack',version='1.1.0',palette=P | {'plum':'#8B638C','plumShade':'#624361'},sizes=[32,48,64,128,256],icons=[])
+manifest['exerciseGroups'] = dict(pecho='chest',espalda='back',hombros='shoulders',brazos='arms',piernas='legs',gluteos='glutes-plum',core='core',cardio='cardio',movilidad='mobility')
+manifest['chartGroups'] = dict(chest='chest',back='back',shoulders='shoulders',arms='arms',glutes='glutes-plum',quads='quads',hamstrings='hamstrings',legs='legs',calves='calves',core='core')
 for icon in ICONS:
     paths={}
     for folder,size in [('masters',128)]+[(f'{n}px',n) for n in manifest['sizes']]:
@@ -85,5 +108,14 @@ for icon in ICONS:
 cards=''.join(f'<article><img width="128" height="128" src="128px/{i["category"]}/{i["name"]}.svg" alt="{i["label"]}"><h2>{i["label"]}</h2><code>{i["category"]}/{i["name"]}</code><div class="sizes">'+''.join(f'<img width="{s}" height="{s}" src="{s}px/{i["category"]}/{i["name"]}.svg" alt="{s} pixel variant" title="{s}px">' for s in [32,48,64])+'</div></article>' for i in ICONS)
 (ROOT/'preview.html').write_text('''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Estella Sticker Pack</title><style>
 *{box-sizing:border-box}body{margin:0;background:#FFF1E1;color:#2B1B12;font:16px/1.5 system-ui,sans-serif}main{max-width:1200px;margin:auto;padding:44px 24px}h1{font-size:40px;line-height:1.1;margin:8px 0}header p{max-width:680px}small{font-weight:800;letter-spacing:2px}button{padding:10px 16px;border:2px solid #2B1B12;border-radius:20px;background:#FFF7DD;color:#2B1B12;cursor:pointer;margin:8px 0 24px}section{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:18px}article{background:#fff8ef;border:1px solid #EEDFCB;border-radius:22px;padding:24px;text-align:center}h2{font-size:18px;margin:10px 0 2px}code{font-size:11px;color:#6E5B4E}.sizes{display:flex;align-items:center;justify-content:center;gap:15px;min-height:90px;margin-top:15px;border-top:1px solid #EEDFCB}img{object-fit:contain}.dark article{background:#504F51}.dark article h2,.dark article code{color:#fff1e1}.dark .sizes{border-color:#777}footer{margin-top:30px;color:#6E5B4E}
-</style><main><header><small>ESTELLA / ASSET LIBRARY / 01</small><h1>Little stickers. Real progress.</h1><p>16 original SVG illustrations. Warm paper edges, brown ink, bright fitness colors. Main samples: 128px. Below each: actual 32, 48 and 64px exports.</p><button onclick="document.body.classList.toggle('dark')">Toggle dark review surface</button></header><section>'''+cards+'''</section><footer>Sizes: 32 · 48 · 64 · 128 · 256px. Editable masters and handoff guide included. Concept pack — app integration is intentionally separate.</footer></main></html>''',encoding='utf-8')
-print(f'Built and XML-validated {len(ICONS)*6} SVGs, manifest.json and preview.html in {ROOT}')
+</style><main><header><small>ESTELLA / ASSET LIBRARY / 01</small><h1>Little stickers. Real progress.</h1><p>28 original SVG illustrations, including 12 muscle and exercise categories. Warm paper edges, brown ink, bright fitness colors. Main samples: 128px. Below each: actual 32, 48 and 64px exports.</p><button onclick="document.body.classList.toggle('dark')">Toggle dark review surface</button></header><section>'''+cards+'''</section><footer>Sizes: 32 · 48 · 64 · 128 · 256px. Editable masters and handoff guide included. Concept pack — app integration is intentionally separate.</footer></main></html>''',encoding='utf-8')
+# A dedicated entry point keeps new muscle stickers from getting lost below the original pack.
+import re
+muscle_cards = ''.join(card for card in re.findall(r'<article>.*?</article>', cards) if '128px/muscles/' in card)
+page = (ROOT/'preview.html').read_text(encoding='utf-8')
+muscle_page = page.replace(cards, muscle_cards).replace('Little stickers. Real progress.', 'Muscle category stickers').replace('28 original SVG illustrations, including 12 muscle and exercise categories.', '12 muscle and exercise category stickers. Glutes is represented by a purple plum.')
+(ROOT/'muscle-preview.html').write_text(muscle_page, encoding='utf-8')
+page = page.replace('<section>', '<p><a href="muscle-preview.html" style="color:#127F73;font-weight:800">View the 12 new muscle stickers →</a> · <a href="milestones/preview.html" style="color:#127F73;font-weight:800">View milestone badges →</a></p><section>', 1)
+(ROOT/'preview.html').write_text(page, encoding='utf-8')
+print(f'Built and XML-validated {len(ICONS)*6} SVGs, manifest.json and both preview pages in {ROOT}')
+

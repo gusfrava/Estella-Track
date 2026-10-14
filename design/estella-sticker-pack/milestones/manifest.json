@@ -1,0 +1,1157 @@
+{
+  "name": "Estella Milestone Badges",
+  "version": "2.0.0",
+  "source": "js/data/badges.js",
+  "tierOrder": [
+    "bronze",
+    "silver",
+    "gold",
+    "platinum",
+    "diamond",
+    "titanium"
+  ],
+  "suggestedTiersOnly": true,
+  "sizes": [
+    32,
+    48,
+    64,
+    128,
+    256
+  ],
+  "badges": [
+    {
+      "id": "w1",
+      "family": "workouts",
+      "counter": "workouts",
+      "at": 1,
+      "conceptOnly": false,
+      "label": "1 workouts",
+      "tier": "bronze",
+      "variants": {
+        "bronze": {
+          "masters": "masters/workouts/bronze/w1.svg",
+          "32px": "32px/workouts/bronze/w1.svg",
+          "48px": "48px/workouts/bronze/w1.svg",
+          "64px": "64px/workouts/bronze/w1.svg",
+          "128px": "128px/workouts/bronze/w1.svg",
+          "256px": "256px/workouts/bronze/w1.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/workouts/bronze/w1.svg",
+        "32px": "animated/32px/workouts/bronze/w1.svg",
+        "48px": "animated/48px/workouts/bronze/w1.svg",
+        "64px": "animated/64px/workouts/bronze/w1.svg",
+        "128px": "animated/128px/workouts/bronze/w1.svg",
+        "256px": "animated/256px/workouts/bronze/w1.svg"
+      }
+    },
+    {
+      "id": "w10",
+      "family": "workouts",
+      "counter": "workouts",
+      "at": 10,
+      "conceptOnly": false,
+      "label": "10 workouts",
+      "tier": "silver",
+      "variants": {
+        "silver": {
+          "masters": "masters/workouts/silver/w10.svg",
+          "32px": "32px/workouts/silver/w10.svg",
+          "48px": "48px/workouts/silver/w10.svg",
+          "64px": "64px/workouts/silver/w10.svg",
+          "128px": "128px/workouts/silver/w10.svg",
+          "256px": "256px/workouts/silver/w10.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/workouts/silver/w10.svg",
+        "32px": "animated/32px/workouts/silver/w10.svg",
+        "48px": "animated/48px/workouts/silver/w10.svg",
+        "64px": "animated/64px/workouts/silver/w10.svg",
+        "128px": "animated/128px/workouts/silver/w10.svg",
+        "256px": "animated/256px/workouts/silver/w10.svg"
+      }
+    },
+    {
+      "id": "w25",
+      "family": "workouts",
+      "counter": "workouts",
+      "at": 25,
+      "conceptOnly": false,
+      "label": "25 workouts",
+      "tier": "gold",
+      "variants": {
+        "gold": {
+          "masters": "masters/workouts/gold/w25.svg",
+          "32px": "32px/workouts/gold/w25.svg",
+          "48px": "48px/workouts/gold/w25.svg",
+          "64px": "64px/workouts/gold/w25.svg",
+          "128px": "128px/workouts/gold/w25.svg",
+          "256px": "256px/workouts/gold/w25.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/workouts/gold/w25.svg",
+        "32px": "animated/32px/workouts/gold/w25.svg",
+        "48px": "animated/48px/workouts/gold/w25.svg",
+        "64px": "animated/64px/workouts/gold/w25.svg",
+        "128px": "animated/128px/workouts/gold/w25.svg",
+        "256px": "animated/256px/workouts/gold/w25.svg"
+      }
+    },
+    {
+      "id": "w50",
+      "family": "workouts",
+      "counter": "workouts",
+      "at": 50,
+      "conceptOnly": false,
+      "label": "50 workouts",
+      "tier": "platinum",
+      "variants": {
+        "platinum": {
+          "masters": "masters/workouts/platinum/w50.svg",
+          "32px": "32px/workouts/platinum/w50.svg",
+          "48px": "48px/workouts/platinum/w50.svg",
+          "64px": "64px/workouts/platinum/w50.svg",
+          "128px": "128px/workouts/platinum/w50.svg",
+          "256px": "256px/workouts/platinum/w50.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/workouts/platinum/w50.svg",
+        "32px": "animated/32px/workouts/platinum/w50.svg",
+        "48px": "animated/48px/workouts/platinum/w50.svg",
+        "64px": "animated/64px/workouts/platinum/w50.svg",
+        "128px": "animated/128px/workouts/platinum/w50.svg",
+        "256px": "animated/256px/workouts/platinum/w50.svg"
+      }
+    },
+    {
+      "id": "w100",
+      "family": "workouts",
+      "counter": "workouts",
+      "at": 100,
+      "conceptOnly": false,
+      "label": "100 workouts",
+      "tier": "diamond",
+      "variants": {
+        "diamond": {
+          "masters": "masters/workouts/diamond/w100.svg",
+          "32px": "32px/workouts/diamond/w100.svg",
+          "48px": "48px/workouts/diamond/w100.svg",
+          "64px": "64px/workouts/diamond/w100.svg",
+          "128px": "128px/workouts/diamond/w100.svg",
+          "256px": "256px/workouts/diamond/w100.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/workouts/diamond/w100.svg",
+        "32px": "animated/32px/workouts/diamond/w100.svg",
+        "48px": "animated/48px/workouts/diamond/w100.svg",
+        "64px": "animated/64px/workouts/diamond/w100.svg",
+        "128px": "animated/128px/workouts/diamond/w100.svg",
+        "256px": "animated/256px/workouts/diamond/w100.svg"
+      }
+    },
+    {
+      "id": "w250",
+      "family": "workouts",
+      "counter": "workouts",
+      "at": 250,
+      "conceptOnly": false,
+      "label": "250 workouts",
+      "tier": "titanium",
+      "variants": {
+        "titanium": {
+          "masters": "masters/workouts/titanium/w250.svg",
+          "32px": "32px/workouts/titanium/w250.svg",
+          "48px": "48px/workouts/titanium/w250.svg",
+          "64px": "64px/workouts/titanium/w250.svg",
+          "128px": "128px/workouts/titanium/w250.svg",
+          "256px": "256px/workouts/titanium/w250.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/workouts/titanium/w250.svg",
+        "32px": "animated/32px/workouts/titanium/w250.svg",
+        "48px": "animated/48px/workouts/titanium/w250.svg",
+        "64px": "animated/64px/workouts/titanium/w250.svg",
+        "128px": "animated/128px/workouts/titanium/w250.svg",
+        "256px": "animated/256px/workouts/titanium/w250.svg"
+      }
+    },
+    {
+      "id": "s2",
+      "family": "streak",
+      "counter": "bestStreak",
+      "at": 2,
+      "conceptOnly": false,
+      "label": "2 weeks in a row",
+      "tier": "bronze",
+      "variants": {
+        "bronze": {
+          "masters": "masters/streak/bronze/s2.svg",
+          "32px": "32px/streak/bronze/s2.svg",
+          "48px": "48px/streak/bronze/s2.svg",
+          "64px": "64px/streak/bronze/s2.svg",
+          "128px": "128px/streak/bronze/s2.svg",
+          "256px": "256px/streak/bronze/s2.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/streak/bronze/s2.svg",
+        "32px": "animated/32px/streak/bronze/s2.svg",
+        "48px": "animated/48px/streak/bronze/s2.svg",
+        "64px": "animated/64px/streak/bronze/s2.svg",
+        "128px": "animated/128px/streak/bronze/s2.svg",
+        "256px": "animated/256px/streak/bronze/s2.svg"
+      }
+    },
+    {
+      "id": "s4",
+      "family": "streak",
+      "counter": "bestStreak",
+      "at": 4,
+      "conceptOnly": false,
+      "label": "4 weeks in a row",
+      "tier": "silver",
+      "variants": {
+        "silver": {
+          "masters": "masters/streak/silver/s4.svg",
+          "32px": "32px/streak/silver/s4.svg",
+          "48px": "48px/streak/silver/s4.svg",
+          "64px": "64px/streak/silver/s4.svg",
+          "128px": "128px/streak/silver/s4.svg",
+          "256px": "256px/streak/silver/s4.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/streak/silver/s4.svg",
+        "32px": "animated/32px/streak/silver/s4.svg",
+        "48px": "animated/48px/streak/silver/s4.svg",
+        "64px": "animated/64px/streak/silver/s4.svg",
+        "128px": "animated/128px/streak/silver/s4.svg",
+        "256px": "animated/256px/streak/silver/s4.svg"
+      }
+    },
+    {
+      "id": "s8",
+      "family": "streak",
+      "counter": "bestStreak",
+      "at": 8,
+      "conceptOnly": false,
+      "label": "8 weeks in a row",
+      "tier": "gold",
+      "variants": {
+        "gold": {
+          "masters": "masters/streak/gold/s8.svg",
+          "32px": "32px/streak/gold/s8.svg",
+          "48px": "48px/streak/gold/s8.svg",
+          "64px": "64px/streak/gold/s8.svg",
+          "128px": "128px/streak/gold/s8.svg",
+          "256px": "256px/streak/gold/s8.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/streak/gold/s8.svg",
+        "32px": "animated/32px/streak/gold/s8.svg",
+        "48px": "animated/48px/streak/gold/s8.svg",
+        "64px": "animated/64px/streak/gold/s8.svg",
+        "128px": "animated/128px/streak/gold/s8.svg",
+        "256px": "animated/256px/streak/gold/s8.svg"
+      }
+    },
+    {
+      "id": "s12",
+      "family": "streak",
+      "counter": "bestStreak",
+      "at": 12,
+      "conceptOnly": false,
+      "label": "12 weeks in a row",
+      "tier": "platinum",
+      "variants": {
+        "platinum": {
+          "masters": "masters/streak/platinum/s12.svg",
+          "32px": "32px/streak/platinum/s12.svg",
+          "48px": "48px/streak/platinum/s12.svg",
+          "64px": "64px/streak/platinum/s12.svg",
+          "128px": "128px/streak/platinum/s12.svg",
+          "256px": "256px/streak/platinum/s12.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/streak/platinum/s12.svg",
+        "32px": "animated/32px/streak/platinum/s12.svg",
+        "48px": "animated/48px/streak/platinum/s12.svg",
+        "64px": "animated/64px/streak/platinum/s12.svg",
+        "128px": "animated/128px/streak/platinum/s12.svg",
+        "256px": "animated/256px/streak/platinum/s12.svg"
+      }
+    },
+    {
+      "id": "s26",
+      "family": "streak",
+      "counter": "bestStreak",
+      "at": 26,
+      "conceptOnly": false,
+      "label": "26 weeks in a row",
+      "tier": "diamond",
+      "variants": {
+        "diamond": {
+          "masters": "masters/streak/diamond/s26.svg",
+          "32px": "32px/streak/diamond/s26.svg",
+          "48px": "48px/streak/diamond/s26.svg",
+          "64px": "64px/streak/diamond/s26.svg",
+          "128px": "128px/streak/diamond/s26.svg",
+          "256px": "256px/streak/diamond/s26.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/streak/diamond/s26.svg",
+        "32px": "animated/32px/streak/diamond/s26.svg",
+        "48px": "animated/48px/streak/diamond/s26.svg",
+        "64px": "animated/64px/streak/diamond/s26.svg",
+        "128px": "animated/128px/streak/diamond/s26.svg",
+        "256px": "animated/256px/streak/diamond/s26.svg"
+      }
+    },
+    {
+      "id": "s52",
+      "family": "streak",
+      "counter": "bestStreak",
+      "at": 52,
+      "conceptOnly": false,
+      "label": "52 weeks in a row",
+      "tier": "titanium",
+      "variants": {
+        "titanium": {
+          "masters": "masters/streak/titanium/s52.svg",
+          "32px": "32px/streak/titanium/s52.svg",
+          "48px": "48px/streak/titanium/s52.svg",
+          "64px": "64px/streak/titanium/s52.svg",
+          "128px": "128px/streak/titanium/s52.svg",
+          "256px": "256px/streak/titanium/s52.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/streak/titanium/s52.svg",
+        "32px": "animated/32px/streak/titanium/s52.svg",
+        "48px": "animated/48px/streak/titanium/s52.svg",
+        "64px": "animated/64px/streak/titanium/s52.svg",
+        "128px": "animated/128px/streak/titanium/s52.svg",
+        "256px": "animated/256px/streak/titanium/s52.svg"
+      }
+    },
+    {
+      "id": "r1",
+      "family": "records",
+      "counter": "records",
+      "at": 1,
+      "conceptOnly": false,
+      "label": "1 records",
+      "tier": "bronze",
+      "variants": {
+        "bronze": {
+          "masters": "masters/records/bronze/r1.svg",
+          "32px": "32px/records/bronze/r1.svg",
+          "48px": "48px/records/bronze/r1.svg",
+          "64px": "64px/records/bronze/r1.svg",
+          "128px": "128px/records/bronze/r1.svg",
+          "256px": "256px/records/bronze/r1.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/records/bronze/r1.svg",
+        "32px": "animated/32px/records/bronze/r1.svg",
+        "48px": "animated/48px/records/bronze/r1.svg",
+        "64px": "animated/64px/records/bronze/r1.svg",
+        "128px": "animated/128px/records/bronze/r1.svg",
+        "256px": "animated/256px/records/bronze/r1.svg"
+      }
+    },
+    {
+      "id": "r10",
+      "family": "records",
+      "counter": "records",
+      "at": 10,
+      "conceptOnly": false,
+      "label": "10 records",
+      "tier": "silver",
+      "variants": {
+        "silver": {
+          "masters": "masters/records/silver/r10.svg",
+          "32px": "32px/records/silver/r10.svg",
+          "48px": "48px/records/silver/r10.svg",
+          "64px": "64px/records/silver/r10.svg",
+          "128px": "128px/records/silver/r10.svg",
+          "256px": "256px/records/silver/r10.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/records/silver/r10.svg",
+        "32px": "animated/32px/records/silver/r10.svg",
+        "48px": "animated/48px/records/silver/r10.svg",
+        "64px": "animated/64px/records/silver/r10.svg",
+        "128px": "animated/128px/records/silver/r10.svg",
+        "256px": "animated/256px/records/silver/r10.svg"
+      }
+    },
+    {
+      "id": "r25",
+      "family": "records",
+      "counter": "records",
+      "at": 25,
+      "conceptOnly": false,
+      "label": "25 records",
+      "tier": "gold",
+      "variants": {
+        "gold": {
+          "masters": "masters/records/gold/r25.svg",
+          "32px": "32px/records/gold/r25.svg",
+          "48px": "48px/records/gold/r25.svg",
+          "64px": "64px/records/gold/r25.svg",
+          "128px": "128px/records/gold/r25.svg",
+          "256px": "256px/records/gold/r25.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/records/gold/r25.svg",
+        "32px": "animated/32px/records/gold/r25.svg",
+        "48px": "animated/48px/records/gold/r25.svg",
+        "64px": "animated/64px/records/gold/r25.svg",
+        "128px": "animated/128px/records/gold/r25.svg",
+        "256px": "animated/256px/records/gold/r25.svg"
+      }
+    },
+    {
+      "id": "r50",
+      "family": "records",
+      "counter": "records",
+      "at": 50,
+      "conceptOnly": true,
+      "label": "50 records",
+      "tier": "platinum",
+      "variants": {
+        "platinum": {
+          "masters": "masters/records/platinum/r50.svg",
+          "32px": "32px/records/platinum/r50.svg",
+          "48px": "48px/records/platinum/r50.svg",
+          "64px": "64px/records/platinum/r50.svg",
+          "128px": "128px/records/platinum/r50.svg",
+          "256px": "256px/records/platinum/r50.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/records/platinum/r50.svg",
+        "32px": "animated/32px/records/platinum/r50.svg",
+        "48px": "animated/48px/records/platinum/r50.svg",
+        "64px": "animated/64px/records/platinum/r50.svg",
+        "128px": "animated/128px/records/platinum/r50.svg",
+        "256px": "animated/256px/records/platinum/r50.svg"
+      }
+    },
+    {
+      "id": "r100",
+      "family": "records",
+      "counter": "records",
+      "at": 100,
+      "conceptOnly": true,
+      "label": "100 records",
+      "tier": "diamond",
+      "variants": {
+        "diamond": {
+          "masters": "masters/records/diamond/r100.svg",
+          "32px": "32px/records/diamond/r100.svg",
+          "48px": "48px/records/diamond/r100.svg",
+          "64px": "64px/records/diamond/r100.svg",
+          "128px": "128px/records/diamond/r100.svg",
+          "256px": "256px/records/diamond/r100.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/records/diamond/r100.svg",
+        "32px": "animated/32px/records/diamond/r100.svg",
+        "48px": "animated/48px/records/diamond/r100.svg",
+        "64px": "animated/64px/records/diamond/r100.svg",
+        "128px": "animated/128px/records/diamond/r100.svg",
+        "256px": "animated/256px/records/diamond/r100.svg"
+      }
+    },
+    {
+      "id": "r250",
+      "family": "records",
+      "counter": "records",
+      "at": 250,
+      "conceptOnly": true,
+      "label": "250 records",
+      "tier": "titanium",
+      "variants": {
+        "titanium": {
+          "masters": "masters/records/titanium/r250.svg",
+          "32px": "32px/records/titanium/r250.svg",
+          "48px": "48px/records/titanium/r250.svg",
+          "64px": "64px/records/titanium/r250.svg",
+          "128px": "128px/records/titanium/r250.svg",
+          "256px": "256px/records/titanium/r250.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/records/titanium/r250.svg",
+        "32px": "animated/32px/records/titanium/r250.svg",
+        "48px": "animated/48px/records/titanium/r250.svg",
+        "64px": "animated/64px/records/titanium/r250.svg",
+        "128px": "animated/128px/records/titanium/r250.svg",
+        "256px": "animated/256px/records/titanium/r250.svg"
+      }
+    },
+    {
+      "id": "f1",
+      "family": "social",
+      "counter": "friends",
+      "at": 1,
+      "conceptOnly": false,
+      "label": "1 friends",
+      "tier": "bronze",
+      "variants": {
+        "bronze": {
+          "masters": "masters/social/bronze/f1.svg",
+          "32px": "32px/social/bronze/f1.svg",
+          "48px": "48px/social/bronze/f1.svg",
+          "64px": "64px/social/bronze/f1.svg",
+          "128px": "128px/social/bronze/f1.svg",
+          "256px": "256px/social/bronze/f1.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/bronze/f1.svg",
+        "32px": "animated/32px/social/bronze/f1.svg",
+        "48px": "animated/48px/social/bronze/f1.svg",
+        "64px": "animated/64px/social/bronze/f1.svg",
+        "128px": "animated/128px/social/bronze/f1.svg",
+        "256px": "animated/256px/social/bronze/f1.svg"
+      }
+    },
+    {
+      "id": "f5",
+      "family": "social",
+      "counter": "friends",
+      "at": 5,
+      "conceptOnly": false,
+      "label": "5 friends",
+      "tier": "silver",
+      "variants": {
+        "silver": {
+          "masters": "masters/social/silver/f5.svg",
+          "32px": "32px/social/silver/f5.svg",
+          "48px": "48px/social/silver/f5.svg",
+          "64px": "64px/social/silver/f5.svg",
+          "128px": "128px/social/silver/f5.svg",
+          "256px": "256px/social/silver/f5.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/silver/f5.svg",
+        "32px": "animated/32px/social/silver/f5.svg",
+        "48px": "animated/48px/social/silver/f5.svg",
+        "64px": "animated/64px/social/silver/f5.svg",
+        "128px": "animated/128px/social/silver/f5.svg",
+        "256px": "animated/256px/social/silver/f5.svg"
+      }
+    },
+    {
+      "id": "f10",
+      "family": "social",
+      "counter": "friends",
+      "at": 10,
+      "conceptOnly": true,
+      "label": "10 friends",
+      "tier": "gold",
+      "variants": {
+        "gold": {
+          "masters": "masters/social/gold/f10.svg",
+          "32px": "32px/social/gold/f10.svg",
+          "48px": "48px/social/gold/f10.svg",
+          "64px": "64px/social/gold/f10.svg",
+          "128px": "128px/social/gold/f10.svg",
+          "256px": "256px/social/gold/f10.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/gold/f10.svg",
+        "32px": "animated/32px/social/gold/f10.svg",
+        "48px": "animated/48px/social/gold/f10.svg",
+        "64px": "animated/64px/social/gold/f10.svg",
+        "128px": "animated/128px/social/gold/f10.svg",
+        "256px": "animated/256px/social/gold/f10.svg"
+      }
+    },
+    {
+      "id": "f25",
+      "family": "social",
+      "counter": "friends",
+      "at": 25,
+      "conceptOnly": true,
+      "label": "25 friends",
+      "tier": "platinum",
+      "variants": {
+        "platinum": {
+          "masters": "masters/social/platinum/f25.svg",
+          "32px": "32px/social/platinum/f25.svg",
+          "48px": "48px/social/platinum/f25.svg",
+          "64px": "64px/social/platinum/f25.svg",
+          "128px": "128px/social/platinum/f25.svg",
+          "256px": "256px/social/platinum/f25.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/platinum/f25.svg",
+        "32px": "animated/32px/social/platinum/f25.svg",
+        "48px": "animated/48px/social/platinum/f25.svg",
+        "64px": "animated/64px/social/platinum/f25.svg",
+        "128px": "animated/128px/social/platinum/f25.svg",
+        "256px": "animated/256px/social/platinum/f25.svg"
+      }
+    },
+    {
+      "id": "f50",
+      "family": "social",
+      "counter": "friends",
+      "at": 50,
+      "conceptOnly": true,
+      "label": "50 friends",
+      "tier": "diamond",
+      "variants": {
+        "diamond": {
+          "masters": "masters/social/diamond/f50.svg",
+          "32px": "32px/social/diamond/f50.svg",
+          "48px": "48px/social/diamond/f50.svg",
+          "64px": "64px/social/diamond/f50.svg",
+          "128px": "128px/social/diamond/f50.svg",
+          "256px": "256px/social/diamond/f50.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/diamond/f50.svg",
+        "32px": "animated/32px/social/diamond/f50.svg",
+        "48px": "animated/48px/social/diamond/f50.svg",
+        "64px": "animated/64px/social/diamond/f50.svg",
+        "128px": "animated/128px/social/diamond/f50.svg",
+        "256px": "animated/256px/social/diamond/f50.svg"
+      }
+    },
+    {
+      "id": "f100",
+      "family": "social",
+      "counter": "friends",
+      "at": 100,
+      "conceptOnly": true,
+      "label": "100 friends",
+      "tier": "titanium",
+      "variants": {
+        "titanium": {
+          "masters": "masters/social/titanium/f100.svg",
+          "32px": "32px/social/titanium/f100.svg",
+          "48px": "48px/social/titanium/f100.svg",
+          "64px": "64px/social/titanium/f100.svg",
+          "128px": "128px/social/titanium/f100.svg",
+          "256px": "256px/social/titanium/f100.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/titanium/f100.svg",
+        "32px": "animated/32px/social/titanium/f100.svg",
+        "48px": "animated/48px/social/titanium/f100.svg",
+        "64px": "animated/64px/social/titanium/f100.svg",
+        "128px": "animated/128px/social/titanium/f100.svg",
+        "256px": "animated/256px/social/titanium/f100.svg"
+      }
+    },
+    {
+      "id": "c1",
+      "family": "social",
+      "counter": "cheersSent",
+      "at": 1,
+      "conceptOnly": false,
+      "label": "1 cheers sent",
+      "tier": "bronze",
+      "variants": {
+        "bronze": {
+          "masters": "masters/social/bronze/c1.svg",
+          "32px": "32px/social/bronze/c1.svg",
+          "48px": "48px/social/bronze/c1.svg",
+          "64px": "64px/social/bronze/c1.svg",
+          "128px": "128px/social/bronze/c1.svg",
+          "256px": "256px/social/bronze/c1.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/bronze/c1.svg",
+        "32px": "animated/32px/social/bronze/c1.svg",
+        "48px": "animated/48px/social/bronze/c1.svg",
+        "64px": "animated/64px/social/bronze/c1.svg",
+        "128px": "animated/128px/social/bronze/c1.svg",
+        "256px": "animated/256px/social/bronze/c1.svg"
+      }
+    },
+    {
+      "id": "c10",
+      "family": "social",
+      "counter": "cheersSent",
+      "at": 10,
+      "conceptOnly": false,
+      "label": "10 cheers sent",
+      "tier": "silver",
+      "variants": {
+        "silver": {
+          "masters": "masters/social/silver/c10.svg",
+          "32px": "32px/social/silver/c10.svg",
+          "48px": "48px/social/silver/c10.svg",
+          "64px": "64px/social/silver/c10.svg",
+          "128px": "128px/social/silver/c10.svg",
+          "256px": "256px/social/silver/c10.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/silver/c10.svg",
+        "32px": "animated/32px/social/silver/c10.svg",
+        "48px": "animated/48px/social/silver/c10.svg",
+        "64px": "animated/64px/social/silver/c10.svg",
+        "128px": "animated/128px/social/silver/c10.svg",
+        "256px": "animated/256px/social/silver/c10.svg"
+      }
+    },
+    {
+      "id": "c25",
+      "family": "social",
+      "counter": "cheersSent",
+      "at": 25,
+      "conceptOnly": true,
+      "label": "25 cheers sent",
+      "tier": "gold",
+      "variants": {
+        "gold": {
+          "masters": "masters/social/gold/c25.svg",
+          "32px": "32px/social/gold/c25.svg",
+          "48px": "48px/social/gold/c25.svg",
+          "64px": "64px/social/gold/c25.svg",
+          "128px": "128px/social/gold/c25.svg",
+          "256px": "256px/social/gold/c25.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/gold/c25.svg",
+        "32px": "animated/32px/social/gold/c25.svg",
+        "48px": "animated/48px/social/gold/c25.svg",
+        "64px": "animated/64px/social/gold/c25.svg",
+        "128px": "animated/128px/social/gold/c25.svg",
+        "256px": "animated/256px/social/gold/c25.svg"
+      }
+    },
+    {
+      "id": "c50",
+      "family": "social",
+      "counter": "cheersSent",
+      "at": 50,
+      "conceptOnly": false,
+      "label": "50 cheers sent",
+      "tier": "platinum",
+      "variants": {
+        "platinum": {
+          "masters": "masters/social/platinum/c50.svg",
+          "32px": "32px/social/platinum/c50.svg",
+          "48px": "48px/social/platinum/c50.svg",
+          "64px": "64px/social/platinum/c50.svg",
+          "128px": "128px/social/platinum/c50.svg",
+          "256px": "256px/social/platinum/c50.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/platinum/c50.svg",
+        "32px": "animated/32px/social/platinum/c50.svg",
+        "48px": "animated/48px/social/platinum/c50.svg",
+        "64px": "animated/64px/social/platinum/c50.svg",
+        "128px": "animated/128px/social/platinum/c50.svg",
+        "256px": "animated/256px/social/platinum/c50.svg"
+      }
+    },
+    {
+      "id": "c100",
+      "family": "social",
+      "counter": "cheersSent",
+      "at": 100,
+      "conceptOnly": true,
+      "label": "100 cheers sent",
+      "tier": "diamond",
+      "variants": {
+        "diamond": {
+          "masters": "masters/social/diamond/c100.svg",
+          "32px": "32px/social/diamond/c100.svg",
+          "48px": "48px/social/diamond/c100.svg",
+          "64px": "64px/social/diamond/c100.svg",
+          "128px": "128px/social/diamond/c100.svg",
+          "256px": "256px/social/diamond/c100.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/diamond/c100.svg",
+        "32px": "animated/32px/social/diamond/c100.svg",
+        "48px": "animated/48px/social/diamond/c100.svg",
+        "64px": "animated/64px/social/diamond/c100.svg",
+        "128px": "animated/128px/social/diamond/c100.svg",
+        "256px": "animated/256px/social/diamond/c100.svg"
+      }
+    },
+    {
+      "id": "c250",
+      "family": "social",
+      "counter": "cheersSent",
+      "at": 250,
+      "conceptOnly": true,
+      "label": "250 cheers sent",
+      "tier": "titanium",
+      "variants": {
+        "titanium": {
+          "masters": "masters/social/titanium/c250.svg",
+          "32px": "32px/social/titanium/c250.svg",
+          "48px": "48px/social/titanium/c250.svg",
+          "64px": "64px/social/titanium/c250.svg",
+          "128px": "128px/social/titanium/c250.svg",
+          "256px": "256px/social/titanium/c250.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/titanium/c250.svg",
+        "32px": "animated/32px/social/titanium/c250.svg",
+        "48px": "animated/48px/social/titanium/c250.svg",
+        "64px": "animated/64px/social/titanium/c250.svg",
+        "128px": "animated/128px/social/titanium/c250.svg",
+        "256px": "animated/256px/social/titanium/c250.svg"
+      }
+    },
+    {
+      "id": "cr1",
+      "family": "social",
+      "counter": "cheersReceived",
+      "at": 1,
+      "conceptOnly": true,
+      "label": "1 cheers received",
+      "tier": "bronze",
+      "variants": {
+        "bronze": {
+          "masters": "masters/social/bronze/cr1.svg",
+          "32px": "32px/social/bronze/cr1.svg",
+          "48px": "48px/social/bronze/cr1.svg",
+          "64px": "64px/social/bronze/cr1.svg",
+          "128px": "128px/social/bronze/cr1.svg",
+          "256px": "256px/social/bronze/cr1.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/bronze/cr1.svg",
+        "32px": "animated/32px/social/bronze/cr1.svg",
+        "48px": "animated/48px/social/bronze/cr1.svg",
+        "64px": "animated/64px/social/bronze/cr1.svg",
+        "128px": "animated/128px/social/bronze/cr1.svg",
+        "256px": "animated/256px/social/bronze/cr1.svg"
+      }
+    },
+    {
+      "id": "cr10",
+      "family": "social",
+      "counter": "cheersReceived",
+      "at": 10,
+      "conceptOnly": false,
+      "label": "10 cheers received",
+      "tier": "silver",
+      "variants": {
+        "silver": {
+          "masters": "masters/social/silver/cr10.svg",
+          "32px": "32px/social/silver/cr10.svg",
+          "48px": "48px/social/silver/cr10.svg",
+          "64px": "64px/social/silver/cr10.svg",
+          "128px": "128px/social/silver/cr10.svg",
+          "256px": "256px/social/silver/cr10.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/silver/cr10.svg",
+        "32px": "animated/32px/social/silver/cr10.svg",
+        "48px": "animated/48px/social/silver/cr10.svg",
+        "64px": "animated/64px/social/silver/cr10.svg",
+        "128px": "animated/128px/social/silver/cr10.svg",
+        "256px": "animated/256px/social/silver/cr10.svg"
+      }
+    },
+    {
+      "id": "cr25",
+      "family": "social",
+      "counter": "cheersReceived",
+      "at": 25,
+      "conceptOnly": true,
+      "label": "25 cheers received",
+      "tier": "gold",
+      "variants": {
+        "gold": {
+          "masters": "masters/social/gold/cr25.svg",
+          "32px": "32px/social/gold/cr25.svg",
+          "48px": "48px/social/gold/cr25.svg",
+          "64px": "64px/social/gold/cr25.svg",
+          "128px": "128px/social/gold/cr25.svg",
+          "256px": "256px/social/gold/cr25.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/gold/cr25.svg",
+        "32px": "animated/32px/social/gold/cr25.svg",
+        "48px": "animated/48px/social/gold/cr25.svg",
+        "64px": "animated/64px/social/gold/cr25.svg",
+        "128px": "animated/128px/social/gold/cr25.svg",
+        "256px": "animated/256px/social/gold/cr25.svg"
+      }
+    },
+    {
+      "id": "cr50",
+      "family": "social",
+      "counter": "cheersReceived",
+      "at": 50,
+      "conceptOnly": true,
+      "label": "50 cheers received",
+      "tier": "platinum",
+      "variants": {
+        "platinum": {
+          "masters": "masters/social/platinum/cr50.svg",
+          "32px": "32px/social/platinum/cr50.svg",
+          "48px": "48px/social/platinum/cr50.svg",
+          "64px": "64px/social/platinum/cr50.svg",
+          "128px": "128px/social/platinum/cr50.svg",
+          "256px": "256px/social/platinum/cr50.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/platinum/cr50.svg",
+        "32px": "animated/32px/social/platinum/cr50.svg",
+        "48px": "animated/48px/social/platinum/cr50.svg",
+        "64px": "animated/64px/social/platinum/cr50.svg",
+        "128px": "animated/128px/social/platinum/cr50.svg",
+        "256px": "animated/256px/social/platinum/cr50.svg"
+      }
+    },
+    {
+      "id": "cr100",
+      "family": "social",
+      "counter": "cheersReceived",
+      "at": 100,
+      "conceptOnly": true,
+      "label": "100 cheers received",
+      "tier": "diamond",
+      "variants": {
+        "diamond": {
+          "masters": "masters/social/diamond/cr100.svg",
+          "32px": "32px/social/diamond/cr100.svg",
+          "48px": "48px/social/diamond/cr100.svg",
+          "64px": "64px/social/diamond/cr100.svg",
+          "128px": "128px/social/diamond/cr100.svg",
+          "256px": "256px/social/diamond/cr100.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/diamond/cr100.svg",
+        "32px": "animated/32px/social/diamond/cr100.svg",
+        "48px": "animated/48px/social/diamond/cr100.svg",
+        "64px": "animated/64px/social/diamond/cr100.svg",
+        "128px": "animated/128px/social/diamond/cr100.svg",
+        "256px": "animated/256px/social/diamond/cr100.svg"
+      }
+    },
+    {
+      "id": "cr250",
+      "family": "social",
+      "counter": "cheersReceived",
+      "at": 250,
+      "conceptOnly": true,
+      "label": "250 cheers received",
+      "tier": "titanium",
+      "variants": {
+        "titanium": {
+          "masters": "masters/social/titanium/cr250.svg",
+          "32px": "32px/social/titanium/cr250.svg",
+          "48px": "48px/social/titanium/cr250.svg",
+          "64px": "64px/social/titanium/cr250.svg",
+          "128px": "128px/social/titanium/cr250.svg",
+          "256px": "256px/social/titanium/cr250.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/titanium/cr250.svg",
+        "32px": "animated/32px/social/titanium/cr250.svg",
+        "48px": "animated/48px/social/titanium/cr250.svg",
+        "64px": "animated/64px/social/titanium/cr250.svg",
+        "128px": "animated/128px/social/titanium/cr250.svg",
+        "256px": "animated/256px/social/titanium/cr250.svg"
+      }
+    },
+    {
+      "id": "cp1",
+      "family": "social",
+      "counter": "copies",
+      "at": 1,
+      "conceptOnly": false,
+      "label": "1 routine copied",
+      "tier": "bronze",
+      "variants": {
+        "bronze": {
+          "masters": "masters/social/bronze/cp1.svg",
+          "32px": "32px/social/bronze/cp1.svg",
+          "48px": "48px/social/bronze/cp1.svg",
+          "64px": "64px/social/bronze/cp1.svg",
+          "128px": "128px/social/bronze/cp1.svg",
+          "256px": "256px/social/bronze/cp1.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/bronze/cp1.svg",
+        "32px": "animated/32px/social/bronze/cp1.svg",
+        "48px": "animated/48px/social/bronze/cp1.svg",
+        "64px": "animated/64px/social/bronze/cp1.svg",
+        "128px": "animated/128px/social/bronze/cp1.svg",
+        "256px": "animated/256px/social/bronze/cp1.svg"
+      }
+    },
+    {
+      "id": "cp10",
+      "family": "social",
+      "counter": "copies",
+      "at": 10,
+      "conceptOnly": true,
+      "label": "10 routine copied",
+      "tier": "silver",
+      "variants": {
+        "silver": {
+          "masters": "masters/social/silver/cp10.svg",
+          "32px": "32px/social/silver/cp10.svg",
+          "48px": "48px/social/silver/cp10.svg",
+          "64px": "64px/social/silver/cp10.svg",
+          "128px": "128px/social/silver/cp10.svg",
+          "256px": "256px/social/silver/cp10.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/silver/cp10.svg",
+        "32px": "animated/32px/social/silver/cp10.svg",
+        "48px": "animated/48px/social/silver/cp10.svg",
+        "64px": "animated/64px/social/silver/cp10.svg",
+        "128px": "animated/128px/social/silver/cp10.svg",
+        "256px": "animated/256px/social/silver/cp10.svg"
+      }
+    },
+    {
+      "id": "cp25",
+      "family": "social",
+      "counter": "copies",
+      "at": 25,
+      "conceptOnly": true,
+      "label": "25 routine copied",
+      "tier": "gold",
+      "variants": {
+        "gold": {
+          "masters": "masters/social/gold/cp25.svg",
+          "32px": "32px/social/gold/cp25.svg",
+          "48px": "48px/social/gold/cp25.svg",
+          "64px": "64px/social/gold/cp25.svg",
+          "128px": "128px/social/gold/cp25.svg",
+          "256px": "256px/social/gold/cp25.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/gold/cp25.svg",
+        "32px": "animated/32px/social/gold/cp25.svg",
+        "48px": "animated/48px/social/gold/cp25.svg",
+        "64px": "animated/64px/social/gold/cp25.svg",
+        "128px": "animated/128px/social/gold/cp25.svg",
+        "256px": "animated/256px/social/gold/cp25.svg"
+      }
+    },
+    {
+      "id": "cp50",
+      "family": "social",
+      "counter": "copies",
+      "at": 50,
+      "conceptOnly": true,
+      "label": "50 routine copied",
+      "tier": "platinum",
+      "variants": {
+        "platinum": {
+          "masters": "masters/social/platinum/cp50.svg",
+          "32px": "32px/social/platinum/cp50.svg",
+          "48px": "48px/social/platinum/cp50.svg",
+          "64px": "64px/social/platinum/cp50.svg",
+          "128px": "128px/social/platinum/cp50.svg",
+          "256px": "256px/social/platinum/cp50.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/platinum/cp50.svg",
+        "32px": "animated/32px/social/platinum/cp50.svg",
+        "48px": "animated/48px/social/platinum/cp50.svg",
+        "64px": "animated/64px/social/platinum/cp50.svg",
+        "128px": "animated/128px/social/platinum/cp50.svg",
+        "256px": "animated/256px/social/platinum/cp50.svg"
+      }
+    },
+    {
+      "id": "cp100",
+      "family": "social",
+      "counter": "copies",
+      "at": 100,
+      "conceptOnly": true,
+      "label": "100 routine copied",
+      "tier": "diamond",
+      "variants": {
+        "diamond": {
+          "masters": "masters/social/diamond/cp100.svg",
+          "32px": "32px/social/diamond/cp100.svg",
+          "48px": "48px/social/diamond/cp100.svg",
+          "64px": "64px/social/diamond/cp100.svg",
+          "128px": "128px/social/diamond/cp100.svg",
+          "256px": "256px/social/diamond/cp100.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/diamond/cp100.svg",
+        "32px": "animated/32px/social/diamond/cp100.svg",
+        "48px": "animated/48px/social/diamond/cp100.svg",
+        "64px": "animated/64px/social/diamond/cp100.svg",
+        "128px": "animated/128px/social/diamond/cp100.svg",
+        "256px": "animated/256px/social/diamond/cp100.svg"
+      }
+    },
+    {
+      "id": "cp250",
+      "family": "social",
+      "counter": "copies",
+      "at": 250,
+      "conceptOnly": true,
+      "label": "250 routine copied",
+      "tier": "titanium",
+      "variants": {
+        "titanium": {
+          "masters": "masters/social/titanium/cp250.svg",
+          "32px": "32px/social/titanium/cp250.svg",
+          "48px": "48px/social/titanium/cp250.svg",
+          "64px": "64px/social/titanium/cp250.svg",
+          "128px": "128px/social/titanium/cp250.svg",
+          "256px": "256px/social/titanium/cp250.svg"
+        }
+      },
+      "animatedFiles": {
+        "masters": "animated/masters/social/titanium/cp250.svg",
+        "32px": "animated/32px/social/titanium/cp250.svg",
+        "48px": "animated/48px/social/titanium/cp250.svg",
+        "64px": "animated/64px/social/titanium/cp250.svg",
+        "128px": "animated/128px/social/titanium/cp250.svg",
+        "256px": "animated/256px/social/titanium/cp250.svg"
+      }
+    }
+  ]
+}

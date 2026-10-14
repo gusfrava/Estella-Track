@@ -136,6 +136,7 @@ export default {
   libSearchPh:'Search: squat, press, curl…', libGroups:'Muscle groups', libLoading:'Loading exercises…',
   libError:'We couldn’t load the exercise list. You can create your own below.', libPopular:'Popular',
   libNoResults:q=>`No results for “${q}”. You can create it below.`, libCustom:q=>`Create “${q}” as your own exercise`,
+  libAddN:n=>n===1?'Add 1 exercise':`Add ${n} exercises`, libAdded:n=>n===1?'1 exercise added':`${n} exercises added`, libTune:'Adjust sets and weight before adding', libInRoutine:'Already in routine', 
   libCustomEmpty:'Create your own exercise', libFromLibrary:'From the Estella library', libChange:'Change', tagSide:'Per side',
   groups:{pecho:'Chest',espalda:'Back',hombros:'Shoulders',brazos:'Arms',piernas:'Legs',gluteos:'Glutes',core:'Core',cardio:'Cardio',movilidad:'Mobility'},
   videoLabel:'Technique video (optional)', videoPh:'Paste a YouTube link',

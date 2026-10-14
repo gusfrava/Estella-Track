@@ -1,6 +1,6 @@
 {
   "name": "Estella Sticker Pack",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "palette": {
     "ink": "#2B1B12",
     "cream": "#FFF1E1",
@@ -9,7 +9,9 @@
     "deep": "#127F73",
     "yellow": "#FFC94D",
     "paper": "#FFF7DD",
-    "peach": "#E8A36B"
+    "peach": "#E8A36B",
+    "plum": "#8B638C",
+    "plumShade": "#624361"
   },
   "sizes": [
     32,
@@ -226,6 +228,185 @@
         "128px": "128px/social/cheer.svg",
         "256px": "256px/social/cheer.svg"
       }
+    },
+    {
+      "category": "muscles",
+      "name": "chest",
+      "label": "Chest",
+      "files": {
+        "masters": "masters/muscles/chest.svg",
+        "32px": "32px/muscles/chest.svg",
+        "48px": "48px/muscles/chest.svg",
+        "64px": "64px/muscles/chest.svg",
+        "128px": "128px/muscles/chest.svg",
+        "256px": "256px/muscles/chest.svg"
+      }
+    },
+    {
+      "category": "muscles",
+      "name": "back",
+      "label": "Back",
+      "files": {
+        "masters": "masters/muscles/back.svg",
+        "32px": "32px/muscles/back.svg",
+        "48px": "48px/muscles/back.svg",
+        "64px": "64px/muscles/back.svg",
+        "128px": "128px/muscles/back.svg",
+        "256px": "256px/muscles/back.svg"
+      }
+    },
+    {
+      "category": "muscles",
+      "name": "shoulders",
+      "label": "Shoulders",
+      "files": {
+        "masters": "masters/muscles/shoulders.svg",
+        "32px": "32px/muscles/shoulders.svg",
+        "48px": "48px/muscles/shoulders.svg",
+        "64px": "64px/muscles/shoulders.svg",
+        "128px": "128px/muscles/shoulders.svg",
+        "256px": "256px/muscles/shoulders.svg"
+      }
+    },
+    {
+      "category": "muscles",
+      "name": "arms",
+      "label": "Arms",
+      "files": {
+        "masters": "masters/muscles/arms.svg",
+        "32px": "32px/muscles/arms.svg",
+        "48px": "48px/muscles/arms.svg",
+        "64px": "64px/muscles/arms.svg",
+        "128px": "128px/muscles/arms.svg",
+        "256px": "256px/muscles/arms.svg"
+      }
+    },
+    {
+      "category": "muscles",
+      "name": "legs",
+      "label": "Legs",
+      "files": {
+        "masters": "masters/muscles/legs.svg",
+        "32px": "32px/muscles/legs.svg",
+        "48px": "48px/muscles/legs.svg",
+        "64px": "64px/muscles/legs.svg",
+        "128px": "128px/muscles/legs.svg",
+        "256px": "256px/muscles/legs.svg"
+      }
+    },
+    {
+      "category": "muscles",
+      "name": "quads",
+      "label": "Quads",
+      "files": {
+        "masters": "masters/muscles/quads.svg",
+        "32px": "32px/muscles/quads.svg",
+        "48px": "48px/muscles/quads.svg",
+        "64px": "64px/muscles/quads.svg",
+        "128px": "128px/muscles/quads.svg",
+        "256px": "256px/muscles/quads.svg"
+      }
+    },
+    {
+      "category": "muscles",
+      "name": "hamstrings",
+      "label": "Hamstrings",
+      "files": {
+        "masters": "masters/muscles/hamstrings.svg",
+        "32px": "32px/muscles/hamstrings.svg",
+        "48px": "48px/muscles/hamstrings.svg",
+        "64px": "64px/muscles/hamstrings.svg",
+        "128px": "128px/muscles/hamstrings.svg",
+        "256px": "256px/muscles/hamstrings.svg"
+      }
+    },
+    {
+      "category": "muscles",
+      "name": "calves",
+      "label": "Calves",
+      "files": {
+        "masters": "masters/muscles/calves.svg",
+        "32px": "32px/muscles/calves.svg",
+        "48px": "48px/muscles/calves.svg",
+        "64px": "64px/muscles/calves.svg",
+        "128px": "128px/muscles/calves.svg",
+        "256px": "256px/muscles/calves.svg"
+      }
+    },
+    {
+      "category": "muscles",
+      "name": "core",
+      "label": "Core",
+      "files": {
+        "masters": "masters/muscles/core.svg",
+        "32px": "32px/muscles/core.svg",
+        "48px": "48px/muscles/core.svg",
+        "64px": "64px/muscles/core.svg",
+        "128px": "128px/muscles/core.svg",
+        "256px": "256px/muscles/core.svg"
+      }
+    },
+    {
+      "category": "muscles",
+      "name": "glutes-plum",
+      "label": "Glutes \u2014 plum",
+      "files": {
+        "masters": "masters/muscles/glutes-plum.svg",
+        "32px": "32px/muscles/glutes-plum.svg",
+        "48px": "48px/muscles/glutes-plum.svg",
+        "64px": "64px/muscles/glutes-plum.svg",
+        "128px": "128px/muscles/glutes-plum.svg",
+        "256px": "256px/muscles/glutes-plum.svg"
+      }
+    },
+    {
+      "category": "muscles",
+      "name": "cardio",
+      "label": "Cardio",
+      "files": {
+        "masters": "masters/muscles/cardio.svg",
+        "32px": "32px/muscles/cardio.svg",
+        "48px": "48px/muscles/cardio.svg",
+        "64px": "64px/muscles/cardio.svg",
+        "128px": "128px/muscles/cardio.svg",
+        "256px": "256px/muscles/cardio.svg"
+      }
+    },
+    {
+      "category": "muscles",
+      "name": "mobility",
+      "label": "Mobility",
+      "files": {
+        "masters": "masters/muscles/mobility.svg",
+        "32px": "32px/muscles/mobility.svg",
+        "48px": "48px/muscles/mobility.svg",
+        "64px": "64px/muscles/mobility.svg",
+        "128px": "128px/muscles/mobility.svg",
+        "256px": "256px/muscles/mobility.svg"
+      }
     }
-  ]
+  ],
+  "exerciseGroups": {
+    "pecho": "chest",
+    "espalda": "back",
+    "hombros": "shoulders",
+    "brazos": "arms",
+    "piernas": "legs",
+    "gluteos": "glutes-plum",
+    "core": "core",
+    "cardio": "cardio",
+    "movilidad": "mobility"
+  },
+  "chartGroups": {
+    "chest": "chest",
+    "back": "back",
+    "shoulders": "shoulders",
+    "arms": "arms",
+    "glutes": "glutes-plum",
+    "quads": "quads",
+    "hamstrings": "hamstrings",
+    "legs": "legs",
+    "calves": "calves",
+    "core": "core"
+  }
 }

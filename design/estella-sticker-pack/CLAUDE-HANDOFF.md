@@ -19,7 +19,7 @@ This is an isolated proposed artwork pack. The application has not been integrat
 
 ## Verification
 
-Run `python tools/build.py` from this folder. It builds 96 SVGs and parses each as XML. Open preview.html for visual verification. Check that only files in this pack changed when the request is artwork-only. XML validation does not prove visual quality or compatibility with every SVG importer.
+Run `python tools/build.py` from this folder. It builds 168 SVGs and parses each as XML. Open preview.html for visual verification. Check that only files in this pack changed when the request is artwork-only. XML validation does not prove visual quality or compatibility with every SVG importer.
 
 ## Future integration candidates (only when authorized)
 
@@ -29,3 +29,4 @@ Run `python tools/build.py` from this folder. It builds 96 SVGs and parses each 
 - js/views/progress.js: records, streaks and goal illustrations.
 
 Do not blindly replace 24px utility icons with detailed stickers. Keep interaction targets and accessible labels intact. Use static SVG for the initial pack; motion should be a separate approved step.
+

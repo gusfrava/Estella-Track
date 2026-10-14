@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="estella-badge-s52-gold-title">
+  <title id="estella-badge-s52-gold-title">52 weeks in a row, gold tier</title>
+  <defs><filter id="estella-badge-s52-gold-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-badge-s52-gold-artwork" filter="url(#estella-badge-s52-gold-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-badge-s52-gold-base"><circle cx="64" cy="61" r="48" fill="#E4AB35"/><circle cx="64" cy="61" r="40" fill="#FFF7DD"/><path d="M28 46Q39 19 66 21" fill="none" stroke="#FFF0B0" stroke-width="5"/><path d="M96 68l3 5l-3 5l-3 -5Z" fill="#FFF0B0" /><g transform="translate(25 23) scale(.60)"><path d="M64 16Q84 34 78 51Q89 47 91 38Q118 76 92 99Q65 120 39 100Q10 78 36 47Q35 65 47 65Q42 43 64 16Z" fill="#FF6A2B" /><path d="M64 61Q82 78 78 89Q75 101 62 101Q43 99 48 85Q51 78 57 75Q55 86 61 86Q68 83 64 61Z" fill="#FFC94D" /></g><rect x="43" y="87" width="42" height="24" rx="9" fill="#FFF1E1"/><g transform="translate(54.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M0 1V7" fill="none" /><path d="M1 8H7" fill="none" /><path d="M8 9V15" fill="none" /><path d="M1 16H7" fill="none" /></g><g transform="translate(66.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M8 1V7" fill="none" /><path d="M1 8H7" fill="none" /><path d="M0 9V15" fill="none" /><path d="M1 16H7" fill="none" /></g></g>
+    <g id="estella-badge-s52-gold-details"></g>
+  </g>
+</svg>

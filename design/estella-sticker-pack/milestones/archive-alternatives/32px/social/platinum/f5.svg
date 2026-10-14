@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 128 128" role="img" aria-labelledby="estella-badge-f5-platinum-title">
+  <title id="estella-badge-f5-platinum-title">5 friends, platinum tier</title>
+  <defs><filter id="estella-badge-f5-platinum-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-badge-f5-platinum-artwork" filter="url(#estella-badge-f5-platinum-sticker)" stroke="#2B1B12" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-badge-f5-platinum-base"><path d="M43 13H85L111 39V81L85 108H43L17 81V39Z" fill="#A7C7C0" /><path d="M47 25H81L99 44V76L81 96H47L29 76V44Z" fill="#FFF7DD" /><path d="M43 13L47 25H81L85 13M17 39L29 44M111 39L99 44M17 81L29 76M111 81L99 76M43 108L47 96M85 108L81 96" fill="none" stroke="#F3FFFA" stroke-width="3"/><g transform="translate(25 23) scale(.60)"><path d="M15 103V90Q15 71 39 71Q63 71 63 91V103Z" fill="#3DC4B3" /><path d="M64 103V90Q64 72 87 72Q111 72 111 91V103Z" fill="#FF6A2B" /><circle cx="39" cy="51" r="18" fill="#E8A36B"/><circle cx="87" cy="52" r="18" fill="#E8A36B"/><path d="M21 47Q17 26 36 29Q44 17 50 31Q60 28 57 46L44 40L30 47Z" fill="#2B1B12" /><path d="M70 45Q64 28 78 31Q84 20 94 33Q108 31 104 48L92 42L80 48Z" fill="#2B1B12" /></g><rect x="43" y="87" width="42" height="24" rx="9" fill="#FFF1E1"/><g transform="translate(60.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M0 1V7" fill="none" /><path d="M1 8H7" fill="none" /><path d="M8 9V15" fill="none" /><path d="M1 16H7" fill="none" /></g></g>
+    <g id="estella-badge-f5-platinum-details"></g>
+  </g>
+</svg>

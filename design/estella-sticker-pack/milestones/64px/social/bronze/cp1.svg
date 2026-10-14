@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 128 128" role="img" aria-labelledby="estella-badge-cp1-bronze-title">
+  <title id="estella-badge-cp1-bronze-title">1 routine copied, bronze tier</title>
+  <defs><filter id="estella-badge-cp1-bronze-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-badge-cp1-bronze-artwork" filter="url(#estella-badge-cp1-bronze-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-badge-cp1-bronze-base"><circle cx="64" cy="61" r="48" fill="#B87847"/><circle cx="64" cy="61" r="40" fill="#FFF7DD"/><path d="M28 46Q39 19 66 21" fill="none" stroke="#F5C79C" stroke-width="5"/><g transform="translate(25 23) scale(.60)"><g class="badge-motion motion-copies"><path d="M42 84L30 101L18 100M59 85L70 100L82 100" fill="none" stroke-width="11"/><path d="M34 58Q46 50 66 58L76 87H28Z" fill="#FFF1E1" /><path d="M33 66H69M30 77H73" fill="none" stroke-width="7"/><path d="M33 63L20 76L27 86" fill="none" stroke-width="10"/><rect x="30" y="21" width="43" height="36" rx="14" fill="#E8A36B"/><path d="M27 27Q25 7 50 9Q69 6 75 27Z" fill="#2B1B12" /><rect x="26" y="23" width="51" height="8" rx="4" fill="#127F73"/><path d="M30 33Q41 29 51 34Q62 29 73 33L71 44Q61 48 52 42Q39 49 31 42Z" fill="#2B1B12" /><path d="M36 35H46L45 41H37ZM57 35H67L66 41H58Z" fill="#FFF1E1" /><circle cx="43" cy="38" r="2" fill="#2B1B12"/><circle cx="64" cy="38" r="2" fill="#2B1B12"/><path d="M49 49Q59 56 66 47" fill="none" stroke-width="2.5"/><g transform="rotate(12 88 68)"><rect x="71" y="45" width="35" height="46" rx="5" fill="#FFF7DD"/><rect x="80" y="41" width="17" height="8" rx="3" fill="#3DC4B3"/><path d="M78 59v12M99 59v12M78 65h21" fill="none" stroke-width="4"/><path d="M79 80h18" fill="none" stroke-width="3"/></g><path d="M62 64L74 77" fill="none" stroke-width="10"/><circle cx="77" cy="78" r="6" fill="#E8A36B"/></g></g><rect x="43" y="87" width="42" height="24" rx="9" fill="#FFF1E1"/><g transform="translate(60.0 91)" stroke-width="2.6"><path d="M8 1V7" fill="none" /><path d="M8 9V15" fill="none" /></g></g>
+    <g id="estella-badge-cp1-bronze-details"></g>
+  </g>
+</svg>

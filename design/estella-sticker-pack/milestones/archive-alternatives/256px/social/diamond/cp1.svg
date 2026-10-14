@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128" role="img" aria-labelledby="estella-badge-cp1-diamond-title">
+  <title id="estella-badge-cp1-diamond-title">1 routine copied, diamond tier</title>
+  <defs><filter id="estella-badge-cp1-diamond-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-badge-cp1-diamond-artwork" filter="url(#estella-badge-cp1-diamond-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-badge-cp1-diamond-base"><path d="M43 13H85L111 39V81L85 108H43L17 81V39Z" fill="#83C9E0" /><path d="M47 25H81L99 44V76L81 96H47L29 76V44Z" fill="#FFF7DD" /><path d="M43 13L47 25H81L85 13M17 39L29 44M111 39L99 44M17 81L29 76M111 81L99 76M43 108L47 96M85 108L81 96" fill="none" stroke="#EDF7FF" stroke-width="3"/><path d="M92 20l5 8l9 3l-9 4l-5 9l-4 -9l-9 -4l9 -3Z" fill="#EDF7FF" /><g transform="translate(25 23) scale(.60)"><rect x="24" y="28" width="80" height="77" rx="10" fill="#FFF7DD"/><path d="M24 51V38Q24 28 34 28H94Q104 28 104 38V51Z" fill="#FF6A2B" /><path d="M44 20v17M83 20v17" fill="none" /><rect x="37" y="65" width="16" height="15" rx="4" fill="#3DC4B3"/><path d="M66 72h21M39 91h14M66 91h21" fill="none" /></g><rect x="43" y="87" width="42" height="24" rx="9" fill="#FFF1E1"/><g transform="translate(60.0 91)" stroke-width="2.6"><path d="M8 1V7" fill="none" /><path d="M8 9V15" fill="none" /></g></g>
+    <g id="estella-badge-cp1-diamond-details"></g>
+  </g>
+</svg>

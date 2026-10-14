@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128" role="img" aria-labelledby="estella-badge-cr25-gold-title">
+  <title id="estella-badge-cr25-gold-title">25 cheers received, gold tier</title>
+  <defs><filter id="estella-badge-cr25-gold-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-badge-cr25-gold-artwork" filter="url(#estella-badge-cr25-gold-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-badge-cr25-gold-base"><circle cx="64" cy="61" r="48" fill="#E4AB35"/><circle cx="64" cy="61" r="40" fill="#FFF7DD"/><path d="M28 46Q39 19 66 21" fill="none" stroke="#FFF0B0" stroke-width="5"/><path d="M96 68l3 5l-3 5l-3 -5Z" fill="#FFF0B0" /><g transform="translate(25 23) scale(.60)"><g class="badge-motion motion-cheersReceived"><path d="M39 73Q64 54 89 73L97 108H31Z" fill="#3DC4B3" /><circle cx="64" cy="48" r="24" fill="#E8A36B"/><path d="M47.2 38.4q16.799999999999997 -26.400000000000002 33.599999999999994 0" fill="none" stroke-width="4"/><path d="M56.8 48h1M71.2 48h1M61 53q3 3 6 0" fill="none" stroke-width="2"/><path d="M24 32l3 5l6 2l-5 4v6l-4 -3l-5 3l1 -6l-5 -4l6 -2Z" fill="#FFC94D" /><path d="M102 28l3 5l6 2l-5 4v6l-4 -3l-5 3l1 -6l-5 -4l6 -2Z" fill="#FFC94D" /></g></g><rect x="43" y="87" width="42" height="24" rx="9" fill="#FFF1E1"/><g transform="translate(54.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M8 1V7" fill="none" /><path d="M1 8H7" fill="none" /><path d="M0 9V15" fill="none" /><path d="M1 16H7" fill="none" /></g><g transform="translate(66.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M0 1V7" fill="none" /><path d="M1 8H7" fill="none" /><path d="M8 9V15" fill="none" /><path d="M1 16H7" fill="none" /></g></g>
+    <g id="estella-badge-cr25-gold-details"></g>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="estella-badge-cr10-platinum-title">
+  <title id="estella-badge-cr10-platinum-title">10 cheers received, platinum tier</title>
+  <defs><filter id="estella-badge-cr10-platinum-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-badge-cr10-platinum-artwork" filter="url(#estella-badge-cr10-platinum-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-badge-cr10-platinum-base"><path d="M43 13H85L111 39V81L85 108H43L17 81V39Z" fill="#A7C7C0" /><path d="M47 25H81L99 44V76L81 96H47L29 76V44Z" fill="#FFF7DD" /><path d="M43 13L47 25H81L85 13M17 39L29 44M111 39L99 44M17 81L29 76M111 81L99 76M43 108L47 96M85 108L81 96" fill="none" stroke="#F3FFFA" stroke-width="3"/><g transform="translate(25 23) scale(.60)"><g transform="rotate(-8 64 64)"><path d="M57 26Q64 12 71 26L81 45L101 48Q116 50 105 62L90 77L93 98Q95 112 82 105L64 95L45 105Q32 112 35 98L38 77L23 62Q12 50 27 48L47 45Z" fill="#FFC94D" /></g></g><rect x="43" y="87" width="42" height="24" rx="9" fill="#FFF1E1"/><g transform="translate(54.0 91)" stroke-width="2.6"><path d="M8 1V7" fill="none" /><path d="M8 9V15" fill="none" /></g><g transform="translate(66.0 91)" stroke-width="2.6"><path d="M1 0H7" fill="none" /><path d="M8 1V7" fill="none" /><path d="M8 9V15" fill="none" /><path d="M1 16H7" fill="none" /><path d="M0 9V15" fill="none" /><path d="M0 1V7" fill="none" /></g></g>
+    <g id="estella-badge-cr10-platinum-details"></g>
+  </g>
+</svg>

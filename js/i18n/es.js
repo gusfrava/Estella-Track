@@ -136,6 +136,7 @@ export default {
   libSearchPh:'Busca: sentadilla, press, curl…', libGroups:'Grupos musculares', libLoading:'Cargando ejercicios…',
   libError:'No pudimos cargar la lista de ejercicios. Puedes crear el tuyo abajo.', libPopular:'Populares',
   libNoResults:q=>`No encontramos “${q}”. Puedes crearlo abajo.`, libCustom:q=>`Crear “${q}” como ejercicio propio`,
+  libAddN:n=>n===1?'Añadir 1 ejercicio':`Añadir ${n} ejercicios`, libAdded:n=>n===1?'1 ejercicio añadido':`${n} ejercicios añadidos`, libTune:'Ajustar series y peso antes de añadir', libInRoutine:'Ya en la rutina', 
   libCustomEmpty:'Crear un ejercicio propio', libFromLibrary:'De la biblioteca de Estella', libChange:'Cambiar', tagSide:'Por lado',
   groups:{pecho:'Pecho',espalda:'Espalda',hombros:'Hombros',brazos:'Brazos',piernas:'Piernas',gluteos:'Glúteos',core:'Core',cardio:'Cardio',movilidad:'Movilidad'},
   videoLabel:'Video de técnica (opcional)', videoPh:'Pega un enlace de YouTube',

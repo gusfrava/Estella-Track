@@ -1,6 +1,7 @@
 // Add / edit an exercise: name, type (weight × reps / reps only / time), per side or not, sets and the target,
 // and an optional technique video. Editing also shows its history.
-// Adding starts in the library picker (exercise-picker.js), which opens this form with the picked exercise.
+// Adding starts in the library picker (exercise-picker.js): several exercises are added straight from there; this form
+// opens for your own exercise, or for one picked exercise with "Ajustar antes de añadir".
 import { openSheet, replaceSheet, closeSheet } from '../ui/sheet.js';
 import { t, getLang } from '../i18n/index.js';
 import { youTubeId, searchUrl } from '../utils/youtube.js';
@@ -88,7 +89,7 @@ export function openExerciseForm(routineId, exerciseId, prefill = null, { replac
     side.onclick = () => { perSide = !perSide; side.setAttribute('aria-checked', perSide); };
     showType();
     const change = s.querySelector('[data-k=change]');
-    if (change) change.onclick = () => openExercisePicker(routineId, { replace: true });
+    if (change) change.onclick = () => openExercisePicker(routineId, { replace: true, change: true });
     // "Buscar en YouTube" searches for whatever name is typed right now (opens in a new tab).
     if (focus === 'video') {
       const v = s.querySelector('#f-video');
