@@ -97,7 +97,7 @@
 .hello-row .hello{margin:0}
 .rhead>.mascot{align-self:center;margin-left:-4px}
 .hello{margin:0 0 4px;font-family:var(--display);font-weight:700;font-size:1.1rem;color:var(--teal-ink)}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);margin:26px 0 22px;border:var(--line) solid var(--ink);border-radius:999px;background:var(--card);overflow:hidden}
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:26px 0 22px;border:var(--line) solid var(--ink);border-radius:999px;background:var(--card);overflow:hidden}
 .tabs button{padding:12px 8px;font-family:var(--display);font-weight:800;font-size:1.05rem}
 .tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
 .authform{display:flex;flex-direction:column}
@@ -147,7 +147,7 @@
   .ex .ib{width:36px;height:36px}
 }
 /* ---------- bottom tabs (Rutinas | Progreso) ---------- */
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:6;max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:6;max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
   height:calc(var(--tabbar-h) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);
   background:var(--card);border:var(--line) solid var(--ink);border-bottom:0;border-radius:24px 24px 0 0}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:var(--display);font-weight:800;font-size:.85rem;color:var(--muted)}
@@ -220,7 +220,7 @@
 .fr-cheer{display:flex;flex-direction:column;gap:8px}
 .fr-cheer>span{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
 .fr-cheer small{color:var(--muted)}
-.cheer-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cheer-btns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .cheer-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:2px solid var(--ink);border-radius:16px;background:var(--card);font-family:var(--display);font-weight:800;font-size:.9rem;box-shadow:2px 3px 0 var(--ink)}
 .cheer-btn svg{width:26px;height:26px}
 .cheer-btn[aria-pressed="true"]{background:var(--orange);color:var(--ink)}
@@ -262,7 +262,7 @@
 .streak-top svg{flex:none;width:46px;height:46px}
 .streak-top b{display:block;font-family:var(--display);font-weight:800;font-size:1.5rem;line-height:1.1}
 .streak-top span{display:block;color:var(--muted);font-size:.92rem;line-height:1.35}
-.sdots{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:14px}
+.sdots{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin-top:14px}
 .sdot{height:14px;border:2px solid var(--ink);border-radius:99px;background:var(--bg)}
 .sdot.on{background:var(--orange)}
 .sdot.now:not(.on){border-style:dashed}
@@ -277,7 +277,7 @@
 .sdot.part{background:linear-gradient(to right,var(--orange) 50%,var(--bg) 50%)}
 .week-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .week-goal{padding:4px 10px;border:2px solid var(--ink);border-radius:99px;background:var(--card);font-family:var(--display);font-weight:800;font-size:.85rem;white-space:nowrap}
-.wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:2px}
+.wdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:2px}
 .wday{display:flex;flex-direction:column;align-items:center;gap:4px}
 .wday i{width:30px;height:30px;border-radius:50%;border:2px solid var(--ink);background:var(--card);display:grid;place-items:center}
 .wday i svg{width:16px;height:16px}
@@ -333,7 +333,7 @@
 .ob-foot .btn{width:100%}
 .ob-foot .btn:disabled{opacity:.4;box-shadow:none}
 /* character cards */
-.ob-chars{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.ob-chars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .ob-char{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px 14px;border:var(--line) solid var(--ink);border-radius:22px;background:var(--card);box-shadow:3px 4px 0 var(--ink)}
 .ob-char[aria-pressed="true"]{background:var(--yellow)}
 .ob-char b{font-family:var(--display);font-weight:800;font-size:1.15rem}
@@ -342,8 +342,8 @@
 .ob-char.off{box-shadow:none;border-style:dashed;opacity:.7}
 .ob-soon{align-self:center;padding:4px 12px;border-radius:99px;background:var(--bg);border:2px dashed var(--ink);font-family:var(--display);font-weight:800;font-size:.9rem}
 /* days 1–7 */
-.ob-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.ob-day{min-width:0;padding:0;aspect-ratio:1;border:var(--line) solid var(--ink);border-radius:14px;background:var(--card);font-family:var(--display);font-weight:800;font-size:1.3rem}
+.ob-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.ob-day{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;width:100%;height:auto;padding:0;aspect-ratio:1/1;text-align:center;border:var(--line) solid var(--ink);border-radius:14px;background:var(--card);font-family:var(--display);font-weight:800;font-size:1.3rem}
 .ob-day[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 .ob-days-label{min-height:64px;display:flex;align-items:center;gap:12px;margin-top:18px;padding:0 4px}
 .ob-days-label span{display:flex;flex-direction:column}
@@ -449,7 +449,7 @@
 .rw-pts svg{width:24px;height:24px;align-self:center}
 .rw-pts b{font-family:var(--display);font-weight:800;font-size:1.6rem;line-height:1}
 .rw-pts span{font-weight:700;color:var(--muted)}
-.rw-row{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.rw-row{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .rw-row li{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0}
 .rw-row li span{font-size:.72rem;font-weight:700;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .rewards .hint{margin:10px 0 0}

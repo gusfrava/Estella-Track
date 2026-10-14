@@ -260,6 +260,21 @@ function celebrateRecord(ex, before) {
   setTimeout(() => feel('points'), 250);
 }
 
+// Run fn once the browser has painted the current frame: a tap shows its result immediately, and the heavier
+// work (saving, re-drawing the whole screen) follows a few milliseconds later.
+const afterPaint = fn => requestAnimationFrame(() => setTimeout(fn, 0));
+
+// Check boxes: flip the box right away, then do the real change (which re-draws it). A second tap on the same
+// box before that happens is ignored.
+const pending = new WeakSet();
+function instantToggle(el, fn) {
+  if (pending.has(el)) return;
+  pending.add(el);
+  el.setAttribute('aria-pressed', el.getAttribute('aria-pressed') !== 'true');
+  el.classList.add('instant');
+  afterPaint(fn);
+}
+
 const isExerciseDone = (rid, exId) => orderedExercises(store.findRoutine(rid)).done.some(i => i.ex.id === exId);
 
 const ACTIONS = {
@@ -286,9 +301,21 @@ const ACTIONS = {
   google: () => auth.google(),
   'local-mode': () => sync.enterLocalMode(),
   // first screen (language) + onboarding
-  'pick-lang': d => { previewLang(d.lang); feel('select'); },
+  'pick-lang': (d, el) => {
+    app.querySelectorAll('[data-action="pick-lang"]').forEach(b => b.setAttribute('aria-pressed', b === el));
+    feel('select');
+    afterPaint(() => previewLang(d.lang));
+  },
   'lang-continue': () => chooseLang(getLang()),
-  'ob-pick': d => { onboarding.choose(d.key, d.value); feel('select'); pop(app.querySelector(`[data-action="ob-pick"][data-key="${d.key}"][data-value="${d.value}"]`)); },
+  'ob-pick': (d, el) => {
+    // Show the pick right away; saving it and re-drawing the screen happen a frame later (so it never feels slow).
+    app.querySelectorAll(`[data-action="ob-pick"][data-key="${d.key}"]`).forEach(b => b.setAttribute('aria-pressed', b === el));
+    feel('select');
+    afterPaint(() => {
+      onboarding.choose(d.key, d.value);
+      pop(app.querySelector(`[data-action="ob-pick"][data-key="${d.key}"][data-value="${d.value}"]`));
+    });
+  },
   'ob-next': () => onboarding.next(),
   'ob-back': () => onboarding.back(),
   'ob-skip': () => onboarding.skipStep(),
@@ -319,10 +346,10 @@ const ACTIONS = {
   'del-act': d => confirmDeleteActivity(d.id),
   // routine screen
   home: () => goHome(),
-  toggle: d => logChange(d.id, rid => store.toggleExercise(rid, d.id), `[data-action="toggle"][data-id="${d.id}"]`),
+  toggle: (d, el) => instantToggle(el, () => logChange(d.id, rid => store.toggleExercise(rid, d.id), `[data-action="toggle"][data-id="${d.id}"]`)),
   repeat: () => { store.repeatRoutine(routineId()); openId = null; window.scrollTo({ top: 0, behavior: 'smooth' }); },
   expand: d => { openId = openId === d.id ? null : d.id; render(); },
-  'set-tick': d => logChange(d.id, rid => store.toggleSet(rid, d.id, Number(d.i)), `[data-action="set-tick"][data-id="${d.id}"][data-i="${d.i}"]`),
+  'set-tick': (d, el) => instantToggle(el, () => logChange(d.id, rid => store.toggleSet(rid, d.id, Number(d.i)), `[data-action="set-tick"][data-id="${d.id}"][data-i="${d.i}"]`)),
   'set-add': d => logChange(d.id, rid => store.addSet(rid, d.id)),
   'set-drop': d => logChange(d.id, rid => store.addDrop(rid, d.id)),
   'set-del': d => logChange(d.id, rid => store.removeSet(rid, d.id, Number(d.i))),
