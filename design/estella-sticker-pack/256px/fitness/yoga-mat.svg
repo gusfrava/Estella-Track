@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128" role="img" aria-labelledby="estella-yoga-mat-title">
+  <title id="estella-yoga-mat-title">Stretch and recover</title>
+  <defs><filter id="estella-yoga-mat-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-yoga-mat-artwork" filter="url(#estella-yoga-mat-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-yoga-mat-base"><path d="M31 36H87L108 86Q111 100 97 103H34Q20 103 20 90V47Z" fill="#3DC4B3" /><path d="M32 36Q17 36 17 51Q17 64 32 64H88L78 36Z" fill="#127F73" /><circle cx="31" cy="50" r="12" fill="#FFF7DD"/><path d="M31 44Q22 44 25 52Q29 59 35 52" fill="none" /></g>
+    <g id="estella-yoga-mat-details"><path d="M40 77h49M44 88h50" fill="none" stroke="#127F73"/></g>
+  </g>
+</svg>

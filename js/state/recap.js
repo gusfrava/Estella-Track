@@ -2,6 +2,7 @@
 // Shown on home during the following week (views/recap.js) and shareable as an image (services/recap-image.js).
 import { getState } from './store.js';
 import { getSocial } from './social.js';
+import { pointsBetween } from './rewards.js';
 import { trainedDays, weeklyGoalFor, weeklyStreak, weekStatusOf, recordsBetween } from './selectors.js';
 import { weekKey, weeksBefore, parseYmd, ymd } from '../utils/dates.js';
 
@@ -11,7 +12,7 @@ const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); r
 export const lastWeekKey = () => weeksBefore(weekKey(), 1);
 
 // { key, from, to, dates (Set), days, goal, status: 'met'|'saved'|'missed', streak (weeks, as of now),
-//   workouts, activities, sets, minutes, records: [{ ex, record }], cheers }
+//   workouts, activities, sets, minutes, records: [{ ex, record }], cheers, points (from the recent points log) }
 export function weekRecap(wk = lastWeekKey(), state = getState()) {
   const from = wk, to = addDays(wk, 6);
   const dates = trainedDays(state).get(wk) || new Set();
@@ -36,7 +37,7 @@ export function weekRecap(wk = lastWeekKey(), state = getState()) {
   return {
     key: wk, from, to, dates, days: dates.size, goal: weeklyGoalFor(state, wk), status: weekStatusOf(state, wk),
     streak: weeklyStreak(state).current, workouts, activities, sets, minutes,
-    records: recordsBetween(state, from, to), cheers,
+    records: recordsBetween(state, from, to), cheers, points: pointsBetween(start, end),
   };
 }
 

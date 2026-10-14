@@ -1,0 +1,231 @@
+{
+  "name": "Estella Sticker Pack",
+  "version": "1.0.0",
+  "palette": {
+    "ink": "#2B1B12",
+    "cream": "#FFF1E1",
+    "orange": "#FF6A2B",
+    "teal": "#3DC4B3",
+    "deep": "#127F73",
+    "yellow": "#FFC94D",
+    "paper": "#FFF7DD",
+    "peach": "#E8A36B"
+  },
+  "sizes": [
+    32,
+    48,
+    64,
+    128,
+    256
+  ],
+  "icons": [
+    {
+      "category": "fitness",
+      "name": "dumbbell",
+      "label": "Strength",
+      "files": {
+        "masters": "masters/fitness/dumbbell.svg",
+        "32px": "32px/fitness/dumbbell.svg",
+        "48px": "48px/fitness/dumbbell.svg",
+        "64px": "64px/fitness/dumbbell.svg",
+        "128px": "128px/fitness/dumbbell.svg",
+        "256px": "256px/fitness/dumbbell.svg"
+      }
+    },
+    {
+      "category": "fitness",
+      "name": "kettlebell",
+      "label": "Kettlebell",
+      "files": {
+        "masters": "masters/fitness/kettlebell.svg",
+        "32px": "32px/fitness/kettlebell.svg",
+        "48px": "48px/fitness/kettlebell.svg",
+        "64px": "64px/fitness/kettlebell.svg",
+        "128px": "128px/fitness/kettlebell.svg",
+        "256px": "256px/fitness/kettlebell.svg"
+      }
+    },
+    {
+      "category": "fitness",
+      "name": "running-shoe",
+      "label": "Running",
+      "files": {
+        "masters": "masters/fitness/running-shoe.svg",
+        "32px": "32px/fitness/running-shoe.svg",
+        "48px": "48px/fitness/running-shoe.svg",
+        "64px": "64px/fitness/running-shoe.svg",
+        "128px": "128px/fitness/running-shoe.svg",
+        "256px": "256px/fitness/running-shoe.svg"
+      }
+    },
+    {
+      "category": "fitness",
+      "name": "stopwatch",
+      "label": "Workout timer",
+      "files": {
+        "masters": "masters/fitness/stopwatch.svg",
+        "32px": "32px/fitness/stopwatch.svg",
+        "48px": "48px/fitness/stopwatch.svg",
+        "64px": "64px/fitness/stopwatch.svg",
+        "128px": "128px/fitness/stopwatch.svg",
+        "256px": "256px/fitness/stopwatch.svg"
+      }
+    },
+    {
+      "category": "fitness",
+      "name": "yoga-mat",
+      "label": "Stretch and recover",
+      "files": {
+        "masters": "masters/fitness/yoga-mat.svg",
+        "32px": "32px/fitness/yoga-mat.svg",
+        "48px": "48px/fitness/yoga-mat.svg",
+        "64px": "64px/fitness/yoga-mat.svg",
+        "128px": "128px/fitness/yoga-mat.svg",
+        "256px": "256px/fitness/yoga-mat.svg"
+      }
+    },
+    {
+      "category": "rewards",
+      "name": "streak-flame",
+      "label": "Training streak",
+      "files": {
+        "masters": "masters/rewards/streak-flame.svg",
+        "32px": "32px/rewards/streak-flame.svg",
+        "48px": "48px/rewards/streak-flame.svg",
+        "64px": "64px/rewards/streak-flame.svg",
+        "128px": "128px/rewards/streak-flame.svg",
+        "256px": "256px/rewards/streak-flame.svg"
+      }
+    },
+    {
+      "category": "rewards",
+      "name": "trophy",
+      "label": "Personal record",
+      "files": {
+        "masters": "masters/rewards/trophy.svg",
+        "32px": "32px/rewards/trophy.svg",
+        "48px": "48px/rewards/trophy.svg",
+        "64px": "64px/rewards/trophy.svg",
+        "128px": "128px/rewards/trophy.svg",
+        "256px": "256px/rewards/trophy.svg"
+      }
+    },
+    {
+      "category": "rewards",
+      "name": "star",
+      "label": "Milestone star",
+      "files": {
+        "masters": "masters/rewards/star.svg",
+        "32px": "32px/rewards/star.svg",
+        "48px": "48px/rewards/star.svg",
+        "64px": "64px/rewards/star.svg",
+        "128px": "128px/rewards/star.svg",
+        "256px": "256px/rewards/star.svg"
+      }
+    },
+    {
+      "category": "rewards",
+      "name": "completion",
+      "label": "Workout complete",
+      "files": {
+        "masters": "masters/rewards/completion.svg",
+        "32px": "32px/rewards/completion.svg",
+        "48px": "48px/rewards/completion.svg",
+        "64px": "64px/rewards/completion.svg",
+        "128px": "128px/rewards/completion.svg",
+        "256px": "256px/rewards/completion.svg"
+      }
+    },
+    {
+      "category": "planning",
+      "name": "calendar",
+      "label": "Weekly plan",
+      "files": {
+        "masters": "masters/planning/calendar.svg",
+        "32px": "32px/planning/calendar.svg",
+        "48px": "48px/planning/calendar.svg",
+        "64px": "64px/planning/calendar.svg",
+        "128px": "128px/planning/calendar.svg",
+        "256px": "256px/planning/calendar.svg"
+      }
+    },
+    {
+      "category": "planning",
+      "name": "goal-target",
+      "label": "Weekly goal",
+      "files": {
+        "masters": "masters/planning/goal-target.svg",
+        "32px": "32px/planning/goal-target.svg",
+        "48px": "48px/planning/goal-target.svg",
+        "64px": "64px/planning/goal-target.svg",
+        "128px": "128px/planning/goal-target.svg",
+        "256px": "256px/planning/goal-target.svg"
+      }
+    },
+    {
+      "category": "wellbeing",
+      "name": "water-bottle",
+      "label": "Hydration",
+      "files": {
+        "masters": "masters/wellbeing/water-bottle.svg",
+        "32px": "32px/wellbeing/water-bottle.svg",
+        "48px": "48px/wellbeing/water-bottle.svg",
+        "64px": "64px/wellbeing/water-bottle.svg",
+        "128px": "128px/wellbeing/water-bottle.svg",
+        "256px": "256px/wellbeing/water-bottle.svg"
+      }
+    },
+    {
+      "category": "wellbeing",
+      "name": "heart",
+      "label": "Wellbeing",
+      "files": {
+        "masters": "masters/wellbeing/heart.svg",
+        "32px": "32px/wellbeing/heart.svg",
+        "48px": "48px/wellbeing/heart.svg",
+        "64px": "64px/wellbeing/heart.svg",
+        "128px": "128px/wellbeing/heart.svg",
+        "256px": "256px/wellbeing/heart.svg"
+      }
+    },
+    {
+      "category": "wellbeing",
+      "name": "rest-moon",
+      "label": "Rest day",
+      "files": {
+        "masters": "masters/wellbeing/rest-moon.svg",
+        "32px": "32px/wellbeing/rest-moon.svg",
+        "48px": "48px/wellbeing/rest-moon.svg",
+        "64px": "64px/wellbeing/rest-moon.svg",
+        "128px": "128px/wellbeing/rest-moon.svg",
+        "256px": "256px/wellbeing/rest-moon.svg"
+      }
+    },
+    {
+      "category": "social",
+      "name": "friends",
+      "label": "Training friends",
+      "files": {
+        "masters": "masters/social/friends.svg",
+        "32px": "32px/social/friends.svg",
+        "48px": "48px/social/friends.svg",
+        "64px": "64px/social/friends.svg",
+        "128px": "128px/social/friends.svg",
+        "256px": "256px/social/friends.svg"
+      }
+    },
+    {
+      "category": "social",
+      "name": "cheer",
+      "label": "Encouragement",
+      "files": {
+        "masters": "masters/social/cheer.svg",
+        "32px": "32px/social/cheer.svg",
+        "48px": "48px/social/cheer.svg",
+        "64px": "64px/social/cheer.svg",
+        "128px": "128px/social/cheer.svg",
+        "256px": "256px/social/cheer.svg"
+      }
+    }
+  ]
+}

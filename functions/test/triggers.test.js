@@ -44,7 +44,10 @@ function colRef(path, filters = [], order = null, lim = null) {
     },
   };
 }
-const db = { collection: name => colRef(name) };
+const db = {
+  collection: name => colRef(name),
+  runTransaction: async fn => { const writes = []; await fn({ get: ref => ref.get(), set: (ref, d) => writes.push(() => ref.set(d)) }); for (const w of writes) await w(); },
+};
 const realLoad = Module._load;
 Module._load = function (req, ...rest) {
   if (req === 'firebase-admin/app') return { initializeApp: () => {} };
@@ -165,4 +168,51 @@ test('routines: shared without weights, follow the Rutinas setting, skip progres
   store.set('users/u1', p2);
   await fns.cardOnProfile.run(ev({ uid: 'u1' }, p, p2));
   assert.strictEqual(store.get('sharedRoutines/u1').visibility, 'private');
+});
+
+test('rewards: workout + weekly goal points, records, cheers, friends, copies; wallet deleted with the account', async () => {
+  store.clear();
+  const today = new Date().toISOString().slice(0, 10);
+  const wk = require('../card').weekKeyOf(today);
+  const p = { username: 'jaz', weeklyGoals: { [wk]: 1 } };
+  store.set('users/u1', p);
+  await fns.cardOnProfile.run(ev({ uid: 'u1' }, null, p));            // card
+  const s1 = gym(today);
+  store.set('users/u1/sessions/s1', s1);
+  await fns.cardOnSession.run(ev({ uid: 'u1', sid: 's1' }, null, s1));
+  let w = store.get('users/u1/wallet/main');
+  assert.strictEqual(w.points, 10 + 15 + 5);                          // workout + goal (1 day) + streak 1 week
+  assert.ok(w.badges.w1 && !w.badges.s2);
+  assert.strictEqual(store.get('profileCards/u1').badges, 1);
+
+  // the same session written again: nothing new
+  await fns.cardOnSession.run(ev({ uid: 'u1', sid: 's1' }, { ...s1, exercises: [{ sets: [{ done: false }] }] }, s1));
+  assert.strictEqual(store.get('users/u1/wallet/main').points, 30);
+
+  // a record
+  const pt = (d, wt) => ({ d, w: wt, r: 8, u: 'kg' });
+  await fns.rewardsOnStats.run(ev({ uid: 'u1', sid: 'e1' }, { points: [pt('2026-01-01', 50)] }, { points: [pt('2026-01-01', 50), pt(today, 60)] }));
+  assert.strictEqual(store.get('users/u1/wallet/main').points, 50);
+
+  // a cheer from u2 (u2 exists) → +1 for u1, a badge for u2
+  store.set('users/u2', { username: 'est' });
+  await fns.rewardsOnCheer.run({ params: { id: 'u2_u1_x' }, data: { exists: true, data: () => ({ from: 'u2', to: 'u1' }) } });
+  assert.strictEqual(store.get('users/u1/wallet/main').points, 51);
+  assert.ok(store.get('users/u2/wallet/main').badges.c1);
+
+  // friend + copied routine
+  store.set('users/u1/friends/u2', { since: 1 });
+  await fns.rewardsOnFriend.run({ params: { uid: 'u1', fid: 'u2' }, data: { exists: true, data: () => ({}) } });
+  const copied = { name: 'X', source: { type: 'friend', id: 'u2', routineId: 'r' }, exercises: [] };
+  await fns.sharedOnRoutine.run(ev({ uid: 'u1', rid: 'rc' }, null, copied));
+  w = store.get('users/u1/wallet/main');
+  assert.ok(w.badges.f1 && w.badges.cp1);
+
+  // nobody gets a wallet for an account that doesn't exist
+  await fns.rewardsOnCheer.run({ params: { id: 'zz' }, data: { exists: true, data: () => ({ from: 'ghost', to: 'u1' }) } });
+  assert.ok(!store.has('users/ghost/wallet/main'));
+
+  store.delete('users/u1');
+  await fns.cardOnProfile.run(ev({ uid: 'u1' }, p, null));
+  assert.ok(!store.has('users/u1/wallet/main'));
 });

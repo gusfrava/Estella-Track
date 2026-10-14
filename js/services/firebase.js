@@ -279,6 +279,12 @@ export function watchCard(uid, cb) {
 // Asks the server to (re)build my card: the server function sees cardRefreshAt change on my profile.
 export const requestCardRefresh = uid => FB.f.setDoc(userDoc(uid), { cardRefreshAt: Date.now() }, { merge: true });
 
+// ---------- points and badges ----------
+// users/{uid}/wallet/main: written only by the server (functions/rewards.js). cb(wallet | null).
+export function watchWallet(uid, cb, onError) {
+  return FB.f.onSnapshot(FB.f.doc(FB.db, 'users', uid, 'wallet', 'main'), snap => cb(snap.exists() ? snap.data() : null), onError);
+}
+
 // ---------- shared routines ("Copiar rutina") ----------
 // sharedRoutines/{uid}: a friend's routines without weights, written only by the server (functions/routines.js).
 // Resolves { state: 'ok', routines } | { state: 'none' } (not built yet) | { state: 'hidden' } (they don't share them).
@@ -349,6 +355,8 @@ export async function exportUserData(user) {
   out.directory = dir.exists() ? dir.data() : null;
   const card = await FB.f.getDoc(cardDoc(user.uid)).catch(() => null);
   out.profileCard = card && card.exists() ? card.data() : null;   // what friends see (built by the server)
+  const wallet = await FB.f.getDoc(FB.f.doc(FB.db, 'users', user.uid, 'wallet', 'main')).catch(() => null);
+  out.wallet = wallet && wallet.exists() ? wallet.data() : null;   // points and badges (built by the server)
   const sharedR = await FB.f.getDoc(FB.f.doc(FB.db, 'sharedRoutines', user.uid)).catch(() => null);
   out.sharedRoutines = sharedR && sharedR.exists() ? sharedR.data() : null;
   out.cheers = [];
@@ -360,7 +368,7 @@ export async function exportUserData(user) {
 }
 
 // Deletes every document of this person (their data, their username, their profile). Auth account is separate.
-// Their friend card (profileCards) and shared routines are deleted by the server as soon as the profile is gone.
+// Their friend card (profileCards), shared routines and points (wallet) are deleted by the server as soon as the profile is gone.
 export async function deleteUserData(user) {
   const uid = user.uid;
   const refs = [];

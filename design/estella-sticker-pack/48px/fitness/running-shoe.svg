@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 128 128" role="img" aria-labelledby="estella-running-shoe-title">
+  <title id="estella-running-shoe-title">Running</title>
+  <defs><filter id="estella-running-shoe-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-running-shoe-artwork" filter="url(#estella-running-shoe-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-running-shoe-base"><path d="M24 40L44 45L54 33L71 62Q79 73 99 77Q111 80 110 95H20Q13 91 16 80Z" fill="#FFF7DD" /><path d="M20 82Q34 90 50 82Q72 93 110 87V99H19Q13 93 20 82Z" fill="#FF6A2B" /><path d="M28 54L46 70L65 64L73 76L45 81L24 66Z" fill="#3DC4B3" /><path d="M52 48l13 -5M58 58l13 -5" fill="none" /></g>
+    <g id="estella-running-shoe-details"><path d="M91 80l8 3" fill="none" /></g>
+  </g>
+</svg>

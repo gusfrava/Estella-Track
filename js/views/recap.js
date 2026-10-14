@@ -33,7 +33,8 @@ export function recapStats(r) {
   const out = [{ value: n, label: R.workouts(n) }, { value: r.streak, label: R.streakWeeks(r.streak) }];
   if (r.sets) out.push({ value: r.sets, label: R.sets });
   if (r.minutes) out.push({ value: r.minutes, label: R.minutes });
-  return out;
+  if (r.points) out.splice(2, 0, { value: r.points, label: t().pts.pointsWord(r.points) });
+  return out.slice(0, 4);
 }
 
 // Home: "Tu semana pasada" with the headline and two buttons.

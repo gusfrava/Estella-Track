@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128" role="img" aria-labelledby="estella-kettlebell-title">
+  <title id="estella-kettlebell-title">Kettlebell</title>
+  <defs><filter id="estella-kettlebell-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-kettlebell-artwork" filter="url(#estella-kettlebell-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-kettlebell-base"><path d="M43 48V34Q43 17 64 17Q85 17 85 34V48H75V34Q75 28 64 28Q53 28 53 34V48Z" fill="#FFF1E1" /><path d="M43 43Q23 55 26 80Q29 105 64 105Q99 105 102 80Q105 55 85 43Z" fill="#3DC4B3" /><circle cx="64" cy="74" r="17" fill="#FFF7DD"/></g>
+    <g id="estella-kettlebell-details"><path d="M40 55Q33 63 35 73" fill="none" stroke="#FFF7DD"/></g>
+  </g>
+</svg>
