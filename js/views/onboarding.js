@@ -31,7 +31,7 @@ export function onboardingView(ui) {
   const n = Math.min(questions, Math.max(0, ui.step));
   const top = step === 'welcome' || step === 'done' ? '' : `<div class="ob-top">
       <button class="round" data-action="ob-back" aria-label="${L.ob.back}">${ICONS.back}</button>
-      ${progressBar(Math.round((n / questions) * 100), `role="progressbar" aria-label="${esc(L.ob.step(n, questions))}" aria-valuemin="0" aria-valuemax="${questions}" aria-valuenow="${n}"`)}
+      ${progressBar(Math.round((n / questions) * 100), `data-bar="ob" role="progressbar" aria-label="${esc(L.ob.step(n, questions))}" aria-valuemin="0" aria-valuemax="${questions}" aria-valuenow="${n}"`)}
       ${OPTIONAL.has(step) ? `<button class="textbtn ob-skip" data-action="ob-skip">${L.ob.skip}</button>` : '<span class="ob-skip"></span>'}
     </div>`;
   const body = SCREENS[step](ui, L);

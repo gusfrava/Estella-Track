@@ -12,6 +12,7 @@ import * as friends from '../controllers/friends.js';
 import { avatarHTML, personName } from '../views/people.js';
 import { friendWeekHTML } from '../views/friend-week.js';
 import { CHEER_ICONS } from '../ui/cheer-icons.js';
+import { feel } from '../ui/feel.js';
 import { exerciseName, loadLibrary } from '../services/library.js';
 import { logger } from '../utils/log.js';
 
@@ -88,7 +89,7 @@ function sendCheer(p, btn) {
   if (!w || !w.last) return;
   const F = t().fr, kind = btn.dataset.cheer;
   const before = myCheerFor(p.uid, w.last.date), removing = !!before && before.kind === kind;
-  if (navigator.vibrate) navigator.vibrate(15);
+  feel(removing ? 'tap' : 'cheer');
   // The button changes right away (the row redraws as soon as cheer() runs), with a small pop and a toast.
   friends.cheer(p.uid, kind, { date: w.last.date, name: lastNameOf(w.last) })
     .catch(err => { log.warn('cheer failed', err); toast(`<span><b>${esc(F.failed)}</b></span>`); });
@@ -132,6 +133,7 @@ function copy(p, shared, routineId, redraw) {
   const r = shared && shared.routines && shared.routines.find(x => x.id === routineId);
   if (!r) return;
   friends.copyRoutine(p, r);
+  feel('done');
   toast(`${ICONS.check}<span><b>${esc(t().fr.copiedToast)}</b>${esc(routineName(r))}</span>`);
   redraw();
 }

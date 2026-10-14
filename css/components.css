@@ -93,3 +93,5 @@ input.input[type="date"]::-webkit-calendar-picker-indicator{opacity:.6}
 /* Live password checklist on "Create account". */
 .pw-rules{list-style:none;margin:2px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:.88rem;color:var(--muted)}
 .pw-rules li.ok{color:var(--teal-ink);font-weight:600}
+
+.feel-switches{display:flex;flex-direction:column;gap:10px;margin:6px 0 4px}

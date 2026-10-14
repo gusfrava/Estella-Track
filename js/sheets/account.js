@@ -1,5 +1,6 @@
 // Account sheet (avatar button): who you are, edit profile, privacy, your data, sign out, delete account.
 // In local mode: local-mode info + leave.
+import { feel, feelPrefs, setFeelPref, canVibrate } from '../ui/feel.js';
 import { openSheet, closeSheet } from '../ui/sheet.js';
 import { t } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
@@ -40,6 +41,7 @@ export function openAccountSheet() {
       <button class="btn secondary" data-k="privacy">${L.privacy}</button>
       <button class="btn secondary" data-k="export">${L.exportData}</button>
       <button class="btn secondary" data-k="intro">${L.ob.replay}</button>
+      ${feelSwitches()}
       <div id="acct-msg"></div>
       <button class="textbtn" data-k="out">${L.signOut}</button>
       <button class="textbtn danger" data-k="delete">${L.deleteAccount}</button>
@@ -51,6 +53,7 @@ export function openAccountSheet() {
     s.querySelector('[data-k=delete]').onclick = () => openDeleteAccountSheet();
     s.querySelector('[data-k=intro]').onclick = () => { closeSheet(true); replayOnboarding(); };
     wireExportButton(s.querySelector('[data-k=export]'), s.querySelector('#acct-msg'));
+    wireFeelSwitches(s);
     s.querySelector('[data-k=out]').onclick = () => {
       closeSheet(true);
       signOutUser().catch(err => log.warn('sign out failed', err));
@@ -82,4 +85,20 @@ export function wireExportButton(btn, msgBox) {
       msg('err-box', L.exportFailed);
     }
   };
+}
+
+// "Sonidos" and "Vibración" (saved on this phone). Vibración only shows where the phone can vibrate.
+function feelSwitches() {
+  const L = t(), p = feelPrefs();
+  const sw = (k, label, hint) => `<button type="button" class="switch" role="switch" data-feel="${k}" aria-checked="${p[k]}">
+    <span><b>${label}</b><span>${hint}</span></span><span class="track" aria-hidden="true"></span></button>`;
+  return `<div class="feel-switches">${sw('sound', L.feelSound, L.feelSoundHint)}${canVibrate() ? sw('haptics', L.feelHaptics, L.feelHapticsHint) : ''}</div>`;
+}
+function wireFeelSwitches(s) {
+  s.querySelectorAll('[data-feel]').forEach(b => b.onclick = () => {
+    const on = b.getAttribute('aria-checked') !== 'true';
+    b.setAttribute('aria-checked', on);
+    setFeelPref(b.dataset.feel, on);
+    if (on) feel(b.dataset.feel === 'sound' ? 'check' : 'done');   // a sample of what you turned on
+  });
 }

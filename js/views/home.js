@@ -78,7 +78,7 @@ function weekCard(week, streak, g) {
     ? `<button class="week-streak" data-action="tab" data-tab="progress">${ICONS.flame}<span><b>${esc(L.streakWeeks(streak.current))}</b>${keep}</span></button>`
     : '';
   const main = g.goal
-    ? `<div class="week-stat"><b class="num">${g.days}/${g.goal}</b><span>${L.workoutsDone(g.goal)}</span></div>`
+    ? `<div class="week-stat"><b class="num" data-count-key="week-days" data-count="${g.days}" data-count-suffix="/${g.goal}">${g.days}/${g.goal}</b><span>${L.workoutsDone(g.goal)}</span></div>`
     : `<div class="week-stat"><b class="num">${week.doneCount}/${week.total}</b><span>${L.routinesDone}</span></div>`;
   const pct = g.goal ? Math.min(100, Math.round((g.days / g.goal) * 100)) : week.pct;
   return `<section class="week" aria-label="${L.thisWeek}">
@@ -86,7 +86,7 @@ function weekCard(week, streak, g) {
       <button class="week-goal" data-action="weekly-goal">${esc(g.goal ? L.goalChip(g.goal) : L.goalSet)}</button></div>
     <div class="week-stats">
       ${main}
-      <div class="week-stat"><b class="num">${n}</b><span>${L.activitiesN(n)}</span></div>
+      <div class="week-stat"><b class="num" data-count-key="week-acts" data-count="${n}">${n}</b><span>${L.activitiesN(n)}</span></div>
     </div>
     ${g.goal ? dayStrip(week.start, g.dates) : progressBar(pct)}
     ${g.goal && g.met ? `<p class="week-met">${esc(L.goalMet)}</p>` : ''}

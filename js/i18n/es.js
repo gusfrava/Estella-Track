@@ -112,6 +112,7 @@ export default {
     share:'Compartir', preparing:'Preparando imagen…', shareText:'Mi semana en Estella 💪', downloaded:'Imagen descargada',
     shareFailed:'No se pudo crear la imagen.', fromProgress:'Resumen de la semana pasada', imgTitle:'Mi semana',
   },
+  feelSound:'Sonidos', feelSoundHint:'Sonidos suaves al marcar series, terminar y ganar insignias', feelHaptics:'Vibración', feelHapticsHint:'Una vibración corta al tocar y al completar cosas',
   tabsLabel:'Secciones', tabRoutines:'Rutinas', tabProgress:'Progreso',
   progressTitle:'Progreso', recordsSub:'Tus récords personales: lo mejor que has hecho en cada ejercicio.',
   noRecordsTitle:'Aún no hay récords', noRecordsBody:'Completa ejercicios en tus rutinas y aquí verás lo mejor que has hecho en cada uno.',
