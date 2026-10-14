@@ -1,4 +1,6 @@
 // Home screen: greeting, weekly summary, routine cards, other activities, + button.
+import { weekRecap, hasRecap, recapHidden } from '../state/recap.js';
+import { recapCard } from './recap.js';
 import { ICONS } from '../ui/icons.js';
 import { t, routineName } from '../i18n/index.js';
 import { esc, fmtDay, fmtDuration } from '../utils/format.js';
@@ -22,6 +24,10 @@ export function homeView(state, opts) {
   ${opts.verify && opts.verify.needed ? verifyBanner(opts.user, opts.verify.ui) : ''}
   <h1>${L.yourRoutines}</h1>
   <p class="sub">${esc(L.weekOf(fmtDay(week.start), fmtDay(week.end)))}</p>`;
+
+  // Monday onwards: last week's recap, until it's hidden (it stays reachable from Progreso).
+  const recap = weekRecap();
+  if (hasRecap(recap) && !recapHidden(recap.key, opts.user && opts.user.uid)) h += recapCard(recap);
 
   const hasRoutines = routinesList(state).length > 0, hasActivities = activities(state).length > 0;
   if (hasRoutines || hasActivities) h += weekCard(week, weeklyStreak(state), weekGoalProgress(state));

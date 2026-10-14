@@ -28,6 +28,8 @@ import { homeView } from './views/home.js';
 import { routineView } from './views/routine.js';
 import { progressView } from './views/progress.js';
 import { friendsView } from './views/friends.js';
+import { openRecap } from './sheets/recap.js';
+import { weekRecap, hideRecap, lastWeekKey } from './state/recap.js';
 import * as friends from './controllers/friends.js';
 import { onSocialChange, pendingIncoming, recentCheers, getSocial } from './state/social.js';
 import { CHEER_ICONS } from './ui/cheer-icons.js';
@@ -215,6 +217,9 @@ const ACTIONS = {
   lang: d => setLang(d.lang),
   account: () => openAccountSheet(),
   'weekly-goal': () => openWeeklyGoalSheet(),
+  // weekly recap
+  'recap-open': () => openRecap(weekRecap()),
+  'recap-hide': () => { hideRecap(lastWeekKey(), (getSession().user || {}).uid); render(); },
   // friends tab
   'fr-search': () => openFriendSearch(),
   'fr-invite': () => shareInvite(),
