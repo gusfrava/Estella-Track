@@ -79,7 +79,7 @@ input.input[type="date"]::-webkit-calendar-picker-indicator{opacity:.6}
 .u-status.bad{color:var(--danger)}
 
 /* Three-option segmented control that fills the row (privacy levels). */
-.seg.seg-3{display:grid;grid-template-columns:repeat(3,1fr);align-self:stretch}
+.seg.seg-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-self:stretch}
 .seg.seg-3 button{padding:8px 6px;font-size:.92rem}
 
 /* Checkbox with text (consent), small print, legal links. */

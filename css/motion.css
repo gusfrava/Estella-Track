@@ -79,3 +79,11 @@
   .sheet,.toast{transition:none}
   .sparkles{display:none}
 }
+
+/* a check box flipped by the tap itself, a frame before the screen re-draws */
+.set-check.instant[aria-pressed="true"]{background:var(--teal)}
+.set-check.instant[aria-pressed="true"] svg,.check.instant[aria-pressed="true"] svg{opacity:1;transform:none}
+.check.instant[aria-pressed="true"]{background:var(--teal)}
+.check.instant[aria-pressed="false"],.set-check.instant[aria-pressed="false"]{background:var(--card)}
+.check.instant[aria-pressed="false"] svg{opacity:0;transform:scale(.4)}
+.set-check.instant[aria-pressed="false"] svg{opacity:.15}
