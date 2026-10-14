@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 128 128" role="img" aria-labelledby="estella-goal-target-title">
+  <title id="estella-goal-target-title">Weekly goal</title>
+  <defs><filter id="estella-goal-target-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-goal-target-artwork" filter="url(#estella-goal-target-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-goal-target-base"><circle cx="60" cy="69" r="37" fill="#FF6A2B"/><circle cx="60" cy="69" r="26" fill="#FFF7DD"/><circle cx="60" cy="69" r="14" fill="#3DC4B3"/><path d="M60 69l36 -40" fill="none" stroke-width="5"/><path d="M87 37V20L99 25L111 25L105 39L88 43Z" fill="#FFC94D" /></g>
+    <g id="estella-goal-target-details"></g>
+  </g>
+</svg>

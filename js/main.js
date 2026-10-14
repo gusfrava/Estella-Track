@@ -29,6 +29,8 @@ import { routineView } from './views/routine.js';
 import { progressView } from './views/progress.js';
 import { friendsView } from './views/friends.js';
 import { openRecap } from './sheets/recap.js';
+import { openBadges, celebrateBadges } from './sheets/badges.js';
+import { onRewardsChange } from './state/rewards.js';
 import { weekRecap, hideRecap, lastWeekKey } from './state/recap.js';
 import * as friends from './controllers/friends.js';
 import { onSocialChange, pendingIncoming, recentCheers, getSocial } from './state/social.js';
@@ -123,6 +125,21 @@ store.subscribe((state, { action }) => {
 });
 account.onVerifyChange(render);
 onSocialChange(() => { const v = getView().name; if (v === 'friends' || v === 'home' || v === 'progress') render(); });
+// Points and badges from the server: re-draw Progreso, "+10 puntos" toast, a celebration for new badges.
+// (Not for what was already there when the app opened: the first snapshot is the starting point.)
+onRewardsChange((w, prev) => {
+  if (getView().name === 'progress') render();
+  if (prev === undefined || !w) return;
+  const before = prev || { points: 0, badges: {} };
+  const gained = (Number(w.points) || 0) - (Number(before.points) || 0);
+  const fresh = Object.keys(w.badges || {}).filter(id => !(before.badges || {})[id]);
+  if (gained > 0) {
+    const why = t().pts.why[(w.log && w.log[0] && w.log[0].why) || ''] || '';
+    toast(`${ICONS.star}<span><b>${esc(t().pts.gained(gained))}</b>${esc(why)}</span>`);
+  }
+  if (fresh.length) setTimeout(() => celebrateBadges(fresh), gained > 0 ? 1200 : 0);
+});
+
 // A cheer that arrives while the app is open: a small toast (not for the ones already there when it opened).
 let cheersShownUpTo = Date.now();
 onSocialChange(() => {
@@ -217,6 +234,8 @@ const ACTIONS = {
   lang: d => setLang(d.lang),
   account: () => openAccountSheet(),
   'weekly-goal': () => openWeeklyGoalSheet(),
+  // points and badges
+  badges: () => openBadges(),
   // weekly recap
   'recap-open': () => openRecap(weekRecap()),
   'recap-hide': () => { hideRecap(lastWeekKey(), (getSession().user || {}).uid); render(); },

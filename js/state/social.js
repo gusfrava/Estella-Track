@@ -66,7 +66,7 @@ export function friendWeek(uid) {
   const n = dates.size;
   return {
     state: 'ok', goal, dates, days: n, left: goal ? Math.max(0, goal - n) : 0, met: goal ? n >= goal : n > 0,
-    streak: streakFrom(days, goals), last: c.last || null, character: c.character || 'estella',
+    streak: streakFrom(days, goals), last: c.last || null, character: c.character || 'estella', badges: Number(c.badges) || 0,
   };
 }
 

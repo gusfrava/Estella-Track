@@ -5,14 +5,19 @@
 //  - cardOnSession: a workout or activity changed → update that week's days and the last workout.
 //  - cardOnProfile: profile changed → name, goal, sharing; rebuilds the whole card when it's missing or outdated
 //    (the app asks for that by writing cardRefreshAt); deletes the card when the account is deleted.
+// Points and badges (users/{uid}/wallet/main, see rewards.js) — awarded here only, so nobody can give themselves points:
+//  - workouts and the weekly goal (cardOnSession), records (rewardsOnStats), cheers (rewardsOnCheer),
+//    friends (rewardsOnFriend), copied routines (sharedOnRoutine).
 // Shared routines (sharedRoutines/{uid}, see routines.js) — what friends can see and copy, without weights:
 //  - sharedOnRoutine: a routine was added, changed or deleted → rebuild the list.
 //  - cardOnProfile also rebuilds it with the card, follows the "Rutinas" sharing setting and deletes it with the account.
 const { setGlobalOptions } = require('firebase-functions/v2');
-const { onDocumentWritten } = require('firebase-functions/v2/firestore');
+const { onDocumentWritten, onDocumentCreated } = require('firebase-functions/v2/firestore');
 const logger = require('firebase-functions/logger');
 const card = require('./card');
 const shared = require('./routines');
+const rewards = require('./rewards');
+const { goalAt, streakAt } = require('./streak');
 
 // us-central1 is inside the database's location (nam7). maxInstances caps cost if something ever loops.
 setGlobalOptions({ region: 'us-central1', maxInstances: 10, memory: '256MiB' });
@@ -34,6 +39,28 @@ const db = { collection: name => fsdb().db.collection(name) };
 const cardRef = uid => db.collection('profileCards').doc(uid);
 const sessionsOf = uid => db.collection('users').doc(uid).collection('sessions');
 const sharedRef = uid => db.collection('sharedRoutines').doc(uid);
+const walletRef = uid => db.collection('users').doc(uid).collection('wallet').doc('main');
+const todayUTC = () => new Date().toISOString().slice(0, 10);
+
+// Applies reward events to someone's wallet in one transaction (several functions can run at once for one person).
+// Skips people whose account doesn't exist. Friends see the number of badges on the friend card.
+async function award(uid, events) {
+  let badgeCount = null;
+  await fsdb().db.runTransaction(async tx => {
+    const [profile, snap] = await Promise.all([tx.get(db.collection('users').doc(uid)), tx.get(walletRef(uid))]);
+    if (!profile.exists) return;
+    // since = yesterday (UTC): the phone dates workouts in local time, which can be a day behind the server.
+    let w = snap.exists ? snap.data() : rewards.newWallet(card.addDays(todayUTC(), -1));
+    const before = JSON.stringify(w);
+    for (const ev of events) w = rewards.applyEvent(w, ev).wallet;
+    if (JSON.stringify(w) === before) return;
+    tx.set(walletRef(uid), w);
+    const n = Object.keys(w.badges || {}).length;
+    if (!snap.exists || n !== Object.keys(snap.data().badges || {}).length) badgeCount = n;
+  });
+  if (badgeCount !== null) await cardRef(uid).update({ badges: badgeCount }).catch(() => {});   // no card yet: fine
+}
+
 const dataOf = snap => (snap && snap.exists ? snap.data() : null);
 
 async function rebuildShared(uid, profile) {
@@ -69,23 +96,62 @@ exports.cardOnSession = onDocumentWritten('users/{uid}/sessions/{sid}', async ev
   if (card.sessionKey(before) === card.sessionKey(after)) return;   // e.g. a set checked mid-workout: nothing new
 
   const [cardSnap, profileSnap] = await Promise.all([cardRef(uid).get(), db.collection('users').doc(uid).get()]);
-  if (!cardSnap.exists || !profileSnap.exists) return;   // no card yet (built from the profile) or account deleted
-  const current = cardSnap.data(), profile = profileSnap.data();
+  if (!profileSnap.exists) return;   // account deleted
+  const profile = profileSnap.data();
+  const events = [];
+  if (card.sessionCounts(after)) {   // a workout or activity: points once per session
+    events.push({ type: 'workout', key: `session:${event.params.sid}`, date: after.date,
+      kind: after.kind === 'activity' ? 'activity' : 'gym', minutes: after.activity && after.activity.minutes });
+  }
 
-  const weeks = new Set([before, after].filter(s => s && /^\d{4}-\d{2}-\d{2}$/.test(s.date)).map(s => card.weekKeyOf(s.date)));
-  const updates = [];
-  for (const wk of weeks) {
-    const snap = await sessionsOf(uid).where('date', '>=', wk).where('date', '<=', card.addDays(wk, 6)).get();
-    const d = card.weekDigits(snap.docs.map(x => x.data()), (current.pts || {})[wk]);
-    updates.push(new (fsdb().FieldPath)('weeks', wk), d || fsdb().FieldValue.delete());
+  if (cardSnap.exists) {   // no card yet: it's built from the profile
+    const current = cardSnap.data();
+    const weeks = new Set([before, after].filter(s => s && /^\d{4}-\d{2}-\d{2}$/.test(s.date)).map(s => card.weekKeyOf(s.date)));
+    const updates = [], newWeeks = { ...(current.weeks || {}) };
+    for (const wk of weeks) {
+      const snap = await sessionsOf(uid).where('date', '>=', wk).where('date', '<=', card.addDays(wk, 6)).get();
+      const d = card.weekDigits(snap.docs.map(x => x.data()), (current.pts || {})[wk]);
+      updates.push(new (fsdb().FieldPath)('weeks', wk), d || fsdb().FieldValue.delete());
+      if (d) newWeeks[wk] = d; else delete newWeeks[wk];
+    }
+    // Weekly goal reached with this workout → goal points + streak bonus (once per week).
+    if (card.sessionCounts(after)) {
+      const wk = card.weekKeyOf(after.date), goals = card.goalHistory(profile), goal = goalAt(goals, wk);
+      if (goal && (newWeeks[wk] || '').length >= goal) {
+        events.push({ type: 'goal', key: `goal:${wk}`, date: after.date, streak: streakAt(newWeeks, goals, wk) });
+      }
+    }
+    updates.push('last', await latest(uid, profile), 'updatedAt', Date.now());
+    try {
+      await cardRef(uid).update(...updates);
+    } catch (err) {
+      if (err.code !== 5) throw err;   // NOT_FOUND: the card was deleted meanwhile (account deletion)
+    }
   }
-  updates.push('last', await latest(uid, profile), 'updatedAt', Date.now());
-  try {
-    await cardRef(uid).update(...updates);
-  } catch (err) {
-    if (err.code === 5) return;   // NOT_FOUND: the card was deleted meanwhile (account deletion)
-    throw err;
-  }
+  if (events.length) await award(uid, events);
+});
+
+// ---------- rewards: records, cheers, friends ----------
+exports.rewardsOnStats = onDocumentWritten('users/{uid}/exerciseStats/{sid}', async event => {
+  const before = dataOf(event.data && event.data.before), after = dataOf(event.data && event.data.after);
+  const rec = rewards.newRecord(before, after);
+  if (rec) await award(event.params.uid, [{ type: 'record', key: `record:${event.params.sid}:${rec.date}`, date: rec.date }]);
+});
+
+exports.rewardsOnCheer = onDocumentCreated('cheers/{id}', async event => {
+  const c = dataOf(event.data);
+  if (!c || !c.from || !c.to) return;
+  const id = event.params.id, date = todayUTC();
+  await Promise.all([
+    award(c.to, [{ type: 'cheerReceived', key: `cheerIn:${id}`, date }]),
+    award(c.from, [{ type: 'cheerSent', key: `cheerOut:${id}`, date }]),
+  ]);
+});
+
+exports.rewardsOnFriend = onDocumentCreated('users/{uid}/friends/{fid}', async event => {
+  const uid = event.params.uid;
+  const snap = await db.collection('users').doc(uid).collection('friends').get();
+  await award(uid, [{ type: 'friends', count: snap.docs.length }]);
 });
 
 // ---------- the profile changed ----------
@@ -93,8 +159,8 @@ exports.cardOnProfile = onDocumentWritten('users/{uid}', async event => {
   const uid = event.params.uid;
   const before = dataOf(event.data && event.data.before), after = dataOf(event.data && event.data.after);
 
-  if (!after) {   // account deleted
-    await Promise.all([cardRef(uid).delete(), sharedRef(uid).delete()]);
+  if (!after) {   // account deleted (the app can't delete these: only the server writes them)
+    await Promise.all([cardRef(uid).delete(), sharedRef(uid).delete(), walletRef(uid).delete()]);
     logger.info('card deleted', { uid });
     return;
   }
@@ -132,6 +198,9 @@ exports.cardOnProfile = onDocumentWritten('users/{uid}', async event => {
 exports.sharedOnRoutine = onDocumentWritten('users/{uid}/routines/{rid}', async event => {
   const uid = event.params.uid, rid = event.params.rid;
   const before = dataOf(event.data && event.data.before), after = dataOf(event.data && event.data.after);
+  if (!before && after && after.source && after.source.type === 'friend') {   // "Copiar rutina" → counts for a badge
+    await award(uid, [{ type: 'copy', key: `copy:${rid}`, date: todayUTC() }]);
+  }
   if (shared.routineKey(rid, before) === shared.routineKey(rid, after)) return;   // e.g. only this week's progress changed
   const profileSnap = await db.collection('users').doc(uid).get();
   if (!profileSnap.exists) return;   // account being deleted

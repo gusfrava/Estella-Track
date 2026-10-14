@@ -68,7 +68,8 @@ export function friendWeekHTML(uid) {
     ? `<div class="fr-last"><span>${F.last}</span><b>${esc(lastName(w.last))}</b><small>${esc(when(w.last.date))}</small></div>${cheerRow(uid, w.last)}`
     : '';
 
-  return `<section class="fr-week">
+  return `${w.badges ? `<p class="fr-badges">${ICONS.star}<span>${esc(L.pts.badgesOf(w.badges))}</span></p>` : ''}
+  <section class="fr-week">
     <div class="fr-week-head"><h3>${F.thisWeek}</h3><span class="chip">${esc(F.daysOfGoal(w.days, w.goal))}</span></div>
     ${dayStrip(weekStart(), w.dates, F.theyTrained)}
     ${w.goal && w.met ? `<p class="week-met">${esc(F.goalMet)}</p>` : ''}

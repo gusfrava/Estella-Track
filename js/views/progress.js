@@ -1,5 +1,6 @@
 // Progress tab: personal records — the best you've ever done on each exercise, grouped by routine.
 // Records come from the history points in exerciseStats (see selectors.personalRecord).
+import { rewardsBlock } from './badges.js';
 import { weekRecap, hasRecap } from '../state/recap.js';
 import { ICONS } from '../ui/icons.js';
 import { t, routineName } from '../i18n/index.js';
@@ -27,6 +28,7 @@ export function progressView(state, opts) {
   <h1>${L.progressTitle}</h1>
   <p class="sub">${L.recordsSub}</p>
   ${streakCard(weeklyStreak(state), weekGoalProgress(state))}
+  ${rewardsBlock()}
   ${hasRecap(weekRecap()) ? `<button class="textbtn recap-link" data-action="recap-open">${ICONS.trophy}<span>${L.rc.fromProgress}</span></button>` : ''}`;
 
   if (!groups.length) {

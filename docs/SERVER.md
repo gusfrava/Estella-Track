@@ -16,6 +16,13 @@ calculated by small functions that run on Google's servers (Firebase Cloud Funct
   Exercises, sets and reps only (no weights, no notes, no archived routines).
   - `sharedOnRoutine` rebuilds the list when a routine is added, edited or deleted (not when you just check sets).
   - `cardOnProfile` builds it together with the card, follows the "Rutinas" sharing setting and deletes it with the account.
+- **Points and badges** (`users/{uid}/wallet/main`, rules in `functions/rewards.js`). Only the server writes them.
+  - Workout +10, activity of 20+ min +5 (max 2 a day), weekly goal +15 plus 5 per streak week (max +50),
+    new record +20 (max 3 a day), cheer received +1 (max 5 a day). Each event pays once. Points start from the
+    person's first event after this was deployed (earlier training doesn't count).
+  - `cardOnSession` (workouts, weekly goal), `rewardsOnStats` (records), `rewardsOnCheer`, `rewardsOnFriend`,
+    `sharedOnRoutine` (copied routines) call it. The badge count also goes on the friend card.
+  - The badge list lives in two places (functions/rewards.js and js/data/badges.js); `npm test` fails if they differ.
 - Cheers (`cheers/{from}_{to}_{date}`) don't need the server: the app writes them and the rules check that you're friends.
 
 ## One-time setup (already done on Jazmin's computer)
@@ -48,7 +55,7 @@ list your cheers newest first). New indexes take a few minutes to build; until t
 `firebase deploy --only firestore:rules` publishes only the rules.
 
 ## Checking it works
-- Firebase console → Functions: `cardOnSession`, `cardOnProfile` and `sharedOnRoutine` are listed.
+- Firebase console → Functions: `cardOnSession`, `cardOnProfile`, `sharedOnRoutine`, `rewardsOnStats`, `rewardsOnCheer` and `rewardsOnFriend` are listed.
 - Firebase console → Firestore → `profileCards`: a document per person after they open the app.
 - Logs: `firebase functions:log`, or Firebase console → Functions → Logs.
 

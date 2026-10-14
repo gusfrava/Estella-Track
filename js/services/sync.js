@@ -16,6 +16,7 @@ import {
 import { SCHEMA_VERSION, DEFAULT_SHARING } from '../state/model.js';
 import { getSession, setSession } from '../state/session.js';
 import { setFriends, setRequests, clearSocial, setCard, dropCard, setCheers } from '../state/social.js';
+import { setWallet, clearWallet } from '../state/rewards.js';
 import { daysAgo } from '../utils/dates.js';
 import { logger } from '../utils/log.js';
 
@@ -134,6 +135,9 @@ function listen(user) {
   unsubs.push(fb.watchCard(uid, e => { myCard = e; askForCard(); }));
   unsubs.push(subscribe(askForCard));
   unsubs.push(fb.watchRequests(uid, lists => { if (mine()) setRequests(lists); }, onErr('friendRequests')));
+  // Points and badges (the server writes them; we only listen).
+  unsubs.push(fb.watchWallet(uid, w => { if (mine()) setWallet(w); }, onErr('wallet')));
+
   // Cheers I received. If the listener fails (e.g. the database index is still being built right after a deploy),
   // try again a minute later instead of staying empty until the app is reopened.
   let offCheers = null, cheersRetry = null;
@@ -217,6 +221,7 @@ function stopListeners() {
   unsubs.forEach(u => { try { u(); } catch (e) {} });
   unsubs = [];
   clearSocial();
+  clearWallet();
 }
 
 // Account deletion: stop listening so the profile listener doesn't recreate the account while it's being deleted.

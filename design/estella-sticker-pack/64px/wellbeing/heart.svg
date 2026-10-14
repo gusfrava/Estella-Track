@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 128 128" role="img" aria-labelledby="estella-heart-title">
+  <title id="estella-heart-title">Wellbeing</title>
+  <defs><filter id="estella-heart-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-heart-artwork" filter="url(#estella-heart-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-heart-base"><path d="M64 103Q10 71 19 43Q29 17 53 33L64 44L75 33Q98 17 108 43Q119 72 64 103Z" fill="#FF6A2B" /><path d="M29 64h18l8 -17l13 34l9 -17h20" fill="none" stroke="#FFF7DD" stroke-width="5"/></g>
+    <g id="estella-heart-details"><path d="M28 45q5 -10 14 -6" fill="none" stroke="#FFF1E1"/></g>
+  </g>
+</svg>

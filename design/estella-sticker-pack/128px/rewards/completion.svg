@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="estella-completion-title">
+  <title id="estella-completion-title">Workout complete</title>
+  <defs><filter id="estella-completion-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-completion-artwork" filter="url(#estella-completion-sticker)" stroke="#2B1B12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-completion-base"><path d="M64 18L77 25L92 25L99 39L109 49L104 65L107 81L93 90L84 104L67 102L51 109L39 97L24 91L24 74L17 60L27 47L31 31L48 29Z" fill="#3DC4B3" /><path d="M40 64l16 16l32 -34" fill="none" stroke="#FFF7DD" stroke-width="11"/></g>
+    <g id="estella-completion-details"></g>
+  </g>
+</svg>

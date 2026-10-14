@@ -89,7 +89,14 @@ users/{uid}                         PRIVATE settings (owner only)
   friends/{friendUid}               { since, username, displayName }   // written for both people when a request is accepted
   customExercises/{id}              exercises not in the library
   mascot/state                      SERVER ONLY: level, xp, energy, muscles{…}, shape
-  wallet/main                       SERVER ONLY: points, inventory[]
+  wallet/main                       SERVER ONLY (functions/rewards.js): points and badges
+    v, points, since 'YYYY-MM-DD' (points count from this day), updatedAt,
+    counters: { workouts, records, cheersSent, cheersReceived, copies, friends, bestStreak },
+    badges: { badgeId: earnedAt },           // ids in js/data/badges.js (same list as functions/rewards.js)
+    awarded: { eventKey: points },           // each workout / week goal / record / cheer pays once
+    daily: { 'YYYY-MM-DD': { w, r, c } },    // per-day caps (2 workouts, 3 records, 5 cheers), kept 14 days
+    log: [{ at, why, pts, badges? }]         // latest 20 (toasts, weekly recap)
+    (later: inventory[] for the mascot store)
 
 profileCards/{uid}                  SERVER ONLY (functions/card.js): what friends see. Readable by the owner; by friends when
                                     visibility is 'friends'; by anyone signed in when 'public'.
@@ -98,6 +105,7 @@ profileCards/{uid}                  SERVER ONLY (functions/card.js): what friend
   weeks: { weekKey: '024' },        // days trained that week, 0 = Monday … 6 = Sunday (a checked set or an activity)
   pts:   { weekKey: '1' },          // days known only from old exercise history (v1 accounts), kept when a week is recomputed
   last:  { kind, name, sport, date } | null,   // last workout; null when sharing.workouts is 'private'
+  badges: n,                        // how many badges (from wallet/main)
   updatedAt
   // The app works out this week, the streak and comodines from goals + weeks (selectors.streakFrom), so cards never go
   // stale. The app writes users/{uid}.cardRefreshAt to ask for a rebuild when its own card is missing or outdated.
