@@ -1,6 +1,7 @@
 // Icons for onboarding and settings, from Tabler Icons v3.19.0 (https://tabler.io/icons), MIT License,
 // Copyright (c) 2020-2024 Paweł Kuna. Stroke width and color come from CSS (.ti), so they match Estella's style.
 // To add one: copy the <path>s from the icon's outline SVG into the list below.
+import { stickerIcon } from './sticker-icons.js';
 const svg = paths => `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 export const OI = {
   goal_strength: svg('<path d="M2 12h1"/><path d="M6 8h-2a1 1 0 0 0 -1 1v6a1 1 0 0 0 1 1h2"/><path d="M6 7v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1 -1v-10a1 1 0 0 0 -1 -1h-1a1 1 0 0 0 -1 1z"/><path d="M9 12h6"/><path d="M15 7v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1 -1v-10a1 1 0 0 0 -1 -1h-1a1 1 0 0 0 -1 1z"/><path d="M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-2"/><path d="M22 12h-1"/>'),  // barbell
@@ -34,3 +35,12 @@ export const OI = {
   clock: svg('<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 7v5l3 3"/>'),  // clock
   back: svg('<path d="M5 12l14 0"/><path d="M5 12l6 6"/><path d="M5 12l6 -6"/>'),  // arrow-left
 };
+const ART = {
+  goal_strength: 'fitness/dumbbell', goal_muscle: 'muscles/arms',
+  goal_fat: 'rewards/streak-flame', goal_athletic: 'fitness/running-shoe',
+  goal_health: 'wellbeing/heart', focus_legs: 'muscles/legs',
+  focus_upper: 'muscles/chest', focus_arms: 'muscles/arms',
+  place_body: 'muscles/mobility', src_friend: 'social/friends',
+  calendar: 'planning/calendar', clock: 'fitness/stopwatch',
+};
+for (const [key, path] of Object.entries(ART)) OI[key] = stickerIcon(path, 'ti');

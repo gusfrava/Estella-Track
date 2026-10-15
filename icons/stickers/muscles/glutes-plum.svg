@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 128 128" role="img" aria-labelledby="estella-glutes-plum-title">
+  <title id="estella-glutes-plum-title">Glutes — plum</title>
+  <defs><filter id="estella-glutes-plum-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-glutes-plum-artwork" filter="url(#estella-glutes-plum-sticker)" stroke="#2B1B12" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-glutes-plum-base"><path d="M64 42Q32 26 23 56Q14 93 49 107Q61 114 73 108Q107 100 105 66Q103 30 73 40Z" fill="#8B638C" /><path d="M64 41Q68 22 62 16" fill="none" stroke-width="5"/><path d="M66 30Q79 10 97 23Q88 41 66 30Z" fill="#3DC4B3" /></g>
+    <g id="estella-glutes-plum-details"></g>
+  </g>
+</svg>

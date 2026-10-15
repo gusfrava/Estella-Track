@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 128 128" role="img" aria-labelledby="estella-back-title">
+  <title id="estella-back-title">Back</title>
+  <defs><filter id="estella-back-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs>
+  <g id="estella-back-artwork" filter="url(#estella-back-sticker)" stroke="#2B1B12" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <g id="estella-back-base"><path d="M49 22H79L81 33L96 40Q105 44 108 61L96 67L88 57L84 101H44L40 57L32 67L20 61Q23 44 32 40L47 33Z" fill="#E8A36B" /><path d="M44 43L60 48L60 88L48 74ZM68 48L84 43L80 74L68 88Z" fill="#3DC4B3" /><path d="M64 38v57" fill="none" /></g>
+    <g id="estella-back-details"></g>
+  </g>
+</svg>

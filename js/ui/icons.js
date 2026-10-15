@@ -1,4 +1,5 @@
 // Inline SVG icons. They use currentColor where possible so CSS controls their color.
+import { stickerIcon } from './sticker-icons.js';
 export const ICONS = {
   share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 9h-1a2 2 0 0 0 -2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-8a2 2 0 0 0 -2 -2h-1"/><path d="M12 14v-11"/><path d="M9 6l3 -3l3 3"/></svg>',
   close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -17,3 +18,13 @@ export const ICONS = {
   trophy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4.5v1.5A3.5 3.5 0 0 0 8 11M17 6h2.5v1.5A3.5 3.5 0 0 1 16 11"/><path d="M12 14v3.5M8.5 20.5h7M9.5 17.5h5v3h-5z"/></svg>',
   bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="#2B1B12" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.5L5 13.5h6l-1 8 8-11h-6z"/></svg>'
 };
+
+// Approved decorative artwork; keep the simple SVGs for editing/navigation controls.
+Object.assign(ICONS, {
+  star: stickerIcon('rewards/star'),
+  dumbbell: stickerIcon('fitness/dumbbell'),
+  dumbbellTab: stickerIcon('fitness/dumbbell'),
+  flame: stickerIcon('rewards/streak-flame'),
+  trophy: stickerIcon('rewards/trophy'),
+  users: stickerIcon('social/friends'),
+});

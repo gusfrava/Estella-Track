@@ -12,6 +12,7 @@ import { getState, findRoutine, addExercises } from '../state/store.js';
 import { lastUsedUnit } from '../state/selectors.js';
 import { toast } from '../ui/toast.js';
 import { ICONS } from '../ui/icons.js';
+import { muscleIcon } from '../ui/sticker-icons.js';
 import { feel } from '../ui/feel.js';
 
 // opts.replace = swap the open sheet's content (coming back from the form).
@@ -27,7 +28,7 @@ export function openExercisePicker(routineId, { replace = false, change = false 
     <input id="lib-q" class="input lib-q" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false"
       placeholder="${esc(L.libSearchPh)}" aria-label="${esc(L.libSearchPh)}">
     <div class="lib-groups" role="group" aria-label="${L.libGroups}">
-      ${GROUPS.map(g => `<button type="button" class="lib-chip" data-group="${g}" aria-pressed="false">${L.groups[g]}</button>`).join('')}
+      ${GROUPS.map(g => `<button type="button" class="lib-chip" data-group="${g}" aria-pressed="false">${muscleIcon(g)}<span>${L.groups[g]}</span></button>`).join('')}
     </div>
     <div id="lib-results" class="lib-results" aria-live="polite"><p class="hint">${L.libLoading}</p></div>
     <button type="button" class="btn secondary lib-custom" data-k="custom"></button>

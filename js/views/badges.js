@@ -3,12 +3,19 @@ import { t } from '../i18n/index.js';
 import { esc, fmtDay } from '../utils/format.js';
 import { ICONS } from '../ui/icons.js';
 import { BADGES } from '../data/badges.js';
+import { BADGE_ART } from '../data/badge-art.js';
 import { getWallet, points, badgeList, earnedCount } from '../state/rewards.js';
 
 const FAMILY_ICON = { workouts: 'dumbbell', streak: 'flame', records: 'trophy', social: 'users' };
+const ART_BASE = new URL('../../icons/badges/', import.meta.url).href;
 
 // A round medal. size: '' (row) | 'big' (celebration) | 'list'
 export function medalHTML(b, size = '') {
+  if (Object.hasOwn(BADGE_ART, b.id)) {
+    const still = `${ART_BASE}static/${b.id}.svg`;
+    const source = b.earned ? `${ART_BASE}animated/${b.id}.svg` : still;
+    return `<span class="medal medal-art${b.earned ? ' earned' : ' locked'}${size ? ' ' + size : ''}" data-badge="${b.id}" aria-hidden="true"><picture><source media="(prefers-reduced-motion: reduce)" srcset="${still}"><img src="${source}" alt="" width="128" height="128" draggable="false" decoding="async"></picture></span>`;
+  }
   const icon = ICONS[FAMILY_ICON[b.family]] || ICONS.star;
   const label = /^[a-z]+\d+$/.test(b.id) && b.at > 1 ? `<em class="num">${b.at}</em>` : '';
   return `<span class="medal fam-${b.family}${b.earned ? '' : ' locked'}${size ? ' ' + size : ''}" aria-hidden="true">${icon}${label}</span>`;

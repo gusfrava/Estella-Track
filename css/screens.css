@@ -443,9 +443,14 @@
 .sheet .actions .btn[data-k=share] svg{width:22px;height:22px}
 
 /* ---------- points and badges ---------- */
-.brand-stack{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.top{gap:12px}
+.top>.brand,.top-right>.avatar{flex:none}
+.top-right{min-width:0}
+.account-language{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;margin-bottom:12px;border-bottom:2px dashed var(--hairline)}
 .header-points{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:6px 10px;border:2px solid var(--ink);border-radius:999px;background:var(--card);font-size:.8rem;white-space:nowrap}
 .header-points svg{width:19px;height:19px;flex:none}
+.header-points{min-width:0}
+.header-points>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .header-points:focus-visible{outline:3px solid var(--teal-ink);outline-offset:3px}
 .rewards{margin:26px 0 24px;padding:16px 18px;border:var(--line) solid var(--ink);border-radius:24px;background:var(--card);box-shadow:3px 4px 0 var(--ink)}
 .rw-title{margin:0;font-family:var(--display);font-size:1.15rem;line-height:1.2}
@@ -471,6 +476,15 @@
 .medal.big{width:96px;height:96px;border-width:3px}
 .medal.big svg{width:48px;height:48px}
 .medal.big em{font-size:.95rem;height:26px;line-height:22px;min-width:30px}
+/* Earned artwork carries its own frame/numeral. Locked artwork is a static SVG,
+   not an animated image paused with CSS (which cannot stop SVG image timelines). */
+.medal.medal-art{width:56px;max-width:100%;height:56px;background:transparent;border:0;border-radius:0}
+.medal-art picture,.medal-art img{display:block;width:100%;height:100%;object-fit:contain}
+.medal.medal-art.list{width:64px;height:64px}
+.medal.medal-art.big{width:128px;height:128px}
+.medal.medal-art.locked{filter:grayscale(1);opacity:.55}
+.medal.medal-art.locked,.medal.medal-art.locked *{animation:none!important;transition:none!important}
+.bn-item .medal.locked{animation:none}
 .badge-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
 .badge-list li{display:flex;align-items:center;gap:14px}
 .bl-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}

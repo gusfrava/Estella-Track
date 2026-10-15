@@ -65,6 +65,8 @@ body.scroll-locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 .lib-groups::-webkit-scrollbar{display:none}
 .lib-chip{flex:none;padding:6px 14px;border:2px solid var(--ink);border-radius:99px;background:var(--card);font-family:var(--display);font-weight:800;font-size:.92rem}
 .lib-chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.lib-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px}
+.lib-chip .sticker-icon{width:32px;height:32px;flex:none}
 .lib-results{min-height:120px}
 .lib-title{margin:0 0 8px}
 .lib-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}

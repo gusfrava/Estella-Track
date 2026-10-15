@@ -1,5 +1,6 @@
 // English strings. Keys must match es.js.
 export default {
+  language:'Language',
   yourRoutines:'Your routines',
   weekOf:(a,b)=>`Week of ${a} – ${b}`,
   thisWeek:'This week',

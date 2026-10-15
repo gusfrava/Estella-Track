@@ -1,5 +1,6 @@
 // Spanish strings (default language). Keys must match en.js.
 export default {
+  language:'Idioma',
   yourRoutines:'Tus rutinas',
   weekOf:(a,b)=>`Semana del ${a} al ${b}`,
   thisWeek:'Esta semana',
