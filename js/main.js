@@ -42,7 +42,7 @@ import { orderedExercises, personalRecord, beatsRecord } from './state/selectors
 import { todayStr } from './utils/dates.js';
 import { usernameView, statusHTML, errorHTML } from './views/username.js';
 import { consentView } from './views/consent.js';
-import { languageView, onboardingView } from './views/onboarding.js';
+import { languageView, renderOnboarding } from './views/onboarding.js';
 import * as onboarding from './controllers/onboarding.js';
 import { openPlusMenu } from './sheets/plus-menu.js';
 import { openRoutineForm } from './sheets/routine-form.js';
@@ -111,7 +111,7 @@ function paint() {
     const ui = onboarding.getOnboardingUI();
     let step = onboarding.STEPS[ui.step];
     if (step === 'done' && (ui.plan === null || ui.plan === 'loading')) step = 'done-loading';   // confetti once the plan shows
-    app.innerHTML = onboardingView(ui);
+    renderOnboarding(app, ui);
     if (step !== lastObStep) { if (lastObStep !== 'done-loading') window.scrollTo(0, 0); if (step === 'done') confetti(); }
     lastObStep = step;
     return `ob:${onboarding.STEPS[ui.step]}`;
