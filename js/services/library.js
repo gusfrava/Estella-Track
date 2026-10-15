@@ -99,8 +99,8 @@ export function libraryVideoId(id) {
 // → { id, short } (short = YouTube Shorts, vertical) or null when there's none (then we offer a YouTube search).
 export function techniqueVideo(ex) {
   if (!ex) return null;
-  const own = youTubeId(ex.video);
-  if (own) return { id: own, short: isShort(ex.video) };
+  const personalId = youTubeId(ex.video);
+  if (personalId) return { id: personalId, short: isShort(ex.video) };
   const v = lib && own(lib.videos, ex.exerciseId);
   const libId = v ? youTubeId(v.video) : '';
   return libId ? { id: libId, short: isShort(v.video) } : null;
