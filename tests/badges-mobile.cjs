@@ -15,7 +15,9 @@ const output = path.join(ROOT, 'tools');
  for (const b of BADGES) {
    const still = fs.readFileSync(path.join(ROOT, `icons/badges/static/${b.id}.svg`), 'utf8');
    assert.ok(!/@keyframes|<animate|animation\s*:/i.test(still), b.id + ' locked source is motionless');
+   assert.ok(!/<filter\b|filter="url\(/i.test(still), b.id + ' static art avoids low-resolution SVG filters');
    const moving = fs.readFileSync(path.join(ROOT, `icons/badges/animated/${b.id}.svg`), 'utf8');
+   assert.ok(!/<filter\b|filter="url\(/i.test(moving), b.id + ' animated art avoids low-resolution SVG filters');
    assert.ok(moving.includes('prefers-reduced-motion'), b.id + ' honors reduced motion');
  }
  for (const [name, engine, device, launch] of [
