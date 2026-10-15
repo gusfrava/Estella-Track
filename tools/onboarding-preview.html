@@ -4,7 +4,7 @@
 <header class="preview-banner"><p>Onboarding branch preview <small>• test answers stay in memory</small></p><button id="restart">Restart</button><button id="language">ES / EN</button></header>
 <main id="app" class="wrap"></main><div id="layer"></div>
 <script type="module">
-import {onboardingView} from '../js/views/onboarding.js';
+import {renderOnboarding} from '../js/views/onboarding.js';
 import * as onboarding from '../js/controllers/onboarding.js';
 import {chooseLang,getLang} from '../js/i18n/index.js';
 import {enterScreen} from '../js/ui/motion.js';
@@ -12,7 +12,7 @@ const app=document.getElementById('app');
 let lastStep=null;
 function render(){
  const ui=onboarding.getOnboardingUI(),step=ui.step;
- app.innerHTML=onboardingView(ui);
+ renderOnboarding(app,ui);
  if(step!==lastStep){
   window.scrollTo(0,0);
   enterScreen(app,lastStep===null?'none':step>lastStep?'forward':'back');

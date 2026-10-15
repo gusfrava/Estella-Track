@@ -148,13 +148,22 @@ const path=require('node:path');
      await page.screenshot({path:path.join(__dirname,`onboarding-${motion}-mobile.png`),fullPage:true});
      // Changing a choice mid-loop must not buy another five seconds of playback.
      await page.waitForTimeout(2400);
+     await page.locator('.ob-motion-bottom').evaluate(el=>{
+       window.preservedBottom={el,generation:el.generation,images:[...el.querySelectorAll('img')],stars:el.getAnimations({subtree:true})};
+     });
      await page.locator(`[data-key="${key}"][data-value="${value}"]`).click();
      await page.waitForSelector(`[data-motion="${motion}"][data-motion-status="ready"]`);
+     const unchanged=()=>page.locator('.ob-motion-bottom').evaluate(el=>{
+       const before=window.preservedBottom,images=[...el.querySelectorAll('img')],stars=el.getAnimations({subtree:true});
+       return el===before.el&&el.generation===before.generation&&images.every((img,i)=>img===before.images[i])&&stars.every((animation,i)=>animation===before.stars[i]);
+     });
+     if(!await unchanged())throw Error(motion+' recreated or reconnected artwork on selection');
      await page.waitForTimeout(2800);
      const running=()=>page.locator('.ob-motion-bottom').evaluate(el=>el.getAnimations({subtree:true}).some(a=>a.playState==='running'));
      if(await running())throw Error(motion+' restarted on selection or exceeded five seconds');
      const alternative=page.locator(`[data-key="${key}"]`).last();await alternative.click();
      await page.waitForSelector(`[data-motion="${motion}"][data-motion-status="ready"]`);
+     if(!await unchanged())throw Error(motion+' refreshed finished artwork on selection');
      if(await running())throw Error(motion+' restarted after it had finished');
    }
    await page.locator(`[data-key="${key}"][data-value="${value}"]`).click();await page.locator('[data-action="ob-next"]').click();

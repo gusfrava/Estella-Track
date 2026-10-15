@@ -42,6 +42,26 @@ export function onboardingView(ui) {
 const foot = (L, label = L.ob.next, action = 'ob-next', enabled = true) =>
   `<div class="ob-foot"><button class="btn" data-action="${action}" ${enabled ? '' : 'disabled'}>${label}</button></div>`;
 
+// Keep fixed bottom artwork connected when only the answers change. Recreating
+// it restarts image decoding and briefly shows frame zero, even with a saved clock.
+export function renderOnboarding(root, ui) {
+  const template = document.createElement('template');
+  template.innerHTML = onboardingView(ui);
+  const next = template.content.firstElementChild;
+  const current = root.firstElementChild;
+  const art = current?.querySelector('.ob-motion-bottom');
+  const nextArt = next.querySelector('.ob-motion-bottom');
+  if (art && nextArt && current.className === next.className && art.dataset.motion === nextArt.dataset.motion) {
+    for (const node of [...current.childNodes]) if (node !== art) node.remove();
+    let afterArt = false;
+    for (const node of [...next.childNodes]) {
+      if (node === nextArt) { afterArt = true; continue; }
+      if (afterArt) current.append(node);
+      else current.insertBefore(node, art);
+    }
+  } else root.replaceChildren(template.content);
+}
+
 // One card: icon, title, optional description, check mark when chosen.
 function option({ key, value, icon, title, desc = '', on, disabled = false, extra = '' }) {
   return `<button class="ob-opt${disabled ? ' off' : ''}" data-action="ob-pick" data-key="${key}" data-value="${value}" aria-pressed="${!!on}" ${disabled ? 'disabled' : ''}>
