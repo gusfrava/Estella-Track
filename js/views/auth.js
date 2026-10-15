@@ -29,7 +29,7 @@ export function authView(ui, { configured, fatal }) {
 
   const signup = ui.screen === 'signup';
   h += `<h1>${signup ? L.signUpTitle : L.signInTitle}</h1><p class="sub">${L.authSub}</p>
-  <div class="tabs" role="tablist">
+  <div class="tabs auth-tabs" role="tablist">
     <button role="tab" data-action="auth-screen" data-screen="login" aria-selected="${!signup}">${L.tabLogin}</button>
     <button role="tab" data-action="auth-screen" data-screen="signup" aria-selected="${signup}">${L.tabSignup}</button>
   </div>

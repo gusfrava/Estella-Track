@@ -98,6 +98,7 @@
 .rhead>.mascot{align-self:center;margin-left:-4px}
 .hello{margin:0 0 4px;font-family:var(--display);font-weight:700;font-size:1.1rem;color:var(--teal-ink)}
 .tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:26px 0 22px;border:var(--line) solid var(--ink);border-radius:999px;background:var(--card);overflow:hidden}
+.tabs.auth-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
 .tabs button{padding:12px 8px;font-family:var(--display);font-weight:800;font-size:1.05rem}
 .tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
 .authform{display:flex;flex-direction:column}
