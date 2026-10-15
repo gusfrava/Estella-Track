@@ -19,4 +19,5 @@ tools/onboarding-character-mobile.png
 /design/estella-wardrobe
 /tools/*
 !/tools/badges-preview.html
+!/tools/sharpen-badges.cjs
 /design

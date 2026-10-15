@@ -7,6 +7,7 @@ The approved `design/estella-sticker-pack` is the source. Runtime assets are cop
 - Earned achievements load animated SVGs. A picture source selects static artwork when reduced motion is enabled.
 - Unearned achievements load the **static** SVG directly and use a grayscale filter. CSS on a parent cannot pause animations inside an SVG image, so locked badges never load the animated variant.
 - Badge names, descriptions, dates and progress remain localized. SVG artwork is decorative; the adjacent text provides its meaning.
+- Badge sticker borders and shadows use vector paths. SVG morphology filters caused visibly pixelated artwork in iPhone WebKit; do not reintroduce them. After copying fresh source exports, run `node tools/sharpen-badges.cjs` to replace those filters and enlarge the first-friend portrait.
 - Simple edit, delete, back, close and completion controls retain their functional icons.
 
 Preview: `http://127.0.0.1:4180/tools/badges-preview.html`. Preview wallets are fabricated in memory; this page does not write account data. The preview fixture is tracked so the mobile test works on a fresh checkout.
