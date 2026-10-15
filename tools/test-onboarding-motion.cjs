@@ -4,6 +4,37 @@ const path=require('node:path');
  const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
  const page=await browser.newPage({viewport:{width:390,height:844}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const transitions=await browser.newPage({viewport:{width:390,height:844}});
+ await transitions.goto('http://127.0.0.1:4180/tools/onboarding-preview.html?step=goal');
+ // Sample every paint across real navigation: onboarding must not inherit the
+ // app's compound wrapper slide / child stagger or move its sticky controls.
+ const checkEntrance=async direction=>{
+   const result=await transitions.evaluate(async direction=>{
+     const ob=window.onboardingPreview.onboarding;
+     if(direction==='next')ob.next();else ob.back();
+     const app=document.querySelector('#app'),screen=app.querySelector('.ob');
+     const violations=[];
+     const animations=screen.getAnimations();
+     const fade=animations.some(a=>a.effect.getKeyframes().every(f=>!f.transform));
+     const start=performance.now();
+     await new Promise(resolve=>{
+       function sample(){
+         if(app.classList.contains('stagger'))violations.push('stagger');
+         for(const el of [screen,screen.querySelector('.ob-top'),screen.querySelector('.ob-foot')].filter(Boolean)){
+           if(getComputedStyle(el).transform!=='none')violations.push('translated controls');
+         }
+         if(performance.now()-start<230)requestAnimationFrame(sample);else resolve();
+       }sample();
+     });
+     return {fade,violations};
+   },direction);
+   if(!result.fade||result.violations.length)throw Error('Onboarding entrance: '+JSON.stringify(result));
+ };
+ await transitions.locator('[data-key="goal"][data-value="muscle"]').click();
+ await checkEntrance('next');await checkEntrance('back');await checkEntrance('next');
+ await transitions.locator('[data-key="focus"][data-value="arms"]').click();
+ if(await transitions.locator('.ob').evaluate(el=>el.getAnimations().length))throw Error('Answer selection replayed the screen entrance');
+ await transitions.close();
  // Slow image responses and rapid selections must never show stacked poses or
  // let a discarded scene finish decoding and take over the latest selection.
  const rapid=await browser.newPage({viewport:{width:390,height:844}});

@@ -30,7 +30,9 @@ if (typeof customElements !== 'undefined' && !customElements.get('estella-onboar
             const reduced = matchMedia('(prefers-reduced-motion: reduce)');
             const paint = now => {
               if (!this.isConnected || this.generation !== generation) return;
-              const elapsed = now - started;
+              // A frame timestamp can precede decode completion within the same
+              // browser paint. Never select frame -1 during that first tick.
+              const elapsed = Math.max(0, now - started);
               const index = reduced.matches || elapsed >= duration ? 0 : Math.floor((elapsed % cycle) / (cycle / 4));
               this.dataset.frame = String(index);
               if (!reduced.matches && elapsed < duration) this.frameRequest = requestAnimationFrame(paint);
