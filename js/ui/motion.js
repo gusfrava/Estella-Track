@@ -11,11 +11,19 @@ export const reducedMotion = () => window.matchMedia && matchMedia('(prefers-red
 let enterTimer = null;
 export function enterScreen(root, dir = 'fade') {
   settleScreen(root, { first: true });
-  if (reducedMotion() || dir === 'none') return;
+  clearTimeout(enterTimer);
   root.classList.remove('enter-forward', 'enter-back', 'enter-tab', 'enter-fade', 'stagger');
+  if (reducedMotion() || dir === 'none') return;
+  const top = root.children.length === 1 ? root.firstElementChild : root;
+  // Keep onboarding controls anchored. Translating the wrapper and staggering its
+  // children compounds movement and changes the sticky footer's containing block.
+  // Animate this screen node only, so answer re-renders cannot replay the entrance.
+  if (top.matches('.ob')) {
+    top.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, easing: 'ease-out' });
+    return;
+  }
   void root.offsetWidth;                                   // restart the animation
   root.classList.add(`enter-${dir}`, 'stagger');
-  const top = root.children.length === 1 ? root.firstElementChild : root;   // onboarding: one .ob wrapper
   if (dir === 'forward') { const m = root.querySelector('.mascot'); if (m) pop(m, 'hop'); }
   const items = [...top.children].filter(el => !el.matches('.tabbar, .fab, header, .ob-top'))
     .flatMap(el => (el.matches('ul, ol, .ob-list, .lib-list') ? [...el.children] : [el]));

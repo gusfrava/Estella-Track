@@ -7,8 +7,18 @@
 import {onboardingView} from '../js/views/onboarding.js';
 import * as onboarding from '../js/controllers/onboarding.js';
 import {chooseLang,getLang} from '../js/i18n/index.js';
+import {enterScreen} from '../js/ui/motion.js';
 const app=document.getElementById('app');
-function render(){app.innerHTML=onboardingView(onboarding.getOnboardingUI());}
+let lastStep=null;
+function render(){
+ const ui=onboarding.getOnboardingUI(),step=ui.step;
+ app.innerHTML=onboardingView(ui);
+ if(step!==lastStep){
+  window.scrollTo(0,0);
+  enterScreen(app,lastStep===null?'none':step>lastStep?'forward':'back');
+  lastStep=step;
+ }
+}
 onboarding.onOnboardingChange(render);
 app.addEventListener('click',event=>{
  const button=event.target.closest('[data-action]');if(!button||button.disabled)return;const d=button.dataset;
@@ -19,7 +29,6 @@ app.addEventListener('click',event=>{
  else if(d.action==='ob-unit')onboarding.setBodyField('unit',d.unit);
  else if(d.action==='ob-save-plan')onboarding.savePlan();
  else if(d.action==='ob-finish'||d.action==='ob-skip-all'){app.innerHTML='<p>Preview complete. Use Restart to try again.</p>';return;}
- render();
 });
 app.addEventListener('input',event=>{if(event.target.dataset.obBody)onboarding.setBodyField(event.target.dataset.obBody,event.target.value);});
 document.getElementById('restart').onclick=()=>{onboarding.resetOnboardingUI();render();};
