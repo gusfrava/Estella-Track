@@ -1,0 +1,32 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><base href="/"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Onboarding — branch preview</title>
+<link rel="stylesheet" href="../css/tokens.css"><link rel="stylesheet" href="../css/base.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/screens.css"><link rel="stylesheet" href="../css/mascot.css"><link rel="stylesheet" href="../css/motion.css"><link rel="stylesheet" href="../css/onboarding-motion.css">
+<style>.preview-banner{padding:10px 14px;background:var(--ink);color:var(--bg);font:12px system-ui;display:flex;justify-content:center;gap:12px;align-items:center;flex-wrap:wrap}.preview-banner button{font:inherit;background:var(--bg);color:var(--ink);border:0;border-radius:6px;padding:5px 9px}.preview-banner p{margin:0}.preview-banner small{opacity:.8}.wrap{padding-top:16px}</style></head><body>
+<header class="preview-banner"><p>Onboarding branch preview <small>• test answers stay in memory</small></p><button id="restart">Restart</button><button id="language">ES / EN</button></header>
+<main id="app" class="wrap"></main><div id="layer"></div>
+<script type="module">
+import {onboardingView} from '../js/views/onboarding.js';
+import * as onboarding from '../js/controllers/onboarding.js';
+import {chooseLang,getLang} from '../js/i18n/index.js';
+const app=document.getElementById('app');
+function render(){app.innerHTML=onboardingView(onboarding.getOnboardingUI());}
+onboarding.onOnboardingChange(render);
+app.addEventListener('click',event=>{
+ const button=event.target.closest('[data-action]');if(!button||button.disabled)return;const d=button.dataset;
+ if(d.action==='ob-pick')onboarding.choose(d.key,d.value);
+ else if(d.action==='ob-next')onboarding.next();
+ else if(d.action==='ob-back')onboarding.back();
+ else if(d.action==='ob-skip')onboarding.skipStep();
+ else if(d.action==='ob-unit')onboarding.setBodyField('unit',d.unit);
+ else if(d.action==='ob-save-plan')onboarding.savePlan();
+ else if(d.action==='ob-finish'||d.action==='ob-skip-all'){app.innerHTML='<p>Preview complete. Use Restart to try again.</p>';return;}
+ render();
+});
+app.addEventListener('input',event=>{if(event.target.dataset.obBody)onboarding.setBodyField(event.target.dataset.obBody,event.target.value);});
+document.getElementById('restart').onclick=()=>{onboarding.resetOnboardingUI();render();};
+document.getElementById('language').onclick=()=>{chooseLang(getLang()==='en'?'es':'en');render();};
+// Optional deep link for reviewing one screen without repeating every question.
+const previewStep=new URLSearchParams(location.search).get('step');
+const previewIndex=onboarding.STEPS.indexOf(previewStep);
+if(previewIndex>0&&previewIndex<onboarding.STEPS.length-1)onboarding.getOnboardingUI().step=previewIndex;
+window.onboardingPreview={onboarding};render();
+</script></body></html>

@@ -6,6 +6,7 @@ import { t, getLang, routineName } from '../i18n/index.js';
 import { exerciseName } from '../services/library.js';
 import { esc, fmtClock } from '../utils/format.js';
 import { mascotHTML } from '../ui/mascot.js';
+import { onboardingMotionHTML, focusMotion, goalMotion, experienceMotion } from '../ui/onboarding-motion.js';
 import { progressBar } from './partials.js';
 import { STEPS, OPTIONAL, CHOICES, AVAILABLE_CHARACTERS, canContinue } from '../controllers/onboarding.js';
 
@@ -53,7 +54,7 @@ const question = (title, sub = '') => `<h1>${esc(title)}</h1>${sub ? `<p class="
 
 const SCREENS = {
   welcome: (ui, L) => `<div class="ob-center">
-      ${mascotHTML({ mood: 'excited', hop: true, size: '300px', label: 'Estella' })}
+      ${onboardingMotionHTML('welcome')}
       <h1>${L.ob.welcomeTitle}</h1><p class="sub">${L.ob.welcomeBody}</p></div>
     <div class="ob-foot"><button class="btn" data-action="ob-next">${L.ob.start}</button>
       <button class="textbtn" data-action="ob-skip-all">${L.ob.skipAll}</button></div>`,
@@ -63,24 +64,25 @@ const SCREENS = {
       const ok = AVAILABLE_CHARACTERS.has(c);
       const name = c === 'estella' ? 'Estella' : 'Diego';
       return `<button class="ob-char${ok ? '' : ' off'}" data-action="ob-pick" data-key="character" data-value="${c}" aria-pressed="${ui.answers.character === c}" ${ok ? '' : 'disabled'}>
-        <span class="ob-char-art">${ok ? mascotHTML({ character: c, size: '190px' }) : `<span class="ob-soon">${L.ob.soon}</span>`}</span>
+        <span class="ob-char-art">${ok ? (c === 'estella' && ui.answers.character === c ? onboardingMotionHTML('cheer', { card: true }) : mascotHTML({ character: c, size: '190px' })) : `<span class="ob-soon">${L.ob.soon}</span>`}</span>
         <b>${name}</b><span class="ob-tick">${ICONS.check}</span></button>`;
     }).join('')}</div>${foot(L)}`,
 
-  goal: (ui, L) => `${question(L.ob.goalTitle)}<div class="ob-list">${CHOICES.goal.map(g => option({
+  goal: (ui, L) => `${question(L.ob.goalTitle)}${onboardingMotionHTML(goalMotion(ui.answers.goal), { compact: true })}<div class="ob-list">${CHOICES.goal.map(g => option({
     key: 'goal', value: g, icon: OI['goal_' + g], title: L.ob.goals[g][0], desc: L.ob.goals[g][1], on: ui.answers.goal === g })).join('')}</div>
     ${foot(L, L.ob.next, 'ob-next', canContinue())}`,
 
-  focus: (ui, L) => `${question(L.ob.focusTitle, L.ob.focusSub)}<div class="ob-list">${CHOICES.focus.map(f => option({
+  focus: (ui, L) => `${question(L.ob.focusTitle, L.ob.focusSub)}${onboardingMotionHTML(focusMotion(ui.answers.focus), { compact: true })}<div class="ob-list">${CHOICES.focus.map(f => option({
     key: 'focus', value: f, icon: OI['focus_' + f], title: L.ob.focuses[f][0], desc: L.ob.focuses[f][1], on: ui.answers.focus === f })).join('')}</div>
     ${foot(L)}`,
 
-  experience: (ui, L) => `${question(L.ob.expTitle)}<div class="ob-list">${CHOICES.experience.map(x => option({
+  experience: (ui, L) => `${question(L.ob.expTitle)}${onboardingMotionHTML(experienceMotion(ui.answers.experience), { compact: true })}<div class="ob-list">${CHOICES.experience.map(x => option({
     key: 'experience', value: x, icon: OI['exp_' + x], title: L.ob.exps[x][0], desc: L.ob.exps[x][1], on: ui.answers.experience === x })).join('')}</div>
     ${foot(L, L.ob.next, 'ob-next', canContinue())}`,
 
   place: (ui, L) => `${question(L.ob.placeTitle, L.ob.placeSub)}<div class="ob-list">${CHOICES.place.map(x => option({
     key: 'place', value: x, icon: OI['place_' + x], title: L.ob.places[x][0], desc: L.ob.places[x][1], on: ui.answers.place === x })).join('')}</div>
+    ${onboardingMotionHTML('thinking', { bottom: true })}
     ${foot(L, L.ob.next, 'ob-next', canContinue())}`,
 
   days: (ui, L) => {
@@ -89,11 +91,13 @@ const SCREENS = {
     <div class="ob-days" role="group" aria-label="${esc(L.ob.daysTitle)}">${[1, 2, 3, 4, 5, 6, 7].map(n =>
       `<button class="ob-day num" data-action="ob-pick" data-key="daysPerWeek" data-value="${n}" aria-pressed="${d === n}" aria-label="${esc(L.ob.daysN(n))}">${n}</button>`).join('')}</div>
     <div class="ob-days-label" aria-live="polite">${d ? `${OI.calendar}<span><b>${esc(L.ob.daysN(d))}</b>${esc(L.ob.daysLabel(d))}</span>` : ''}</div>
+    ${onboardingMotionHTML('dogwalk', { bottom: true })}
     ${foot(L, L.ob.next, 'ob-next', canContinue())}`;
   },
 
   minutes: (ui, L) => `${question(L.ob.minTitle)}<div class="ob-list">${CHOICES.minutes.map(m => option({
     key: 'minutes', value: m, icon: OI.clock, title: `${m} min`, desc: L.ob.mins[m], on: ui.answers.minutes === m })).join('')}</div>
+    ${onboardingMotionHTML('calendar', { bottom: true })}
     ${foot(L, L.ob.next, 'ob-next', canContinue())}`,
 
   body: (ui, L) => {
