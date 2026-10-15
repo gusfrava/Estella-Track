@@ -3,7 +3,8 @@ import { weekRecap, hasRecap, recapHidden } from '../state/recap.js';
 import { recapCard } from './recap.js';
 import { ICONS } from '../ui/icons.js';
 import { t, routineName } from '../i18n/index.js';
-import { esc, fmtDay, fmtDuration } from '../utils/format.js';
+import { esc, fmtDay, fmtDuration, fmtNum } from '../utils/format.js';
+import { getWallet, points } from '../state/rewards.js';
 import { nextMonday, parseYmd, todayStr, ymd } from '../utils/dates.js';
 import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities, weeklyStreak, trainedToday, weekGoalProgress } from '../state/selectors.js';
 import { mascotHTML } from '../ui/mascot.js';
@@ -44,7 +45,9 @@ export function homeView(state, opts) {
 // Logo, language and account button: the top of both tabs.
 export function appHeader(state, opts) {
   const L = t();
-  return `<header class="top">${brand()}
+  return `<header class="top"><div class="brand-stack">${brand()}
+      ${getWallet() !== undefined ? `<button class="header-points" data-action="badges" aria-label="${esc(L.pts.points(points()) + ' · ' + L.pts.title)}">${ICONS.star}<span><b class="num" data-count-key="points" data-count="${points()}">${esc(fmtNum(points()))}</b> ${esc(L.pts.pointsWord(points()))}</span></button>` : ''}
+    </div>
     <div class="top-right">${langToggle()}
       <button class="avatar" data-action="account" aria-label="${L.account}">${esc(initial({ ...opts, profile: state.profile }))}</button>
     </div>

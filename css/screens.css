@@ -443,7 +443,12 @@
 .sheet .actions .btn[data-k=share] svg{width:22px;height:22px}
 
 /* ---------- points and badges ---------- */
-.rewards{margin:4px 0 14px;padding:14px;border:var(--line) solid var(--ink);border-radius:20px;background:var(--card);box-shadow:3px 4px 0 var(--ink)}
+.brand-stack{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.header-points{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:6px 10px;border:2px solid var(--ink);border-radius:999px;background:var(--card);font-size:.8rem;white-space:nowrap}
+.header-points svg{width:19px;height:19px;flex:none}
+.header-points:focus-visible{outline:3px solid var(--teal-ink);outline-offset:3px}
+.rewards{margin:26px 0 24px;padding:16px 18px;border:var(--line) solid var(--ink);border-radius:24px;background:var(--card);box-shadow:3px 4px 0 var(--ink)}
+.rw-title{margin:0;font-family:var(--display);font-size:1.15rem;line-height:1.2}
 .rw-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .rw-pts{display:flex;align-items:baseline;gap:6px}
 .rw-pts svg{width:24px;height:24px;align-self:center}
