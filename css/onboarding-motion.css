@@ -1,4 +1,4 @@
-/* Only onboarding art. Bounded CSS loops settle on frame one; no persistent timers or listeners. */
+/* Only onboarding art. A single playback clock selects exactly one pose. */
 .ob-motion{display:block;position:relative;isolation:isolate;flex:none;width:min(100%,340px);height:300px;margin:0 auto 8px;pointer-events:none}
 .ob-motion-compact{height:140px;margin:0 auto 14px}
 .ob-motion-bottom{height:150px;max-width:320px;margin:18px auto 10px}
@@ -12,32 +12,29 @@
 .ob-s-character .ob-char-art{width:100%}
 .ob-motion-card .ob-motion-star-a{right:5%;font-size:17px}
 .ob-motion-card .ob-motion-star-b{left:5%;font-size:13px}
-.ob-motion-fallback{position:absolute;inset:0;display:flex;justify-content:center}
+.ob-motion-fallback{position:absolute;inset:0;display:none;justify-content:center}
+.ob-motion[data-motion-status="fallback"] .ob-motion-fallback{display:flex}
 .ob-motion-fallback .mascot *{animation:none!important}
 .ob-motion.is-ready .ob-motion-fallback{display:none}
-.ob-motion:not(.is-ready) .ob-motion-frame{opacity:0;animation:none}
+.ob-motion[data-motion-status="fallback"] .ob-motion-frames{display:none}
 .ob-motion:not(.is-ready) .ob-motion-star{animation:none}
 /* The added art must not put the sticky Continue button over the last answer. */
 .ob-s-goal .ob-foot,.ob-s-focus .ob-foot,.ob-s-experience .ob-foot{position:static}
 .ob-s-place .ob-foot,.ob-s-days .ob-foot,.ob-s-minutes .ob-foot{position:static;margin-top:0}
 .ob-motion-frames{position:relative;width:100%;height:100%}
-.ob-motion-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;animation:ob-pose 2.2s steps(1,end) 2}
-.ob-motion-frame:first-child{opacity:1}
-.ob-motion-frame:nth-child(2){animation-name:ob-pose-2}
-.ob-motion-frame:nth-child(3){animation-name:ob-pose-3}
-.ob-motion-frame:nth-child(4){animation-name:ob-pose-4}
+.ob-motion-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0}
+.ob-motion:not([data-frame]) .ob-motion-frame:first-child,
+.ob-motion[data-frame="0"] .ob-motion-frame:nth-child(1),
+.ob-motion[data-frame="1"] .ob-motion-frame:nth-child(2),
+.ob-motion[data-frame="2"] .ob-motion-frame:nth-child(3),
+.ob-motion[data-frame="3"] .ob-motion-frame:nth-child(4){opacity:1}
 /* Five seconds total for single-scene screens. Negative delay resumes the same
    screen clock after an answer changes, including its already-finished state. */
-.ob-motion-bottom .ob-motion-frame,.ob-motion-bottom .ob-motion-star{animation-duration:2.5s;animation-delay:var(--ob-motion-delay,0ms)}
-.ob-motion-bottom[data-motion="dogwalk"] .ob-motion-frame{animation-duration:1.25s;animation-iteration-count:4}
-@keyframes ob-pose{0%,24.99%{opacity:1}25%,100%{opacity:0}}
-@keyframes ob-pose-2{0%,24.99%{opacity:0}25%,49.99%{opacity:1}50%,100%{opacity:0}}
-@keyframes ob-pose-3{0%,49.99%{opacity:0}50%,74.99%{opacity:1}75%,100%{opacity:0}}
-@keyframes ob-pose-4{0%,74.99%{opacity:0}75%,99.99%{opacity:1}100%{opacity:0}}
+.ob-motion-bottom .ob-motion-star{animation-duration:2.5s;animation-delay:var(--ob-motion-delay,0ms)}
 .ob-motion-star{position:absolute;z-index:1;color:var(--orange);font-size:28px;animation:ob-star 2.2s ease-in-out 2;transform-origin:center}
 .ob-motion-star-a{right:12%;top:15%}
 .ob-motion-star-b{left:12%;top:48%;color:var(--teal-ink);font-size:20px;animation-direction:reverse}
 .ob-motion-compact .ob-motion-star-a{right:18%;top:12%;font-size:23px}
 .ob-motion-compact .ob-motion-star-b{left:18%;font-size:17px}
 @keyframes ob-star{0%,100%{transform:translateY(0) rotate(-8deg) scale(1)}50%{transform:translateY(-6px) rotate(14deg) scale(1.12)}}
-@media(prefers-reduced-motion:reduce){.ob-motion-frame,.ob-motion-star{animation:none}.ob-motion-frame{opacity:0}.ob-motion-frame:first-child{opacity:1}}
+@media(prefers-reduced-motion:reduce){.ob-motion-star{animation:none}.ob-motion .ob-motion-frame{opacity:0}.ob-motion .ob-motion-frame:first-child{opacity:1}}

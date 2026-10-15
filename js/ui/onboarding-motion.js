@@ -5,27 +5,44 @@ const BASE = new URL('../../icons/onboarding-motion/', import.meta.url).href;
 // Single-scene bottom art keeps its screen-entry clock across answer re-renders.
 let bottomTimeline = null;
 
-// Start the short CSS sequence only once every frame is decoded. A slow or missing
-// image leaves the existing mascot visible; removed screens need no timer cleanup.
+// One clock selects one frame per paint. Cancel it immediately when a render
+// replaces this scene, including while its images are still decoding.
 if (typeof customElements !== 'undefined' && !customElements.get('estella-onboarding-motion')) {
   customElements.define('estella-onboarding-motion', class extends HTMLElement {
     connectedCallback() {
+      const generation = this.generation = (this.generation || 0) + 1;
       queueMicrotask(() => {
         const frames = [...this.querySelectorAll('.ob-motion-frame')];
         Promise.all(frames.map(frame => frame.decode())).then(() => {
-          if (this.isConnected) {
-            if (this.classList.contains('ob-motion-bottom')) {
+          if (this.isConnected && this.generation === generation) {
+            let started = performance.now();
+            const bottom = this.classList.contains('ob-motion-bottom');
+            if (bottom) {
               const scene = this.dataset.motion;
               if (!bottomTimeline || bottomTimeline.scene !== scene) bottomTimeline = { scene, started: performance.now() };
               const elapsed = Math.min(5000, Math.max(0, performance.now() - bottomTimeline.started));
               this.style.setProperty('--ob-motion-delay', `${-elapsed}ms`);
+              started = bottomTimeline.started;
             }
             this.classList.add('is-ready'); this.dataset.motionStatus = 'ready';
+            const duration = bottom ? 5000 : 4400;
+            const cycle = this.dataset.motion === 'dogwalk' ? 1250 : bottom ? 2500 : 2200;
+            const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+            const paint = now => {
+              if (!this.isConnected || this.generation !== generation) return;
+              const elapsed = now - started;
+              const index = reduced.matches || elapsed >= duration ? 0 : Math.floor((elapsed % cycle) / (cycle / 4));
+              this.dataset.frame = String(index);
+              if (!reduced.matches && elapsed < duration) this.frameRequest = requestAnimationFrame(paint);
+            };
+            paint(performance.now());
           }
-        }).catch(() => { if (this.isConnected) this.dataset.motionStatus = 'fallback'; });
+        }).catch(() => { if (this.isConnected && this.generation === generation) this.dataset.motionStatus = 'fallback'; });
       });
     }
     disconnectedCallback() {
+      this.generation = (this.generation || 0) + 1;
+      cancelAnimationFrame(this.frameRequest);
       if (!this.classList.contains('ob-motion-bottom')) return;
       const scene = this.dataset.motion;
       queueMicrotask(() => {

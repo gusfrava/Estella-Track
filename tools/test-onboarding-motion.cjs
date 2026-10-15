@@ -4,6 +4,42 @@ const path=require('node:path');
  const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
  const page=await browser.newPage({viewport:{width:390,height:844}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ // Slow image responses and rapid selections must never show stacked poses or
+ // let a discarded scene finish decoding and take over the latest selection.
+ const rapid=await browser.newPage({viewport:{width:390,height:844}});
+ await rapid.route('**/icons/onboarding-motion/*.webp',async route=>{
+   await new Promise(resolve=>setTimeout(resolve,250));await route.continue();
+ });
+ for(const [step,key,choices,lastScene] of [
+   ['goal','goal',['strength','muscle','fat','athletic','health'],'yoga'],
+   ['focus','focus',['legs','upper','arms','balanced'],'stretch'],
+   ['experience','experience',['never','beginner','intermediate','advanced'],'onearm']
+ ]){
+   await rapid.goto('http://127.0.0.1:4180/tools/onboarding-preview.html?step='+step);
+   await rapid.waitForSelector('.ob-motion');
+   await rapid.evaluate(()=>{
+     window.poseErrors=[];
+     window.samplePoses=()=>{
+       const scene=document.querySelector('.ob-motion');
+       if(scene){
+         const visible=[...scene.querySelectorAll('.ob-motion-frame')].filter(img=>getComputedStyle(img).opacity==='1');
+         if(visible.length!==1)window.poseErrors.push('Visible poses: '+visible.length);
+         if(scene.dataset.motionStatus!=='fallback'&&getComputedStyle(scene.querySelector('.ob-motion-fallback')).display!=='none')window.poseErrors.push('Fallback flashed');
+       }
+       window.poseSampler=requestAnimationFrame(window.samplePoses);
+     };window.samplePoses();
+   });
+   for(const value of choices){
+     await rapid.locator(`[data-key="${key}"][data-value="${value}"]`).click();
+     await rapid.waitForTimeout(40);
+   }
+   await rapid.waitForSelector(`[data-motion="${lastScene}"][data-motion-status="ready"]`);
+   await rapid.waitForTimeout(2300);
+   const failures=await rapid.evaluate(()=>{cancelAnimationFrame(window.poseSampler);return window.poseErrors;});
+   if(failures.length)throw Error('Rapid selection '+step+': '+failures.join(', '));
+   if(await rapid.locator('.ob-motion').getAttribute('data-motion')!==lastScene)throw Error('Stale scene replaced latest selection');
+ }
+ await rapid.close();
  await page.goto('http://127.0.0.1:4180/tools/onboarding-preview.html');
  await page.waitForSelector('[data-motion="welcome"]');
  await page.locator('.ob-motion-frame').evaluateAll(images=>Promise.all(images.map(img=>img.decode())));
@@ -104,5 +140,5 @@ const path=require('node:path');
  const fallback=await browser.newPage();await fallback.route('**/icons/onboarding-motion/welcome-1.webp',route=>route.abort());
  await fallback.goto('http://127.0.0.1:4180/tools/onboarding-preview.html');await fallback.waitForSelector('[data-motion-status="fallback"]');
  if(!await fallback.locator('.ob-motion-fallback .mascot').isVisible())throw Error('Missing image did not preserve static mascot');
- await browser.close();if(errors.length)throw Error(errors.join('\n'));console.log('PASS: real onboarding; all reactions; bottom placement and spacing; moving frames; five-second playback without restart on option changes; validation; navigation; starter plan; ES/EN; 320px layout; reduced motion; missing-image fallback.');
+ await browser.close();if(errors.length)throw Error(errors.join('\n'));console.log('PASS: rapid selections with delayed images and no overlapping poses or fallback flashes; real onboarding; all reactions; bottom placement and spacing; moving frames; five-second playback without restart on option changes; validation; navigation; starter plan; ES/EN; 320px layout; reduced motion; missing-image fallback.');
 })().catch(e=>{console.error(e);process.exit(1)});
