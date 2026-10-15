@@ -1,6 +1,6 @@
 // Points and badges on screen: the block on Progreso, a badge medal, the "all badges" list and the new-badge celebration.
 import { t } from '../i18n/index.js';
-import { esc, fmtDay, fmtNum } from '../utils/format.js';
+import { esc, fmtDay } from '../utils/format.js';
 import { ICONS } from '../ui/icons.js';
 import { BADGES } from '../data/badges.js';
 import { getWallet, points, badgeList, earnedCount } from '../state/rewards.js';
@@ -17,14 +17,14 @@ export function medalHTML(b, size = '') {
 export const badgeName = b => t().pts.names[b.id] || b.id;
 export const badgeDesc = b => (t().pts.desc[b.counter] || (() => ''))(b.at);
 
-// Progreso: points + the first badges (earned first, then the closest ones) + "Ver todas".
+// Progreso: the first badges (earned first, then the closest ones). Points live in the shared header.
 export function rewardsBlock() {
   const P = t().pts, w = getWallet();
   if (w === undefined) return '';   // still loading (or not signed in)
   const list = badgeList().slice(0, 5);
   return `<section class="rewards">
     <div class="rw-head">
-      <span class="rw-pts">${ICONS.star}<b class="num" data-count-key="points" data-count="${points()}">${esc(fmtNum(points()))}</b><span>${esc(P.pointsWord(points()))}</span></span>
+      <h2 class="rw-title">${esc(P.allTitle)}</h2>
       <button class="textbtn" data-action="badges">${P.seeAll}</button>
     </div>
     <ul class="rw-row">${list.map(b => `<li title="${esc(badgeName(b))}">${medalHTML(b)}<span>${esc(badgeName(b))}</span></li>`).join('')}</ul>
