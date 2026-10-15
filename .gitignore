@@ -17,5 +17,6 @@ firebase-debug.log
 tools/onboarding-character-mobile.png
 /mockups
 /design/estella-wardrobe
-/tools
+/tools/*
+!/tools/badges-preview.html
 /design

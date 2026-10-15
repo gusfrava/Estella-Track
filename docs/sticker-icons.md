@@ -9,7 +9,7 @@ The approved `design/estella-sticker-pack` is the source. Runtime assets are cop
 - Badge names, descriptions, dates and progress remain localized. SVG artwork is decorative; the adjacent text provides its meaning.
 - Simple edit, delete, back, close and completion controls retain their functional icons.
 
-Preview: `http://127.0.0.1:4180/tools/badges-preview.html`. Preview wallets are fabricated in memory; this page does not write account data. The preview is in the locally ignored tools folder.
+Preview: `http://127.0.0.1:4180/tools/badges-preview.html`. Preview wallets are fabricated in memory; this page does not write account data. The preview fixture is tracked so the mobile test works on a fresh checkout.
 
 ## Verification
 

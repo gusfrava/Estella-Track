@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><base href="/"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Estella — badge preview</title>
+<link rel="stylesheet" href="../css/tokens.css"><link rel="stylesheet" href="../css/base.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/screens.css"><link rel="stylesheet" href="../css/overlays.css"><link rel="stylesheet" href="../css/mascot.css"><link rel="stylesheet" href="../css/motion.css">
+<style>.preview-controls{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;padding:10px;background:var(--ink);color:var(--bg);font:12px system-ui}.preview-controls button,.preview-controls select{font:inherit;padding:6px;border:0;border-radius:5px;background:var(--bg);color:var(--ink)}.wrap{padding-top:20px}</style>
+</head><body>
+<div class="preview-controls"><span>Preview data only</span><select id="wallet" aria-label="Achievement state"><option value="mixed">Some earned</option><option value="locked">None earned</option><option value="earned">All earned</option></select><button id="language">ES / EN</button><button id="picker">Exercise icons</button></div>
+<main id="app" class="wrap"></main><div id="layer"></div>
+<script type="module">
+import {progressView} from '../js/views/progress.js';
+import {BADGES} from '../js/data/badges.js';
+import {setWallet} from '../js/state/rewards.js';
+import {blankState} from '../js/state/model.js';
+import {setSession} from '../js/state/session.js';
+import {previewLang,getLang,onLangChange} from '../js/i18n/index.js';
+import {openBadges} from '../js/sheets/badges.js';
+import {openAccountSheet} from '../js/sheets/account.js';
+import {openExercisePicker} from '../js/sheets/exercise-picker.js';
+const state=blankState(),user={displayName:'Estella',email:'preview@example.com'};
+setSession({mode:'app',user,localMode:false});
+const app=document.getElementById('app');
+function render(){
+ const mode=document.getElementById('wallet').value;
+ const earned=mode==='earned'?BADGES.map(b=>b.id):mode==='mixed'?['w1','s2','r1']:[];
+ setWallet({points:earned.length*20,counters:{workouts:mode==='earned'?250:1},badges:Object.fromEntries(earned.map((id,i)=>[id,Date.now()-i]))});
+ app.innerHTML=progressView(state,{user,localMode:false});
+}
+document.getElementById('wallet').onchange=render;
+document.getElementById('language').onclick=()=>{previewLang(getLang()==='en'?'es':'en');};
+document.getElementById('picker').onclick=()=>openExercisePicker('preview');
+onLangChange(render);
+app.addEventListener('click',event=>{
+ const action=event.target.closest('[data-action]')?.dataset.action;
+ if(action==='badges')openBadges();else if(action==='account')openAccountSheet();
+});
+render();
+</script></body></html>
