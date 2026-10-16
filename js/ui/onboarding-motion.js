@@ -1,6 +1,7 @@
 // Presentation only: answer storage and screen navigation stay in the onboarding controller.
-import { mascotHTML } from './mascot.js';
+import { mascotHTML, selectedCharacter } from './mascot.js';
 const SCENES = new Set(['stretch', 'legs', 'bench', 'welcome', 'cheer', 'strength', 'muscle', 'model', 'soccer', 'yoga', 'curls', 'clumsy', 'trainer', 'hack', 'onearm', 'thinking', 'dogwalk', 'calendar']);
+const DIEGO_BASE = new URL('../../icons/diego-motion/', import.meta.url).href;
 const BASE = new URL('../../icons/onboarding-motion/', import.meta.url).href;
 // Single-scene bottom art keeps its screen-entry clock across answer re-renders.
 let bottomTimeline = null;
@@ -18,7 +19,7 @@ if (typeof customElements !== 'undefined' && !customElements.get('estella-onboar
             let started = performance.now();
             const bottom = this.classList.contains('ob-motion-bottom');
             if (bottom) {
-              const scene = this.dataset.motion;
+              const scene = `${this.dataset.character}:${this.dataset.motion}`;
               if (!bottomTimeline || bottomTimeline.scene !== scene) bottomTimeline = { scene, started: performance.now() };
               const elapsed = Math.min(5000, Math.max(0, performance.now() - bottomTimeline.started));
               this.style.setProperty('--ob-motion-delay', `${-elapsed}ms`);
@@ -46,23 +47,24 @@ if (typeof customElements !== 'undefined' && !customElements.get('estella-onboar
       this.generation = (this.generation || 0) + 1;
       cancelAnimationFrame(this.frameRequest);
       if (!this.classList.contains('ob-motion-bottom')) return;
-      const scene = this.dataset.motion;
+      const scene = `${this.dataset.character}:${this.dataset.motion}`;
       queueMicrotask(() => {
         const current = document.querySelector('.ob-motion-bottom');
-        if (bottomTimeline?.scene === scene && current?.dataset.motion !== scene) bottomTimeline = null;
+        if (bottomTimeline?.scene === scene && `${current?.dataset.character}:${current?.dataset.motion}` !== scene) bottomTimeline = null;
       });
     }
   });
 }
 
-export function onboardingMotionHTML(scene = 'welcome', { compact = false, card = false, bottom = false } = {}) {
+export function onboardingMotionHTML(scene = 'welcome', { compact = false, card = false, bottom = false, character = selectedCharacter() } = {}) {
   const name = SCENES.has(scene) ? scene : 'stretch';
-  return `<estella-onboarding-motion class="ob-motion${compact ? ' ob-motion-compact' : ''}${card ? ' ob-motion-card' : ''}${bottom ? ' ob-motion-bottom' : ''}" data-motion="${name}" aria-hidden="true">
-    <span class="ob-motion-fallback">${mascotHTML({ size: '100%' })}</span>
+  const base = character === 'diego' ? DIEGO_BASE : BASE;
+  return `<estella-onboarding-motion class="ob-motion${compact ? ' ob-motion-compact' : ''}${card ? ' ob-motion-card' : ''}${bottom ? ' ob-motion-bottom' : ''}" data-motion="${name}" data-character="${character === 'diego' ? 'diego' : 'estella'}" aria-hidden="true">
+    <span class="ob-motion-fallback">${mascotHTML({ character, size: '100%' })}</span>
     <span class="ob-motion-star ob-motion-star-a">✦</span>
     <span class="ob-motion-star ob-motion-star-b">✧</span>
     <div class="ob-motion-frames">${[0, 1, 2, 3].map(i =>
-      `<img class="ob-motion-frame" src="${BASE}${name}-${i}.webp" alt="" width="720" height="640" decoding="async" draggable="false">`).join('')}</div>
+      `<img class="ob-motion-frame" src="${base}${name}-${i}.webp" alt="" width="720" height="640" decoding="async" draggable="false">`).join('')}</div>
   </estella-onboarding-motion>`;
 }
 

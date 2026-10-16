@@ -31,7 +31,7 @@ export const CHOICES = {
   minutes: [30, 45, 60, 90],
   source: ['instagram', 'tiktok', 'youtube', 'friend', 'search', 'ad', 'other'],
 };
-export const AVAILABLE_CHARACTERS = new Set(['estella']);   // Diego appears once his art is in the app
+export const AVAILABLE_CHARACTERS = new Set(['estella', 'diego']);
 
 // ---------- UI state (this device only) ----------
 let ui = null;          // { step, answers, body: { unit, weight, height, ft, inch }, error, plan, planInfo }

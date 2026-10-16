@@ -106,11 +106,11 @@ function check(g, cx, cy) {
   g.lineWidth = 9; g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = C.ink; g.stroke();
 }
 function mascotImage(mood) {
-  const { svg } = mascotSVG({ mood });
+  const { svg, imageURL } = mascotSVG({ mood });
   return new Promise(ok => {
     const img = new Image();
     img.onload = () => ok(img);
     img.onerror = () => ok(null);   // no mascot is better than no picture
-    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    img.src = imageURL || `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   });
 }
