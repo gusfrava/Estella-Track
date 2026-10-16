@@ -1,7 +1,7 @@
 // Website js/ui/motion.js: confetti bursts and the "Routine complete!" card.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, Modal, Platform, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
-import { Motion, Txt } from '@/components/native-ui';
+import { Diego, Motion, Txt, selectedCharacter } from '@/components/native-ui';
 import { useApp } from '@/providers/AppProvider';
 import { colors as c } from '@/theme/tokens';
 
@@ -68,7 +68,7 @@ export function Celebration({ recurring, onDone }) {
   return <Modal transparent animationType="fade" onRequestClose={finish}>
     <Pressable accessibilityRole="button" accessibilityLabel={L.completedTitle} onPress={finish} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: 'rgba(255,241,225,0.82)' }}>
       <Animated.View accessibilityLiveRegion="polite" style={{ width: '100%', maxWidth: 340, alignItems: 'center', backgroundColor: c.yellow, borderWidth: 2.5, borderColor: c.ink, borderRadius: 28, paddingHorizontal: 24, paddingBottom: 30, boxShadow: `5px 6px 0 ${c.ink}`, transform: [{ scale }] }}>
-        <View style={{ width: '100%', marginTop: -150, marginBottom: 8 }}><Motion scene="cheer" size={240} /></View>
+        {selectedCharacter() === 'diego' ? <View style={{ marginTop: -150, marginBottom: 8 }}><Diego scene="complete" size={260} /></View> : <View style={{ width: '100%', marginTop: -150, marginBottom: 8 }}><Motion scene="cheer" size={240} /></View>}
         <Txt bold size={32} style={{ textAlign: 'center', lineHeight: 36 }}>{L.completedTitle}</Txt>
         <Txt style={{ marginTop: 6, fontWeight: '600', textAlign: 'center' }}>{recurring ? L.completedWeekly : L.completedOnce}</Txt>
       </Animated.View>

@@ -151,7 +151,7 @@ export default {
     langTitle:'¿En qué idioma quieres usar Estella?', langSub:'Puedes cambiarlo cuando quieras.',
     skip:'Saltar', skipAll:'Ahora no', next:'Continuar', back:'Atrás', start:'Empezar', step:(a,b)=>`Paso ${a} de ${b}`,
     welcomeTitle:'¡Hola! Soy Estella', welcomeBody:'Te hago unas preguntas rápidas para preparar tu plan. Es menos de un minuto.',
-    charTitle:'Elige tu personaje', charSub:'Crece contigo mientras entrenas. Puedes cambiarlo cuando quieras.', soon:'Muy pronto',
+    charTitle:'Elige tu personaje', charSub:'Crece contigo mientras entrenas. Puedes cambiar tu elección hasta terminar la introducción.', soon:'Muy pronto',
     goalTitle:'¿Cuál es tu objetivo principal?',
     goals:{strength:['Ganar fuerza','Levantar más peso'],muscle:['Ganar músculo','Más definición y volumen'],fat:['Perder grasa y tonificar','Moverte más y con más energía'],athletic:['Rendimiento atlético','Correr, saltar, deportes'],health:['Salud y bienestar','Moverte y sentirte bien']},
     expTitle:'¿Cuánta experiencia tienes en el gym?',

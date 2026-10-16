@@ -31,7 +31,14 @@ export const CHOICES = {
   minutes: [30, 45, 60, 90],
   source: ['instagram', 'tiktok', 'youtube', 'friend', 'search', 'ad', 'other'],
 };
-export const AVAILABLE_CHARACTERS = new Set(['estella']);   // Diego appears once his art is in the app
+export const AVAILABLE_CHARACTERS = new Set(['estella', 'diego']);
+
+// A confirmed choice survives back navigation and replay. Completed legacy
+// profiles keep the companion they already have.
+export function isCharacterLocked() {
+  const saved = getState().profile?.onboarding;
+  return !!(saved?.character && saved.completedAt);
+}
 
 // ---------- UI state (this device only) ----------
 let ui = null;          // { step, answers, body: { unit, weight, height, ft, inch }, error, plan, planInfo }
@@ -113,6 +120,7 @@ const pick = o => Object.fromEntries(['character', 'goal', 'focus', 'experience'
 function save(extra = {}) {
   const p = getState().profile || {};
   const prev = p.onboarding || {};
+  if (isCharacterLocked()) ui.answers.character = prev.character;
   const onboarding = { ...prev, ...ui.answers, version: VERSION, startedAt: prev.startedAt || Date.now(), ...extra };
   updateProfile({ onboarding });
 }
@@ -140,7 +148,7 @@ export function canContinue() {
 // key = 'goal' | 'experience' | … ; value from CHOICES (days: 1–7)
 export function choose(key, value) {
   getOnboardingUI();
-  if (key === 'character' && !AVAILABLE_CHARACTERS.has(value)) return;
+  if (key === 'character' && (!AVAILABLE_CHARACTERS.has(value) || isCharacterLocked())) return;
   ui.answers[key] = key === 'daysPerWeek' || key === 'minutes' ? Number(value) : value;
   ui.error = '';
   save();
@@ -176,6 +184,7 @@ export function next() {
     if (b.weight || b.heightCm) saveBody({ weight: b.weight, weightUnit: b.unit, heightCm: b.heightCm, source: 'onboarding' });
   }
   if (!canContinue()) return;
+  if (s === 'character' && !isCharacterLocked()) save({ characterConfirmedAt: Date.now() });
   if (s === 'source') save();
   if (STEPS[ui.step + 1] === 'done') complete();
   ui.step = Math.min(STEPS.length - 1, ui.step + 1);
