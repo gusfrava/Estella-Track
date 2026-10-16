@@ -196,21 +196,20 @@ export function repeatRoutine(id) {
   emit('local', 'repeat-routine', [setW('routines', touch(r))]);
 }
 
-// "Desmarcar todo": throws away the current check marks (and their history points).
+// "Desmarcar todo": throws away the current check marks (and their history points). The emptied session is kept,
+// like unchecking (see dropEntry), so checking again doesn't count as a second workout.
 export function resetRoutine(id) {
   const r = findRoutine(id); if (!r) return;
   const s = currentSession(r);
+  if (!s) return;
   const writes = [];
-  if (s) {
-    for (const e of s.exercises.filter(entryDone)) {
-      const st = removePoint(e.id, e.doneAt ? ymdOf(e.doneAt) : s.date);
-      if (st) writes.push(setW('stats', st));
-    }
-    delete state.sessions[s.id];
-    writes.push(delW('sessions', s.id));
+  for (const e of s.exercises.filter(entryDone)) {
+    const st = removePoint(e.id, e.doneAt ? ymdOf(e.doneAt) : s.date);
+    if (st) writes.push(setW('stats', st));
   }
-  r.current = null;
-  writes.push(setW('routines', touch(r)));
+  s.exercises = [];
+  updateStatus(r, s);
+  writes.push(setW('sessions', touch(s)));
   emit('local', 'reset-routine', writes);
 }
 
@@ -308,6 +307,12 @@ function entryFor(r, ex, create, writes) {
   let s = currentSession(r);
   let e = s && s.exercises.find(x => x.id === ex.id);
   if (e || !create) return { s, e };
+  // An emptied session (everything unchecked) starts over today, so a mistaken tap earlier in the week doesn't date
+  // the real workout. It keeps its id: the server awards each session once, so re-checking can't count it twice.
+  if (s && !s.exercises.length) {
+    s.date = todayStr(); s.weekKey = weekKey(); s.startedAt = Date.now(); s.finishedAt = null;
+    if (r.current.weekKey !== s.weekKey) { r.current = { sessionId: s.id, weekKey: s.weekKey }; writes.push(setW('routines', touch(r))); }
+  }
   if (!s) {
     s = makeGymSession(r);
     state.sessions[s.id] = s;
@@ -343,19 +348,13 @@ function settle(r, ex, s, e, writes) {
   return completed;
 }
 
-// Removes an entry; an empty session is deleted so "nothing logged" leaves nothing behind.
+// Removes an entry. A session left empty is kept (it counts as nothing: no done sets) instead of deleted, so
+// checking again reuses it and the server doesn't award the same workout twice (it awards once per session id).
 function dropEntry(r, s, e, writes) {
   if (e.doneAt) { const st = removePoint(e.id, ymdOf(e.doneAt)); if (st) writes.push(setW('stats', st)); }
   s.exercises = s.exercises.filter(x => x !== e);
-  if (!s.exercises.length) {
-    delete state.sessions[s.id];
-    writes.push(delW('sessions', s.id));
-    r.current = null;
-    writes.push(setW('routines', touch(r)));
-  } else {
-    updateStatus(r, s);
-    writes.push(setW('sessions', touch(s)));
-  }
+  updateStatus(r, s);
+  writes.push(setW('sessions', touch(s)));
 }
 
 const NOTHING = { completed: false, exerciseDone: false, setDone: false };
