@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="32" height="32"><title>full body</title><defs><filter id="onboarding-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs><g filter="url(#onboarding-sticker)" stroke="#2B1B12" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="64" cy="22" r="11" fill="#E8A36B"/><path d="M48 40L37 69M80 40L91 69" stroke-width="12"/><path d="M48 40L37 69M80 40L91 69" stroke="#E8A36B" stroke-width="7"/><path d="M49 38Q64 33 79 38L76 69H52Z" fill="#3DC4B3"/><path d="M52 69H76L79 84H66L64 77L62 84H49Z" fill="#2B1B12"/><path d="M55 84L53 106M73 84L75 106" stroke-width="12"/><path d="M55 84L53 106M73 84L75 106" stroke="#E8A36B" stroke-width="7"/><path d="M53 104L43 110H58V104M75 104L85 110H70V104" fill="#FFF1E1"/></g></svg>

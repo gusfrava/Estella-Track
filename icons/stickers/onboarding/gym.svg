@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="32" height="32"><title>gym</title><defs><filter id="onboarding-sticker" x="-25%" y="-25%" width="160%" height="165%" color-interpolation-filters="sRGB">
+    <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="cutout"/>
+    <feOffset in="cutout" dx="2" dy="4" result="offset"/>
+    <feFlood flood-color="#2B1B12" flood-opacity="0.25"/><feComposite in2="offset" operator="in" result="shadow"/>
+    <feFlood flood-color="#FFF1E1"/><feComposite in2="cutout" operator="in" result="border"/>
+    <feMerge><feMergeNode in="shadow"/><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter></defs><g filter="url(#onboarding-sticker)" stroke="#2B1B12" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"><path d="M19 108V42L64 20L109 42V108Z" fill="#3DC4B3"/><path d="M31 108V54H97V108Z" fill="#FFF1E1"/><path d="M55 108V82H73V108" fill="#FF6A2B"/><path d="M44 65H84" stroke-width="6"/><rect x="39" y="56" width="9" height="18" rx="2" fill="#FFC94D"/><rect x="80" y="56" width="9" height="18" rx="2" fill="#FFC94D"/></g></svg>

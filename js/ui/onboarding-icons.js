@@ -44,3 +44,25 @@ const ART = {
   calendar: 'planning/calendar', clock: 'fitness/stopwatch',
 };
 for (const [key, path] of Object.entries(ART)) OI[key] = stickerIcon(path, 'ti');
+
+// Complete the onboarding set with matching colored sticker artwork.
+const ONBOARDING_ART = {
+  "focus_balanced": "full-body",
+  "place_gym": "gym",
+  "place_small": "small-gym",
+  "place_home": "home",
+  "exp_never": "exp-never",
+  "exp_beginner": "exp-beginner",
+  "exp_intermediate": "exp-intermediate",
+  "exp_advanced": "exp-advanced",
+  "src_instagram": "src-instagram",
+  "src_tiktok": "src-tiktok",
+  "src_youtube": "src-youtube",
+  "src_search": "src-search",
+  "src_ad": "src-ad",
+  "src_other": "src-other",
+  "language": "language",
+  "scale": "scale",
+  "ruler": "ruler"
+};
+for (const [key, name] of Object.entries(ONBOARDING_ART)) OI[key] = stickerIcon(`onboarding/${name}`, 'ti');
