@@ -8,6 +8,8 @@ import { router } from 'expo-router';
 import { colors as c, fonts } from '@/theme/tokens';
 import art from '@/theme/art.json';
 import { motions } from '@/theme/motions';
+import { diegoMotions } from '@/theme/diego-motions';
+import { getState } from '@/core/state/store';
 import { addToastHost } from './toast-bus';
 import { feel } from '@/services/feel';
 import { useApp } from '@/providers/AppProvider';
@@ -21,7 +23,9 @@ import { cheersSeenAt } from '@/core/controllers/friends';
 const softBreaks = c => (typeof c === 'string' ? c.replace(/([+/&])(?=[A-Za-z\u00C0-\u024F])/g, '$1\u200B') : Array.isArray(c) ? c.map(softBreaks) : c);
 // A light buzz on every button, like the website's tap feedback; picking an answer sounds like a selection.
 const withFeel = (fn, kind = 'tap') => fn && (e => { feel(kind); fn(e); });
-export function Txt({ children, size = 16, bold = false, muted = false, style, ...props }) { children = softBreaks(children); return <Text {...props} style={[{ fontFamily: bold ? fonts.heading : fonts.body, color: muted ? c.muted : c.ink, fontSize: size, lineHeight: size * 1.35 }, style]}>{children}</Text>; }
+// Baloo's glyphs are taller than their size: iOS clips them when the line is shorter than ~1.25× (e.g. "2/4" on Home).
+const minLine = (size, bold, style) => { const lh = StyleSheet.flatten(style)?.lineHeight; return bold && lh && lh < size * 1.25 ? { lineHeight: Math.ceil(size * 1.25) } : null; };
+export function Txt({ children, size = 16, bold = false, muted = false, style, ...props }) { children = softBreaks(children); return <Text {...props} style={[{ fontFamily: bold ? fonts.heading : fonts.body, color: muted ? c.muted : c.ink, fontSize: size, lineHeight: size * 1.35 }, style, minLine(size, bold, style)]}>{children}</Text>; }
 export const Title = ({ children }) => <Txt size={34} bold>{children}</Txt>;
 const grayArt = Object.fromEntries(Object.entries(art).map(([name, xml]) => [name, xml.replace(/#[\da-f]{6}\b|#[\da-f]{3}\b/gi, color => {
   const hex = color.length === 4 ? color.slice(1).split('').map(c => c + c).join('') : color.slice(1);
@@ -31,8 +35,10 @@ const grayArt = Object.fromEntries(Object.entries(art).map(([name, xml]) => [nam
 export function Icon({ name, size = 26, locked = false, color }) { let xml = (locked ? grayArt : art)[name]; if (xml && color) xml = xml.replaceAll(c.ink, color); const Svg = xml?.includes('<style>') ? SvgCss : SvgXml; return xml ? <View style={{ opacity: locked ? .5 : 1 }}><Svg xml={xml} width={size} height={size} /></View> : <Txt bold size={size}>{({ back: '‹', close: '×', edit: '✎', delete: '×', add: '+', check: '✓' })[name] || '✦'}</Txt>; }
 // Website .btn: pill with a hard ink shadow that the press pushes the button into. Back ("‹") is the website's .round.
 export function Button({ children, title, onPress, secondary = false, disabled = false, small = false, selected = false, label, style }) { const round = title === '‹'; return <Pressable onPress={withFeel(onPress)} accessibilityRole="button" accessibilityLabel={label || title} accessibilityState={{ disabled, selected }} aria-disabled={disabled} aria-selected={selected} disabled={disabled} style={({ pressed }) => [s.button, small && s.small, round && s.round, { backgroundColor: selected ? c.yellow : secondary ? c.card : c.orange, opacity: disabled ? .6 : 1 }, pressed && !disabled && !round && s.pressed, pressed && round && { opacity: .7 }, style]}>{children || (['‹','✎','×'].includes(title) ? <Icon name={'ui-'+({'‹':'back','✎':'pen','×':'close'})[title]} size={round ? 22 : 26} /> : <Txt bold size={small ? 16 : 20} style={{ textAlign: 'center' }}>{title}</Txt>)}</Pressable>; }
-// Website mascotHTML({ crop: 'bust' }): Estella's head and shoulders in a bordered circle.
-export const Bust = ({ size = 96 }) => <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 2, borderColor: c.ink, backgroundColor: c.yellowSoft, overflow: 'hidden' }}><Icon name="mascot-bust" size={size - 4} /></View>;
+// Website selectedCharacter(): the companion chosen in onboarding.
+export const selectedCharacter = () => getState().profile?.onboarding?.character === 'diego' ? 'diego' : 'estella';
+// Website mascotHTML({ crop: 'bust' }): the companion's head and shoulders in a bordered circle (Diego's blinking portrait).
+export const Bust = ({ size = 96, character = selectedCharacter() }) => <View style={{ width: size, height: size, borderRadius: size / 2, borderWidth: 2, borderColor: c.ink, backgroundColor: c.yellowSoft, overflow: 'hidden' }}>{character === 'diego' ? <Diego scene="portrait" size={size - 4} /> : <Icon name="mascot-bust" size={size - 4} />}</View>;
 export function TextButton({ title, onPress, color = c.ink, style }) { return <Pressable onPress={withFeel(onPress)} accessibilityRole="button" style={({ pressed }) => [{ paddingVertical: 10, paddingHorizontal: 4, opacity: pressed ? .6 : 1 }, style]}><Txt bold style={{ color, textAlign: 'center' }}>{title}</Txt></Pressable>; }
 // Website .ob-opt: icon tile, title and description, and a tick that turns teal when chosen.
 export function Option({ icon, title, desc, selected = false, compact = false, onPress }) {
@@ -66,18 +72,41 @@ function TabBadge({ active }) { const { L, session } = useApp(); if (session.loc
 function SheetPanel({ title, children, onClose }) { const { L } = useApp(), insets = useSafeAreaInsets(); return <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[s.sheet, { paddingBottom: 24 + insets.bottom }]}><View style={s.sheetTop}><View style={s.grab} /><Pressable accessibilityRole="button" accessibilityLabel={L.close} onPress={onClose} style={s.sheetX}><Txt bold size={22} style={{ lineHeight: 26 }}>×</Txt></Pressable></View>{!!title && <Txt bold size={26.4} style={{ lineHeight: 30, paddingRight: 40, marginBottom: 18 }}>{title}</Txt>}<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 20, paddingBottom: 12, paddingRight: 5 }}>{children}</ScrollView></KeyboardAvoidingView>; }
 export function Sheet({ title, children, onClose }) { const { L } = useApp(); return <Modal transparent animationType="slide" onRequestClose={onClose}><View style={s.shade}><Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel={L.close} /><SheetPanel title={title} onClose={onClose}>{children}</SheetPanel><ToastHost /></View></Modal>; }
 export function RouteSheet({ title, children }) { const { L } = useApp(), close = () => router.canGoBack() ? router.back() : router.replace('/'); return <View style={s.shade}><Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel={L.close} /><SheetPanel title={title} onClose={close}>{children}</SheetPanel></View>; }
-function MotionFrames({ scene = 'welcome', bottom = false, size = 220 }) {
-  const [frame, setFrame] = useState(0), [reduce, setReduce] = useState(true);
-  const [pulse] = useState(() => new Animated.Value(1));
+function useReduceMotion() {
+  const [reduce, setReduce] = useState(true);
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(setReduce); const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduce); return () => sub.remove(); }, []);
+  return reduce;
+}
+// Website .diego-mascot: Diego's approved poses as discrete frames, never a crossfade. All four stay stacked so a
+// switch never waits for a load. Poses step every 0.5 s; the portrait holds still and blinks (third pose) every 5 s.
+export function Diego({ scene = 'welcome', size = 120 }) {
+  const reduce = useReduceMotion(), [frame, setFrame] = useState(0), portrait = scene === 'portrait';
   useEffect(() => {
     if (reduce) return;
-    const start = Date.now(), duration = bottom ? 5000 : 4400, cycle = scene === 'dogwalk' ? 1250 : bottom ? 2500 : 2200;
+    const start = Date.now();
+    const timer = setInterval(() => { const t = Date.now() - start; setFrame(portrait ? (t % 5000 >= 4250 && t % 5000 < 4500 ? 2 : 0) : Math.floor(t / 500) % 4); }, 50);
+    return () => clearInterval(timer);
+  }, [portrait, reduce]);
+  const shown = reduce ? 0 : frame;
+  return <View style={{ width: size, height: size, alignSelf: 'center' }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{(diegoMotions[scene] || diegoMotions.welcome).map((source, i) => <Image key={i} source={source} style={[StyleSheet.absoluteFill, { opacity: shown === i ? 1 : 0 }]} contentFit="contain" transition={0} />)}</View>;
+}
+// Website onboarding-motion.js: one playback clock picks exactly one of the scene's four poses, Estella's or Diego's.
+// card: the character-step card (art 190 wide); still: the unchosen card's first pose without stars.
+function MotionFrames({ scene = 'welcome', bottom = false, size = 220, character, card = false, still = false }) {
+  const [frame, setFrame] = useState(0), reduce = useReduceMotion();
+  const [pulse] = useState(() => new Animated.Value(1));
+  useEffect(() => {
+    if (reduce || still) return;
+    const start = Date.now(), duration = bottom ? 5000 : scene === 'soccer' ? Infinity : 4400, cycle = scene === 'dogwalk' ? 1250 : bottom ? 2500 : 2200;
     const timer = setInterval(() => { const elapsed = Date.now() - start; setFrame(elapsed >= duration ? 0 : Math.floor(elapsed % cycle / (cycle / 4))); if (elapsed >= duration) clearInterval(timer); }, 60);
     const animation = Animated.loop(Animated.sequence([Animated.timing(pulse, { toValue: 1.18, duration: 700, useNativeDriver: Platform.OS !== 'web' }), Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: Platform.OS !== 'web' })]), { iterations: 3 }); animation.start();
     return () => { clearInterval(timer); animation.stop(); pulse.setValue(1); };
-  }, [scene, bottom, reduce, pulse]);
-  return <View style={{ height: size, width: '100%', marginTop: bottom ? 28 : 0, alignItems: 'center' }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Image source={(motions[scene] || motions.welcome)[reduce ? 0 : frame]} style={{ width: '100%', height: '100%' }} contentFit="contain" transition={0} /><Animated.Text style={{ position: 'absolute', right: '12%', top: 25, color: c.orange, fontSize: 28, transform: [{ scale: pulse }] }}>✦</Animated.Text><Txt style={{ position: 'absolute', left: '12%', bottom: 50, color: c.teal }}>✧</Txt></View>;
+  }, [scene, bottom, reduce, still, pulse]);
+  const frames = character === 'diego' ? diegoMotions : motions;
+  return <View style={{ height: size, width: '100%', marginTop: bottom ? 28 : 0, alignItems: 'center' }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <Image source={(frames[scene] || frames.welcome)[reduce || still ? 0 : frame]} style={[{ width: card ? 190 : '100%', height: '100%' }, card && character === 'diego' && { transform: [{ scale: 1.035 }] }]} contentFit="contain" transition={0} />
+    {!still && <><Animated.Text style={{ position: 'absolute', right: card ? '5%' : '12%', top: card ? 20 : 25, color: c.orange, fontSize: card ? 17 : 28, transform: [{ scale: pulse }] }}>✦</Animated.Text><Txt size={card ? 13 : 16} style={[{ position: 'absolute', left: card ? '5%' : '12%', color: c.teal }, card ? { top: '48%' } : { bottom: 50 }]}>✧</Txt></>}
+  </View>;
 }
 export const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: c.background },
@@ -114,7 +143,7 @@ export const s = StyleSheet.create({
   sheetX: { position: 'absolute', right: -8, top: 6, width: 36, height: 36, borderRadius: 18, borderWidth: 2, borderColor: c.ink, backgroundColor: c.card, alignItems: 'center', justifyContent: 'center' },
 });
 
-export function Motion(props) { return <MotionFrames key={props.scene || 'welcome'} {...props} />; }
+export function Motion({ character = selectedCharacter(), ...props }) { return <MotionFrames key={`${character}:${props.scene || 'welcome'}:${!!props.still}`} character={character} {...props} />; }
 
 // Website ui/toast.js: one short message at the top (icon, bold title, optional line), gone after 3.2 s.
 export { toast } from './toast-bus';

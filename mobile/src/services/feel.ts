@@ -1,8 +1,8 @@
 // How the app feels, as the website's js/ui/feel.js: one place for vibration and small sounds.
-//   'tap' any button (vibration only) · 'select' picking an answer · 'check' a set checked · 'done' an exercise
+//   'tap' any button (a very soft tick) · 'select' picking an answer · 'check' a set checked · 'done' an exercise
 //   finished · 'complete' a whole routine · 'points' points arrived · 'badge' a new badge · 'cheer' a cheer ·
 //   'error' something didn't work
-// The sounds are the website's tones rendered to files (scripts/make-sounds.cjs). They mix with whatever else is
+// The sounds are the website's notes as soft marimba/bell tones, rendered to files (scripts/make-sounds.cjs). They mix with whatever else is
 // playing and stay quiet when the phone is on silent. The "Sounds" and "Vibration" switches live in Account.
 import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
@@ -36,7 +36,8 @@ const HAPTICS: Record<FeelKind, () => unknown> = {
 };
 
 // ---------- sound ----------
-const SOURCES: Partial<Record<FeelKind, number>> = {
+const SOURCES: Record<FeelKind, number> = {
+  tap: require('../../assets/sounds/tap.wav'),
   select: require('../../assets/sounds/select.wav'),
   check: require('../../assets/sounds/check.wav'),
   done: require('../../assets/sounds/done.wav'),
@@ -46,22 +47,37 @@ const SOURCES: Partial<Record<FeelKind, number>> = {
   cheer: require('../../assets/sounds/cheer.wav'),
   error: require('../../assets/sounds/error.wav'),
 };
-const players: Partial<Record<FeelKind, AudioPlayer>> = {};
-let audioReady = false;
-function player(kind: FeelKind) {
-  const source = SOURCES[kind];
-  if (!source) return null;
-  if (!audioReady) { audioReady = true; void setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'mixWithOthers' }).catch(() => {}); }
-  return (players[kind] ??= createAudioPlayer(source));
+// Every sound is loaded when the app opens (a player created on the first tap isn't ready in time and stays silent),
+// with a few players each so quick repeated taps overlap instead of cutting each other off.
+const POOL = 3;
+const pools: Partial<Record<FeelKind, { players: AudioPlayer[]; next: number }>> = {};
+let prepared = false;
+export function prepareFeel() {
+  if (prepared) return;
+  prepared = true;
+  void setAudioModeAsync({ playsInSilentMode: false, interruptionMode: 'mixWithOthers' }).catch(() => {});
+  for (const kind of Object.keys(SOURCES) as FeelKind[]) {
+    try { pools[kind] = { players: Array.from({ length: POOL }, () => createAudioPlayer(SOURCES[kind])), next: 0 }; } catch { /* audio not available */ }
+  }
+}
+
+function play(kind: FeelKind) {
+  prepareFeel();
+  const pool = pools[kind];
+  if (!pool) return;
+  // The least recently used player that is ready; skip one still loading rather than lose the sound.
+  for (let k = 0; k < POOL; k++) {
+    const p = pool.players[(pool.next + k) % POOL];
+    if (!p.isLoaded) continue;
+    pool.next = (pool.next + k + 1) % POOL;
+    if (p.currentTime > 0 || p.playing) p.seekTo(0).then(() => p.play(), () => p.play());
+    else p.play();
+    return;
+  }
 }
 
 export function feel(kind: FeelKind) {
   const prefs = feelPrefs();
   if (prefs.haptics && canVibrate) { try { void Promise.resolve(HAPTICS[kind]()).catch(() => {}); } catch { /* not available */ } }
-  if (prefs.sound) {
-    try {
-      const p = player(kind);
-      if (p) { void p.seekTo(0); p.play(); }
-    } catch { /* audio not available right now */ }
-  }
+  if (prefs.sound) { try { play(kind); } catch { /* audio not available right now */ } }
 }

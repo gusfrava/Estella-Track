@@ -12,7 +12,7 @@ import { DEFAULT_SHARING, SCHEMA_VERSION } from '@/core/state/model';
 import { hydrateStorage, KEYS, readJSON, writeJSON, lsGet, lsSet, lsDel, flushStorage } from '@/core/services/storage';
 import { t, getLang, setLang, previewLang, chooseLang, hasChosenLang, onLangChange, routineName } from '@/core/i18n';
 import { toast } from '@/components/toast-bus';
-import { feel } from '@/services/feel';
+import { feel, prepareFeel } from '@/services/feel';
 const CHEER_ICONS = { fire: 'streak-flame', strong: 'dumbbell', clap: 'cheer' };
 
 const Context = createContext(null);
@@ -90,6 +90,7 @@ export function AppProvider({ children }) {
       if (gained > 0) { toast({ icon: 'ui-star', title: P.gained(gained), body: P.why[w.log?.[0]?.why || ''] || '' }); feel('points'); }
       if (fresh.length) setTimeout(() => { toast({ icon: 'badge-' + fresh[0], title: fresh.length > 1 ? P.newBadges : P.newBadge, body: fresh.map(id => P.names[id] || id).join(', ') }); feel('badge'); }, gained > 0 ? 1600 : 0);
     });
+    prepareFeel();
     const languageStop = onLangChange(notify), rewardsStop = rewards.onRewardsChange(notify), socialStop = social.onSocialChange(notify), sessionStop = session.onSessionChange(notify);
     const onboardingStop = ob.onOnboardingChange(notify);
     // A cheer that arrives while the app is open: a short toast, as on the website (not for the ones already there).

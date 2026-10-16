@@ -1,42 +1,63 @@
-// Renders the website's feedback sounds (js/ui/feel.js, made live with Web Audio) into small WAV files for the
-// phone: the same notes, envelopes and volumes, so both apps sound alike. Run: node scripts/make-sounds.cjs
+// Renders the app's feedback sounds into small WAV files (assets/sounds). Same moments and notes as the website's
+// js/ui/feel.js (C major, one family), voiced as soft marimba/bell tones: a rounded fundamental, a quiet overtone
+// that fades first, a gentle attack and a short airy echo, so nothing clicks or sounds harsh.
+// Run: node scripts/make-sounds.cjs
 const fs = require('node:fs');
 const path = require('node:path');
-const RATE = 44100, MASTER = 0.22;
+const RATE = 44100, PEAK = 0.5;
 const N = { C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880, C6: 1046.5, E6: 1318.5, G6: 1568 };
 
-// Exponential ramp between two values over [t0, t1], like AudioParam.exponentialRampToValueAtTime.
-const expRamp = (a, b, t0, t1, t) => a * Math.pow(b / a, Math.min(1, Math.max(0, (t - t0) / (t1 - t0))));
-const wave = (type, phase) => type === 'sine' ? Math.sin(phase) : (2 / Math.PI) * Math.asin(Math.sin(phase));   // triangle
+// One mallet note. tone: 'marimba' (warm, 4th overtone) | 'bell' (brighter, 2.76× partial) | 'soft' (pure, for taps).
+function note(freq, at = 0, len = 0.35, vol = 0.6, tone = 'marimba') {
+  const partials = { marimba: [[1, 1, 1], [4, 0.18, 3.5]], bell: [[1, 1, 1], [2.76, 0.22, 2.5], [5.4, 0.06, 5]], soft: [[1, 1, 1]] }[tone];
+  return { freq, at, len, vol, partials };
+}
+// A note that bends up a little as it starts (the "pop" of checks and selections).
+const pop = (from, to, at, len, vol, tone) => ({ ...note(to, at, len, vol, tone), from });
 
-function render(parts) {
-  const end = Math.max(...parts.map(p => p.at + p.len + 0.08));
-  const out = new Float32Array(Math.ceil(end * RATE));
+function render(parts, level = 1) {
+  const end = Math.max(...parts.map(p => p.at + p.len)) + 0.25;
+  const dry = new Float32Array(Math.ceil(end * RATE));
   for (const p of parts) {
-    let phase = 0;
-    const start = Math.floor(p.at * RATE), stop = Math.ceil((p.at + p.len + 0.06) * RATE);
-    for (let i = start; i < stop && i < out.length; i++) {
-      const t = i / RATE - p.at;
-      const freq = p.to ? expRamp(p.from, p.to, 0, p.slideLen, t) : p.from;
-      phase += 2 * Math.PI * freq / RATE;
-      const gain = t < p.attack ? expRamp(0.0001, p.vol, 0, p.attack, t) : expRamp(p.vol, 0.0001, p.attack, p.release, t);
-      out[i] += wave(p.type, phase) * gain * MASTER;
+    const start = Math.floor(p.at * RATE), n = Math.ceil(p.len * RATE);
+    const phases = p.partials.map(() => 0);
+    for (let i = 0; i < n && start + i < dry.length; i++) {
+      const t = i / RATE;
+      const attack = Math.min(1, t / 0.006);                                   // 6 ms: soft, no click
+      const bend = p.from ? p.from + (p.freq - p.from) * Math.min(1, t / 0.045) : p.freq;
+      let s = 0;
+      p.partials.forEach(([mult, amp, decayRate], k) => {
+        phases[k] += 2 * Math.PI * bend * mult / RATE;
+        s += Math.sin(phases[k]) * amp * Math.exp(-t * decayRate * (6 / p.len));
+      });
+      const release = Math.min(1, (p.len - t) / 0.03);                         // fade the very end to silence
+      dry[start + i] += s * attack * release * p.vol;
     }
   }
-  return out;
+  // Short, soft echo for a bit of space.
+  const out = new Float32Array(dry.length);
+  for (let i = 0; i < out.length; i++) {
+    const e1 = i >= 3970 ? dry[i - 3970] * 0.16 : 0, e2 = i >= 7940 ? dry[i - 7940] * 0.06 : 0;
+    out[i] = dry[i] + e1 + e2;
+  }
+  // Gentle low-pass to round off any edge, then normalize.
+  let prev = 0; for (let i = 0; i < out.length; i++) { prev += (out[i] - prev) * 0.55; out[i] = prev; }
+  const max = Math.max(...out.map(Math.abs)) || 1;
+  return out.map(v => v / max * PEAK * level);
 }
-const note = (freq, at = 0, len = 0.12, vol = 0.6, type = 'sine') => ({ from: freq, at, len, vol, type, attack: 0.012, release: len });
-const slide = (from, to, at = 0, len = 0.09, vol = 0.5) => ({ from, to, slideLen: len, at, len: len + 0.04, vol, type: 'triangle', attack: 0.01, release: len + 0.04 });
 
+// How loud each moment is next to the others: taps barely there, the big moments fullest.
+const LEVELS = { tap: 0.3, select: 0.55, check: 0.75, done: 0.85 };
 const SOUNDS = {
-  select: [slide(N.E5, N.G5, 0, 0.06, 0.35)],
-  check: [slide(N.G5, N.C6, 0, 0.08, 0.5)],
-  done: [note(N.E5, 0, 0.14, 0.45), note(N.G5, 0.07, 0.18, 0.45)],
-  complete: [note(N.C5, 0, 0.16, 0.45), note(N.E5, 0.09, 0.16, 0.45), note(N.G5, 0.18, 0.16, 0.45), note(N.C6, 0.27, 0.34, 0.5)],
-  points: [note(N.A5, 0, 0.08, 0.35, 'triangle'), note(N.E6, 0.06, 0.14, 0.35, 'triangle')],
-  badge: [N.C6, N.E6, N.G6, N.E6, N.G6].map((f, i) => note(f, i * 0.06, 0.22, 0.28, 'triangle')),
-  cheer: [slide(N.D5, N.A5, 0, 0.07, 0.4), slide(N.G5, N.E6, 0.08, 0.08, 0.4)],
-  error: [note(330, 0, 0.12, 0.35, 'triangle'), note(262, 0.1, 0.18, 0.35, 'triangle')],
+  tap: [note(N.G5, 0, 0.09, 0.25, 'soft')],
+  select: [pop(N.E5, N.G5, 0, 0.22, 0.5)],
+  check: [pop(N.G5, N.C6, 0, 0.28, 0.6)],
+  done: [note(N.E5, 0, 0.35, 0.5), note(N.G5, 0.08, 0.45, 0.55)],
+  complete: [note(N.C5, 0, 0.4, 0.45), note(N.E5, 0.1, 0.4, 0.45), note(N.G5, 0.2, 0.45, 0.5), note(N.C6, 0.3, 0.9, 0.6, 'bell')],
+  points: [note(N.A5, 0, 0.3, 0.45, 'bell'), note(N.E6, 0.08, 0.5, 0.45, 'bell')],
+  badge: [N.C6, N.E6, N.G6, N.E6, N.G6].map((f, i) => note(f, i * 0.07, 0.6, 0.35, 'bell')),
+  cheer: [pop(N.D5, N.A5, 0, 0.3, 0.5), pop(N.G5, N.E6, 0.09, 0.4, 0.5)],
+  error: [note(392, 0, 0.3, 0.45), note(330, 0.12, 0.45, 0.45)],              // a soft falling third, not a buzzer
 };
 
 function wav(samples) {
@@ -52,5 +73,5 @@ function wav(samples) {
 
 const dir = path.resolve(__dirname, '../assets/sounds');
 fs.mkdirSync(dir, { recursive: true });
-for (const [name, parts] of Object.entries(SOUNDS)) fs.writeFileSync(path.join(dir, `${name}.wav`), wav(render(parts)));
+for (const [name, parts] of Object.entries(SOUNDS)) fs.writeFileSync(path.join(dir, `${name}.wav`), wav(render(parts, LEVELS[name] ?? 1)));
 console.log(`Wrote ${Object.keys(SOUNDS).length} sounds to assets/sounds.`);

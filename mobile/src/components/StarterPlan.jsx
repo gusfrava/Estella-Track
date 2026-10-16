@@ -19,7 +19,7 @@ export default function StarterPlan({ ui, labels: O }) {
   const groups = Object.keys(info.volume || {}), max = Math.max(1, ...groups.map(g => info.volume[g]));
   const chevron = up => <View style={{ transform: [{ rotate: up ? '90deg' : '-90deg' }] }}><Icon name="ui-back" size={22} color={up === null ? c.tealInk : undefined} /></View>;
   return <View style={{ gap: 14 }}>
-    <Row style={{ justifyContent: 'flex-start', gap: 14 }}><Bust size={88} /><View style={{ flex: 1, gap: 4 }}><Title>{O.planTitle}</Title><Txt muted>{O.planSub(plan.length, a.daysPerWeek, a.minutes)}</Txt></View></Row>
+    <Row style={{ justifyContent: 'flex-start', gap: 14 }}><Bust size={88} character={a.character} /><View style={{ flex: 1, gap: 4 }}><Title>{O.planTitle}</Title><Txt muted>{O.planSub(plan.length, a.daysPerWeek, a.minutes)}</Txt></View></Row>
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 14, borderWidth: 2, borderColor: c.ink, backgroundColor: c.yellowSoft }}>
       <Icon name={`ob-focus_${a.focus || 'balanced'}`} size={22} color={c.tealInk} /><Txt size={15.2} style={{ flex: 1, lineHeight: 21 }}>{O.planWhy(a.focus || 'balanced', info.focusExtra || 0)}</Txt>
     </View>

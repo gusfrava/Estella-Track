@@ -68,6 +68,13 @@ const frames = fs.readdirSync(path.join(root, 'icons/onboarding-motion')).filter
 for (const file of frames) fs.copyFileSync(path.join(root, 'icons/onboarding-motion', file), path.join(motionDir, file));
 const scenes = [...new Set(frames.map(f => f.replace(/-\d.webp$/, '')))];
 fs.writeFileSync(path.join(mobile, 'src/theme/motions.js'), 'export const motions = {\n' + scenes.map(s => `${JSON.stringify(s)}: [${[0,1,2,3].map(i => `require('../../assets/motion/${s}-${i}.webp')`).join(',')}],`).join('\n') + '\n};\n');
+// Diego's approved poses: the same onboarding scenes plus 'portrait' (busts) and 'complete' (celebration).
+const diegoDir = path.join(mobile, 'assets/diego-motion');
+fs.mkdirSync(diegoDir, { recursive: true });
+const diegoFrames = fs.readdirSync(path.join(root, 'icons/diego-motion')).filter(f => f.endsWith('.webp'));
+for (const file of diegoFrames) fs.copyFileSync(path.join(root, 'icons/diego-motion', file), path.join(diegoDir, file));
+const diegoScenes = [...new Set(diegoFrames.map(f => f.replace(/-\d.webp$/, '')))];
+fs.writeFileSync(path.join(mobile, 'src/theme/diego-motions.js'), 'export const diegoMotions = {\n' + diegoScenes.map(s => `${JSON.stringify(s)}: [${[0,1,2,3].map(i => `require('../../assets/diego-motion/${s}-${i}.webp')`).join(',')}],`).join('\n') + '\n};\n');
 // react-native-svg cannot run the stickers' feMorphology filter: it drops the outline and clips the artwork.
 // Native gets the same look as plain layers: the artwork's silhouette, its stroke widened by the dilate
 // radius on each side, drawn once as the offset ink shadow and once as the cream outline.
@@ -105,6 +112,6 @@ const bust = character.BUST;
 art['mascot-bust'] = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${bust.x} ${bust.y} ${bust.w} ${bust.h}" fill="none"><style>.expr{display:none}.expr-amused{display:inline}</style>${character.BODY}</svg>`.replace(/var\([^,]+,([^\)]+)\)/g,'$1');
 for (const key of Object.keys(art)) art[key] = art[key].replace(/\saria-[a-z-]+="[^"]*"/g, '').replace(/<title[^>]*>[\s\S]*?<\/title>/g, '');
 fs.writeFileSync(path.join(mobile, 'src/theme/art.json'), JSON.stringify(art));
-console.log(`Synced ${files.length} shared modules, exercise library, ${frames.length} motion frames and SVG artwork.`);
+console.log(`Synced ${files.length} shared modules, exercise library, ${frames.length} motion frames, ${diegoFrames.length} Diego frames and SVG artwork.`);
 
 
