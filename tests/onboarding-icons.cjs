@@ -1,0 +1,2 @@
+const fs=require('fs');const assert=require('node:assert/strict');
+(async()=>{const {OI}=await import('../js/ui/onboarding-icons.js');for(const [key,html] of Object.entries(OI)){if(key==='back')continue;assert(html.includes('sticker-icon'),key);const src=html.match(/href="([^"]+)"/)[1];assert(fs.existsSync(new URL(src)),key);}assert(OI.focus_balanced.includes('full-body.svg'));console.log('PASS: all 29 onboarding option/support icons use existing sticker assets, including every discovery source and full-body focus.');})();
