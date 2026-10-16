@@ -30,6 +30,7 @@ if (typeof customElements !== 'undefined' && !customElements.get('estella-onboar
         const frames = [...this.querySelectorAll('.ob-motion-frame')];
         Promise.all(frames.map(frame => frame.decode())).then(() => {
           if (this.isConnected && this.generation === generation) {
+            if (this.dataset.still === 'true') { this.dataset.frame = '0'; this.classList.add('is-ready'); return; }
             let started = performance.now();
             const bottom = this.classList.contains('ob-motion-bottom');
             if (bottom) {
@@ -71,14 +72,14 @@ if (typeof customElements !== 'undefined' && !customElements.get('estella-onboar
   });
 }
 
-export function onboardingMotionHTML(scene = 'welcome', { compact = false, card = false, bottom = false, character = selectedCharacter() } = {}) {
+export function onboardingMotionHTML(scene = 'welcome', { compact = false, card = false, bottom = false, still = false, character = selectedCharacter() } = {}) {
   const name = SCENES.has(scene) ? scene : 'stretch';
   const base = character === 'diego' ? DIEGO_BASE : BASE;
-  return `<estella-onboarding-motion class="ob-motion${compact ? ' ob-motion-compact' : ''}${card ? ' ob-motion-card' : ''}${bottom ? ' ob-motion-bottom' : ''}" data-motion="${name}" data-character="${character === 'diego' ? 'diego' : 'estella'}" aria-hidden="true">
+  return `<estella-onboarding-motion class="ob-motion${compact ? ' ob-motion-compact' : ''}${card ? ' ob-motion-card' : ''}${bottom ? ' ob-motion-bottom' : ''}" data-still="${still}" data-motion="${name}" data-character="${character === 'diego' ? 'diego' : 'estella'}" aria-hidden="true">
     <span class="ob-motion-fallback">${mascotHTML({ character, size: '100%' })}</span>
     <span class="ob-motion-star ob-motion-star-a">✦</span>
     <span class="ob-motion-star ob-motion-star-b">✧</span>
-    <div class="ob-motion-frames">${[0, 1, 2, 3].map(i =>
+    <div class="ob-motion-frames">${(still ? [0] : [0, 1, 2, 3]).map(i =>
       `<img class="ob-motion-frame" src="${base}${name}-${i}.webp" alt="" width="720" height="640" decoding="async" fetchpriority="${i === 0 ? 'high' : 'auto'}" draggable="false">`).join('')}</div>
   </estella-onboarding-motion>`;
 }

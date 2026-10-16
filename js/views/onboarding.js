@@ -84,7 +84,7 @@ const SCREENS = {
       const ok = AVAILABLE_CHARACTERS.has(c);
       const name = c === 'estella' ? 'Estella' : 'Diego';
       return `<button class="ob-char${ok ? '' : ' off'}" data-action="ob-pick" data-key="character" data-value="${c}" aria-pressed="${ui.answers.character === c}" ${ok && (!isCharacterLocked() || ui.answers.character === c) ? '' : 'disabled'}>
-        <span class="ob-char-art">${ok ? (ui.answers.character === c ? onboardingMotionHTML('cheer', { card: true, character: c }) : mascotHTML({ character: c, size: '190px' })) : `<span class="ob-soon">${L.ob.soon}</span>`}</span>
+        <span class="ob-char-art">${ok ? (onboardingMotionHTML('cheer', { card: true, character: c, still: ui.answers.character !== c })) : `<span class="ob-soon">${L.ob.soon}</span>`}</span>
         <b>${name}</b><span class="ob-tick">${ICONS.check}</span></button>`;
     }).join('')}</div>${foot(L)}`,
 

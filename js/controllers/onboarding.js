@@ -37,7 +37,7 @@ export const AVAILABLE_CHARACTERS = new Set(['estella', 'diego']);
 // profiles keep the companion they already have.
 export function isCharacterLocked() {
   const saved = getState().profile?.onboarding;
-  return !!(saved?.character && (saved.characterConfirmedAt || saved.completedAt || saved.skippedAt));
+  return !!(saved?.character && saved.completedAt);
 }
 
 // ---------- UI state (this device only) ----------
