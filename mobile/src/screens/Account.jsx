@@ -8,7 +8,6 @@ import { ProfileForm } from './Access';
 import * as store from '@/core/state/store';
 import * as fb from '@/core/services/firebase';
 import { DEFAULT_SHARING, SHARING_LEVELS } from '@/core/state/model';
-import { replayOnboarding } from '@/core/controllers/onboarding';
 import { colors } from '@/theme/tokens';
 import { googleSignInAvailable } from '@/services/google-sign-in';
 import { canVibrate, feel, feelPrefs, setFeelPref } from '@/services/feel';
@@ -36,7 +35,6 @@ export default function Account() {
       <Button secondary title={L.editProfile} onPress={() => setSheet('profile')} />
       <Button secondary title={L.privacy} onPress={() => setSheet('privacy')} />
       <Button secondary title={exporting ? L.exporting : L.exportData} disabled={exporting} onPress={exportData} />
-      <Button secondary title={L.ob.replay} onPress={() => { replayOnboarding(); router.replace('/'); }} />
       {!!message && <FormMessage kind={message[0]} text={message[1]} />}
       <TextButton title={L.signOut} onPress={leave} style={{ alignSelf: 'center' }} />
       <TextButton title={L.deleteAccount} color={danger} onPress={() => setSheet('delete')} style={{ alignSelf: 'center' }} />
