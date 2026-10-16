@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "Estella Track",
+    "slug": "estella-track",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "estellatrack",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.gusfrava.estellatrack",
+      "googleServicesFile": "./config/firebase/GoogleService-Info.plist"
+    },
+    "android": {
+      "package": "com.gusfrava.estellatrack",
+      "adaptiveIcon": {
+        "backgroundColor": "#145D5E",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "googleServicesFile": "./config/firebase/google-services.json"
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#145D5E",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 220
+        }
+      ],
+      "expo-localization",
+      "expo-sharing",
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": false,
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      "react-native-nitro-google-signin",
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": false
+    }
+  }
+}

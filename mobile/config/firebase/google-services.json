@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "436604220343",
+    "project_id": "estella-track---official",
+    "storage_bucket": "estella-track---official.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:436604220343:android:5b89d757728269f567ae32",
+        "android_client_info": {
+          "package_name": "com.gusfrava.estellatrack"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "436604220343-tl8v4jlvnmd4naino730kf201147o635.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gusfrava.estellatrack",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "436604220343-buabqldioup6pj40njbvsdcamg1ekr6k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAV-smiT6a0bgIYYvfc8pMqz0Gmb8xDsEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "436604220343-buabqldioup6pj40njbvsdcamg1ekr6k.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "436604220343-90rm2631lo6ndblc9co80r3sv1ieo5av.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.gusfrava.estellatrack"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
