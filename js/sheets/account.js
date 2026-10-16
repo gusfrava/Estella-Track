@@ -12,11 +12,9 @@ import { legalLinks, langToggle } from '../views/partials.js';
 import { openPrivacySheet } from './privacy.js';
 import { openProfileSheet } from './profile-form.js';
 import { openDeleteAccountSheet } from './delete-account.js';
-import { replayOnboarding } from '../controllers/onboarding.js';
 import { prepareMyData, saveMyData, usesShareSheet } from '../controllers/account.js';
 import { logger } from '../utils/log.js';
 
-import { mascotHTML, selectedCharacter } from '../ui/mascot.js';
 
 const log = logger('account');
 
@@ -45,7 +43,6 @@ export function openAccountSheet({ replace = false } = {}) {
       <button class="btn secondary" data-k="edit">${L.editProfile}</button>
       <button class="btn secondary" data-k="privacy">${L.privacy}</button>
       <button class="btn secondary" data-k="export">${L.exportData}</button>
-      <button class="btn secondary" data-k="intro">${L.ob.replay}</button>
       ${feelSwitches()}
       <div id="acct-msg"></div>
       <button class="textbtn" data-k="out">${L.signOut}</button>
@@ -57,7 +54,6 @@ export function openAccountSheet({ replace = false } = {}) {
     s.querySelector('[data-k=edit]').onclick = () => openProfileSheet();
     s.querySelector('[data-k=privacy]').onclick = () => openPrivacySheet();
     s.querySelector('[data-k=delete]').onclick = () => openDeleteAccountSheet();
-    s.querySelector('[data-k=intro]').onclick = () => { closeSheet(true); replayOnboarding(); };
     wireExportButton(s.querySelector('[data-k=export]'), s.querySelector('#acct-msg'));
     wireFeelSwitches(s);
     s.querySelector('[data-k=out]').onclick = () => {
