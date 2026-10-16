@@ -5,7 +5,7 @@ import { openSheet, closeSheet, replaceSheet } from '../ui/sheet.js';
 import { t, setLang } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
 import { getSession } from '../state/session.js';
-import { getState } from '../state/store.js';
+import { getState, updateProfile } from '../state/store.js';
 import { signOutUser, exitLocalMode } from '../services/sync.js';
 import { initial, displayNameOf } from '../views/home.js';
 import { legalLinks, langToggle } from '../views/partials.js';
@@ -15,6 +15,8 @@ import { openDeleteAccountSheet } from './delete-account.js';
 import { replayOnboarding } from '../controllers/onboarding.js';
 import { prepareMyData, saveMyData, usesShareSheet } from '../controllers/account.js';
 import { logger } from '../utils/log.js';
+
+import { mascotHTML, selectedCharacter } from '../ui/mascot.js';
 
 const log = logger('account');
 
@@ -27,7 +29,7 @@ export function openAccountSheet({ replace = false } = {}) {
   if (localMode) {
     show(`<h2>${L.account}</h2>
       <div class="acct"><span class="avatar big" aria-hidden="true">·</span><span><b>${L.localMode}</b><span>${L.localModeBody}</span></span></div>
-      ${languageSetting()}
+      ${languageSetting()}${characterSetting()}
       <div class="actions"><button class="btn secondary" data-k="out">${L.exitLocal}</button></div>`,
     s => { wireLanguage(s); s.querySelector('[data-k=out]').onclick = () => { closeSheet(true); exitLocalMode(); }; });
     return;
@@ -38,7 +40,7 @@ export function openAccountSheet({ replace = false } = {}) {
   show(`<h2>${L.account}</h2>
     <div class="acct"><span class="avatar big" aria-hidden="true">${esc(initial({ user, profile }))}</span>
       <span>${name ? `<b>${esc(name)}</b>` : ''}${handle ? `<span class="handle-text">${esc(handle)}</span>` : ''}<span>${esc(user.email || '')}</span></span></div>
-    ${languageSetting()}
+    ${languageSetting()}${characterSetting()}
     <div class="actions">
       <button class="btn secondary" data-k="edit">${L.editProfile}</button>
       <button class="btn secondary" data-k="privacy">${L.privacy}</button>
@@ -68,7 +70,19 @@ export function openAccountSheet({ replace = false } = {}) {
 function languageSetting() {
   return `<div class="account-language"><b>${esc(t().language)}</b>${langToggle()}</div>`;
 }
+function characterSetting() {
+  return `<div class="account-character"><b>${esc(t().ob.charTitle)}</b><div class="account-character-options">${['estella', 'diego'].map(character => `<button type="button" class="btn secondary" data-character="${character}" aria-pressed="${selectedCharacter() === character}">${mascotHTML({ character, crop: 'bust', size: '48px' })}${character === 'diego' ? 'Diego' : 'Estella'}</button>`).join('')}</div></div>`;
+}
 function wireLanguage(sheet) {
+  sheet.querySelectorAll('[data-character]').forEach(button => {
+    button.onclick = () => {
+      const character = button.dataset.character;
+      if (!['estella', 'diego'].includes(character)) return;
+      updateProfile({ onboarding: { ...getState().profile?.onboarding, character } });
+      openAccountSheet({ replace: true });
+      document.querySelector(`.account-character [data-character="${character}"]`)?.focus({ preventScroll: true });
+    };
+  });
   sheet.querySelectorAll('[data-action="lang"]').forEach(button => {
     button.onclick = () => {
       if (button.getAttribute('aria-pressed') === 'true') return;

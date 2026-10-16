@@ -35,3 +35,17 @@
   .mascot.blinks .expr{animation:none}
   .mascot.blinks .expr-blink{display:none}
 }
+
+/* Diego's approved illustrated poses: discrete frames, never a crossfade. */
+.diego-mascot{position:relative;aspect-ratio:1;width:auto;max-width:100%;overflow:hidden}
+.diego-mascot img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;animation:diego-pose 2s steps(1,end) infinite;animation-delay:calc((4 - var(--pose)) * -.5s)}
+.diego-mascot img:first-child{opacity:1}
+@keyframes diego-pose{0%,24.99%{opacity:1}25%,100%{opacity:0}}
+.diego-mascot[data-scene="portrait"] img{animation:none;opacity:0}
+.diego-mascot[data-scene="portrait"] img:first-child{animation:diego-open 5s steps(1,end) infinite}
+.diego-mascot[data-scene="portrait"] img:nth-child(3){animation:diego-closed 5s steps(1,end) infinite}
+@keyframes diego-open{0%,84%{opacity:1}85%,89%{opacity:0}90%,100%{opacity:1}}
+@keyframes diego-closed{0%,84%{opacity:0}85%,89%{opacity:1}90%,100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.diego-mascot img{animation:none!important;opacity:0!important}.diego-mascot img:first-child{opacity:1!important}}
+
+.account-character{margin:20px 0}.account-character-options{display:flex;gap:12px;margin-top:10px}.account-character-options .btn{flex:1;min-width:0;gap:8px}.account-character-options [aria-pressed="true"]{background:var(--yellow)}
