@@ -5,7 +5,7 @@ Approved poses copied from `mockups/diego-motion-v2/assets` for the web app. Eac
 - Onboarding: 18 scenes, selected in `js/ui/onboarding-motion.js`.
 - Routine/home portraits: `portrait`, with a five-second blink cycle.
 - Routine completion: `complete`, with a restrained celebration.
-- Character preference: `profile.onboarding.character`; confirmed on Continue in onboarding and locked thereafter, including introduction replay.
+- Character preference: `profile.onboarding.character`; editable throughout onboarding and locked after completion, including introduction replay.
 - Reduced motion: shows a single still pose.
 
 Native mobile assets and screens are separate and were not updated.

@@ -38,3 +38,8 @@
 .ob-motion-compact .ob-motion-star-b{left:18%;font-size:17px}
 @keyframes ob-star{0%,100%{transform:translateY(0) rotate(-8deg) scale(1)}50%{transform:translateY(-6px) rotate(14deg) scale(1.12)}}
 @media(prefers-reduced-motion:reduce){.ob-motion-star{animation:none}.ob-motion .ob-motion-frame{opacity:0}.ob-motion .ob-motion-frame:first-child{opacity:1}}
+
+/* Square Diego sheets must not shrink to the narrower selection-card width. */
+.ob-motion-card .ob-motion-frames{width:190px;left:50%;transform:translateX(-50%)}
+.ob-motion-card[data-character="diego"] .ob-motion-frame{transform:scale(1.035)}
+.ob-motion[data-still="true"] .ob-motion-star{display:none}
