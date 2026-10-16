@@ -47,5 +47,3 @@
 @keyframes diego-open{0%,84%{opacity:1}85%,89%{opacity:0}90%,100%{opacity:1}}
 @keyframes diego-closed{0%,84%{opacity:0}85%,89%{opacity:1}90%,100%{opacity:0}}
 @media(prefers-reduced-motion:reduce){.diego-mascot img{animation:none!important;opacity:0!important}.diego-mascot img:first-child{opacity:1!important}}
-
-.account-character{margin:20px 0}.account-character-options{display:flex;gap:12px;margin-top:10px}.account-character-options .btn{flex:1;min-width:0;gap:8px}.account-character-options [aria-pressed="true"]{background:var(--yellow)}

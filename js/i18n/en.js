@@ -151,7 +151,7 @@ export default {
     langTitle:'Which language do you want to use Estella in?', langSub:'You can change it anytime.',
     skip:'Skip', skipAll:'Not now', next:'Continue', back:'Back', start:'Start', step:(a,b)=>`Step ${a} of ${b}`,
     welcomeTitle:'Hi! I’m Estella', welcomeBody:'A few quick questions to set up your plan. It takes less than a minute.',
-    charTitle:'Choose your character', charSub:'They grow with you as you train. You can change it anytime.', soon:'Coming soon',
+    charTitle:'Choose your character', charSub:'They grow with you as you train. Your choice is permanent once you continue.', soon:'Coming soon',
     goalTitle:'What’s your main goal?',
     goals:{strength:['Get stronger','Lift heavier'],muscle:['Build muscle','More size and definition'],fat:['Lose fat and tone up','Move more, with more energy'],athletic:['Athletic performance','Run, jump, play sports'],health:['Health and wellbeing','Move and feel good']},
     expTitle:'How much gym experience do you have?',

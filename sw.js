@@ -21,9 +21,26 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin === self.location.origin) event.respondWith(networkFirst(req));
+  if (url.origin === self.location.origin) {
+    const artwork = /\/icons\/(?:diego-motion|onboarding-motion)\/[^/]+\.webp$/.test(url.pathname);
+    event.respondWith(artwork ? artworkCache(req, event) : networkFirst(req));
+  }
   else if (CDN.some(re => re.test(req.url))) event.respondWith(cacheFirst(req));
 });
+
+// Reuse decoded artwork downloads immediately. Refresh in the background so
+// updated illustrations become available without blocking selection changes.
+async function artworkCache(req, event) {
+  const cache = await caches.open(CACHE);
+  const hit = await cache.match(req);
+  const refresh = fetch(req, { cache: 'no-cache' }).then(async res => {
+    if (res.ok) await cache.put(req, res.clone());
+    return res;
+  });
+  event.waitUntil(refresh.then(() => {}, () => {}));
+  if (hit) return hit;
+  return refresh;
+}
 
 async function networkFirst(req) {
   const cache = await caches.open(CACHE);
