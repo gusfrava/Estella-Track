@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<!-- Source of the App Store / Google Play listing images. One image per load:
+       frames.html?n=1&lang=en&size=ios    1290×2796 (iPhone 6.9")
+       frames.html?n=1&lang=en&size=play   1080×1920 (Google Play phone)
+     Render with: node ../../../scripts/store-listing.cjs  (headless Chrome, writes appstore/ and play/). -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>Estella Track listing frame</title>
+<style>
+  @font-face { font-family: Baloo; src: url('../../../node_modules/@expo-google-fonts/baloo-2/800ExtraBold/Baloo2_800ExtraBold.ttf'); }
+  @font-face { font-family: Figtree; font-weight: 600; src: url('../../../node_modules/@expo-google-fonts/figtree/600SemiBold/Figtree_600SemiBold.ttf'); }
+  :root { --teal: #145D5E; --cream: #FFF1E1; --ink: #2B1B12; --yellow: #FFC94D; --orange: #FF6A2B; --card: #FFFFFF; }
+  html, body { margin: 0; overflow: hidden; }
+  body { background: var(--bg); color: var(--fg); }
+  #frame { position: relative; overflow: hidden; background: var(--bg); }
+  .head { position: absolute; }
+  h1 { margin: 0; font-family: Baloo; font-weight: 800; line-height: .98; letter-spacing: -.01em; }
+  h1 span { display: block; }
+  h1 em { font-style: normal; color: var(--accent); }
+  p { margin: 0; font-family: Figtree; font-weight: 600; line-height: 1.28; color: var(--sub); }
+  .pop { position: absolute; background-repeat: no-repeat; box-sizing: border-box; border: solid var(--ink); background-color: var(--cream); }
+  .pop.cardcrop { background-color: transparent; border: 0; box-shadow: none !important; }
+  .mark { position: absolute; border: solid var(--orange); box-sizing: border-box; }
+  .char { position: absolute; bottom: 0; }
+</style>
+</head>
+<body>
+<div id="frame"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const n = Number(q.get('n') || 1), lang = q.get('lang') === 'es' ? 'es' : 'en', size = q.get('size') === 'play' ? 'play' : 'ios';
+const [W, H] = size === 'play' ? [1080, 1920] : [1290, 2796];
+const u = W / 1290;   // 1 design px at the App Store width
+const SRC = { w: 1080, h: 2160 };   // app captures (360×720 @3x)
+const M = '../../motion/', D = '../../diego-motion/';
+const THEMES = {
+  teal:   { bg: '#145D5E', fg: '#FFF1E1', accent: '#FFC94D', sub: '#D9EEEA', mark: 'white-orange.svg' },
+  cream:  { bg: '#FFF1E1', fg: '#2B1B12', accent: '#145D5E', sub: '#6B5647', mark: 'warm-espresso-orange.svg' },
+  yellow: { bg: '#FFC94D', fg: '#2B1B12', accent: '#B8400F', sub: '#5A3F1E', mark: 'warm-espresso-orange.svg' },
+};
+
+// Each image: headline lines (*…* = accent), subline, theme, the phone screen, pop-out crops (source px) and a companion.
+// pop: { crop:[x,y,w,h] in the capture, at:[left, top] as fractions of the phone, w: fraction of the phone width }
+const IMAGES = {
+  1: { theme: 'teal', screen: 'home',
+       en: { h: ['Log your workouts.', '*See your progress.*', 'Keep showing up.'] },
+       es: { h: ['Registra tus entrenos.', '*Mira tu progreso.*', 'Y sigue dándole.'] },
+       pops: [{ crop: [58, 788, 975, 400], zoom: 1.12 }, { crop: { en: [58, 198, 972, 335], es: [58, 198, 972, 405] }, at: [-.36, .48], w: .9, from: 'records' }],
+       char: { src: M + 'muscle-0.webp', h: .27, side: 'left', dx: -.03 } },
+  2: { theme: 'cream', screen: 'plan',
+       en: { h: ['Start', '*where you are.*'], p: 'Share your goals, experience and schedule. Get a starter plan you can change.' },
+       es: { h: ['Empieza', '*donde estás.*'], p: 'Cuéntanos tus metas, tu experiencia y tu horario. Recibe un plan inicial que puedes cambiar.' },
+       pops: [{ crop: [58, 580, 965, 270], zoom: 1.12 }],
+       char: { src: M + 'calendar-0.webp', h: .25, side: 'left', dx: .0 } },
+  3: { theme: 'teal', screen: 'log',
+       en: { h: ['Give every set', '*a home.*'], p: 'Log your reps and weight as you go.' },
+       es: { h: ['Cada serie,', '*en su lugar.*'], p: 'Registra repeticiones y peso mientras entrenas.' },
+       pops: [{ crop: { en: [90, 1235, 900, 400], es: [90, 1292, 900, 400] }, zoom: 1.14 }],
+       char: { src: D + 'curls-0.webp', h: .34, side: 'left', dx: -.12, square: true } },
+  4: { theme: 'yellow', mode: 'card', screen: 'log',
+       en: { h: ['Your last session,', '*right there.*'], p: 'See what you did last time, so you know what to aim for.' },
+       es: { h: ['Tu última sesión,', '*ahí mismo.*'], p: 'Mira lo que hiciste la última vez y sabrás a qué apuntar.' },
+       card: { crop: { en: [55, 645, 980, 1315], es: [55, 645, 980, 1370] }, mark: { en: [40, 500, 900, 80], es: [40, 500, 900, 112] } },
+       char: { src: M + 'hack-0.webp', h: .22, side: 'right', dx: -.01 } },
+  5: { theme: 'cream', screen: 'progress',
+       en: { h: ['Showing up', '*counts.*'], p: 'Even on the messy days. Weekly goals and streaks keep track for you.' },
+       es: { h: ['Cada día', '*cuenta.*'], p: 'Incluso los días difíciles. Tu meta semanal y tus rachas lo registran por ti.' },
+       pops: [{ crop: [58, 608, 975, 375], zoom: 1.12 }],
+       char: { src: M + 'clumsy-0.webp', h: .26, side: 'right', dx: .0 } },
+  6: { theme: 'teal', screen: 'records',
+       en: { h: ['Another rep.', '*A little more weight.*'], p: 'That’s your progress. Keep your personal records close.' },
+       es: { h: ['Otra repetición.', '*Un poco más de peso.*'], p: 'Eso es progreso. Ten tus récords personales siempre a mano.' },
+       pops: [{ crop: { en: [58, 198, 972, 335], es: [58, 198, 972, 405] }, zoom: 1.12 }],
+       char: { src: M + 'strength-0.webp', h: .25, side: 'left', dx: .01 } },
+  7: { theme: 'cream', screen: 'badges',
+       en: { h: ['Your first', '*of many.*'], p: 'Badges and points for the effort you put in.' },
+       es: { h: ['La primera', '*de muchas.*'], p: 'Insignias y puntos por el esfuerzo que pones.' },
+       pops: [{ crop: { en: [70, 1830, 900, 200], es: [70, 1665, 900, 210] }, zoom: 1.14 }],
+       char: { src: D + 'cheer-0.webp', h: .34, side: 'right', dx: -.12, square: true } },
+  8: { theme: 'yellow', screen: 'technique',
+       en: { h: ['Technique,', '*right where', 'you need it.*'], p: 'Add your favorite creator’s YouTube video to any exercise.' },
+       es: { h: ['La técnica,', '*justo donde', 'la necesitas.*'], p: 'Añade a cualquier ejercicio el video de YouTube de tu creador favorito.' },
+       pops: [{ crop: [40, 1340, 1000, 290], zoom: 1.1 }, { crop: { en: [100, 1005, 475, 120], es: [100, 1005, 365, 120] }, at: [-.08, .035], w: { en: .6, es: .46 }, from: 'log', radius: 70 }],
+       char: { src: D + 'thinking-0.webp', h: .28, side: 'right', dx: -.11, square: true } },
+  9: { theme: 'teal', screen: 'friends',
+       en: { h: ['You don’t have', 'to do it *solo.*'], p: 'Share a routine and send a cheer. Friends need an Estella account.' },
+       es: { h: ['No tienes que', 'hacerlo *a solas.*'], p: 'Comparte una rutina y manda ánimos. Los amigos necesitan una cuenta de Estella.' },
+       pops: [{ crop: [58, 1110, 965, 205], zoom: 1.12 }],
+       char: { src: M + 'dogwalk-0.webp', h: .2, side: 'left', dx: -.05 } },
+  10: { theme: 'yellow', screen: 'companion', phoneW: .56,
+       en: { h: ['Meet your new', '*gym buddy.*'], p: 'Train with Estella or Diego, in English or Spanish.' },
+       es: { h: ['Elige quién', '*entrena contigo.*'], p: 'Entrena con Estella o Diego, en español o en inglés.' },
+       pops: [],
+       char: { src: '../../estella/welcome.webp', h: .30, side: 'left', dx: -.02 },
+       char2: { src: D + 'cheer-0.webp', h: .38, side: 'right', dx: -.10, square: true } },
+};
+
+const img = IMAGES[n], copy = img[lang], theme = THEMES[img.theme];
+const byLang = v => (v && !Array.isArray(v) && typeof v === 'object' ? v[lang] : v);
+const shots = `screens/${lang}/`;
+const root = document.documentElement.style;
+Object.entries(theme).forEach(([k, v]) => root.setProperty('--' + k, v));
+const frame = document.getElementById('frame');
+Object.assign(frame.style, { width: W + 'px', height: H + 'px' });
+const el = (tag, cls, parent = frame) => { const e = document.createElement(tag); if (cls) e.className = cls; parent.appendChild(e); return e; };
+
+// Headline: three short lines on the first image, two (plus subline) on the rest.
+const pad = 92 * u, headTop = (size === 'play' ? 70 : 120) * u;
+const head = el('div', 'head');
+Object.assign(head.style, { left: pad + 'px', top: headTop + 'px', width: (W - pad * 2) + 'px' });
+// The wordmark in the top-left corner, then the headline.
+const logo = el('img', 'wordmark', head); logo.src = '../../brand/' + theme.mark; logo.alt = 'Estella Track';
+Object.assign(logo.style, { display: 'block', height: (size === 'play' ? 104 : 128) * u + 'px', margin: `0 0 ${(size === 'play' ? 30 : 44) * u}px ${-10 * u}px` });
+const h1 = el('h1', '', head);
+const fs = (copy.h.length > 2 ? 112 : 124) * u * (size === 'play' ? .9 : 1);
+h1.style.fontSize = fs + 'px';
+// *…* marks the accent; it may run across lines.
+let open = false;
+h1.innerHTML = copy.h.map(line => {
+  let out = open ? '<em>' : '';
+  for (const ch of line) { if (ch === '*') { out += open ? '</em>' : '<em>'; open = !open; } else out += ch; }
+  return `<span>${out}${open ? '</em>' : ''}</span>`;
+}).join('');
+if (copy.p) { const p = el('p', '', head); p.textContent = copy.p; p.style.fontSize = 44 * u * (size === 'play' ? .92 : 1) + 'px'; p.style.marginTop = 28 * u + 'px'; p.style.maxWidth = 1000 * u + 'px'; }
+
+const shadow = (x, y) => `${x * u}px ${y * u}px 0 var(--ink)`;
+const svg = (w, h, body) => `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" fill="currentColor">${body}</svg>`;
+// Status bar icons (simple drawings, dark content on the app's light background).
+const ICONS = {
+  iosSignal: svg(18, 12, '<rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/>'),
+  iosWifi: svg(17, 12, '<path d="M8.5 2.2c2.6 0 5 1 6.8 2.7l1.4-1.5A11.6 11.6 0 0 0 8.5 0 11.6 11.6 0 0 0 .3 3.4l1.4 1.5A9.7 9.7 0 0 1 8.5 2.2zm0 3.6c1.6 0 3.1.6 4.2 1.6l1.4-1.5a8 8 0 0 0-11.2 0l1.4 1.5a6.1 6.1 0 0 1 4.2-1.6zm0 3.5c.7 0 1.3.3 1.8.7L8.5 12 6.7 10a2.6 2.6 0 0 1 1.8-.7z"/>'),
+  iosBattery: svg(27, 13, '<rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" stroke-opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2"/><path d="M25 4.5v4a2 2 0 0 0 0-4z" fill-opacity=".45"/>'),
+  andWifi: svg(16, 13, '<path d="M8 13 0 3.3A12.4 12.4 0 0 1 8 .5c3 0 5.8 1 8 2.8z"/>'),
+  andSignal: svg(13, 13, '<path d="M13 0v13H0z"/>'),
+  andBattery: svg(8, 14, '<rect x="2.5" y="0" width="3" height="1.6" rx=".5"/><rect x="0" y="1.4" width="8" height="12.6" rx="1.6"/>'),
+};
+const DEVICES = {
+  // iPhone 16 Pro proportions: 1206×2622 screen, thin black border, titanium band, Dynamic Island.
+  iphone: { aspect: 2622 / 1206, bezel: .03, band: .024, radius: .135, depth: .11, bandColor: ['#5d5a57', '#2e2c2b', '#8a8682', '#3b3937'] },
+  // Pixel 9 proportions: 1080×2424 screen, even bezel, flat aluminium frame, centred punch-hole camera.
+  pixel: { aspect: 2424 / 1080, bezel: .042, band: .02, radius: .1, depth: .115, bandColor: ['#3a3d40', '#1d1f21', '#5c6064', '#26282a'] },
+};
+
+// The screen: a status bar strip, the app capture, and (Pixel) the gesture bar; strip colours sampled from the capture.
+function screenContent(parent, kind, sw, file) {
+  const d = DEVICES[kind], sh = sw * d.aspect, k = sw / SRC.w, appH = SRC.h * k;
+  const statusH = kind === 'pixel' ? (sh - appH) * .66 : sh - appH, navH = sh - appH - statusH;
+  const scr = el('div', 'screen', parent);
+  Object.assign(scr.style, { position: 'absolute', inset: '0', borderRadius: d.radius * sw + 'px', overflow: 'hidden', background: '#FFF1E1' });
+  const top = el('div', '', scr); Object.assign(top.style, { position: 'absolute', left: 0, right: 0, top: 0, height: statusH + 1 + 'px', background: 'var(--scrTop, #FFF1E1)' });
+  const app = el('img', '', scr); app.src = file; Object.assign(app.style, { position: 'absolute', left: 0, top: statusH + 'px', width: sw + 'px', height: appH + 'px' });
+  if (navH > 0) { const nav = el('div', '', scr); Object.assign(nav.style, { position: 'absolute', left: 0, right: 0, bottom: 0, height: navH + 1 + 'px', background: 'var(--scrBottom, #FFFFFF)' }); }
+  const sample = () => { try {
+    const c = document.createElement('canvas'); c.width = 4; c.height = SRC.h; const g = c.getContext('2d'); g.drawImage(app, 0, 0, 4, SRC.h);
+    const px = y => { const v = g.getImageData(1, y, 1, 1).data; return `rgb(${v[0]},${v[1]},${v[2]})`; };
+    scr.style.setProperty('--scrTop', px(4)); scr.style.setProperty('--scrBottom', px(SRC.h - 4));
+  } catch { /* a tainted file image keeps the default colours */ } };
+  app.complete ? sample() : app.addEventListener('load', sample);
+  // Status bar
+  const bar = el('div', '', scr), fsz = sw * (kind === 'pixel' ? .037 : .043);
+  Object.assign(bar.style, { position: 'absolute', left: 0, right: 0, top: 0, height: statusH + 'px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#2B1B12', fontFamily: 'Figtree', fontWeight: 600, fontSize: fsz + 'px',
+    padding: kind === 'pixel' ? `${statusH * .08}px ${sw * .075}px 0` : `${statusH * .12}px ${sw * .1}px 0 ${sw * .115}px`, boxSizing: 'border-box' });
+  const time = el('span', '', bar); time.textContent = '9:41';
+  const icons = el('span', '', bar); Object.assign(icons.style, { display: 'flex', alignItems: 'center', gap: sw * .014 + 'px' });
+  const icon = (name, w) => { const i = el('span', '', icons); i.innerHTML = ICONS[name]; Object.assign(i.style, { display: 'block', width: w * sw + 'px', height: w * sw * .75 + 'px' }); };
+  if (kind === 'pixel') { icon('andWifi', .04); icon('andSignal', .034); icon('andBattery', .022); }
+  else { icon('iosSignal', .045); icon('iosWifi', .042); icon('iosBattery', .066); }
+  if (kind === 'iphone') {
+    const isl = el('div', '', scr); Object.assign(isl.style, { position: 'absolute', left: '50%', top: sw * .028 + 'px', width: sw * .31 + 'px', height: sw * .091 + 'px', marginLeft: -sw * .155 + 'px', borderRadius: '999px', background: '#050505' });
+    const hi = el('div', '', scr); Object.assign(hi.style, { position: 'absolute', left: '50%', bottom: sw * .02 + 'px', width: sw * .34 + 'px', height: sw * .013 + 'px', marginLeft: -sw * .17 + 'px', borderRadius: '99px', background: '#1a1a1a' });
+  } else {
+    const cam = el('div', '', scr), r = sw * .036; Object.assign(cam.style, { position: 'absolute', left: '50%', top: statusH / 2 - r / 2 + sw * .004 + 'px', width: r + 'px', height: r + 'px', marginLeft: -r / 2 + 'px', borderRadius: '50%', background: 'radial-gradient(circle at 40% 35%, #2a3240 0 18%, #050505 40%)' });
+    const pill = el('div', '', scr); Object.assign(pill.style, { position: 'absolute', left: '50%', bottom: navH / 2 - sw * .006 + 'px', width: sw * .26 + 'px', height: sw * .012 + 'px', marginLeft: -sw * .13 + 'px', borderRadius: '99px', background: '#2B1B12', opacity: .8 });
+  }
+  return { statusH, k };
+}
+
+// A device: body with depth (stacked edge layers), side buttons, the screen, and pop-outs floating above it.
+function device(kind, x, y, sw, tilt, file, pops) {
+  const d = DEVICES[kind], inset = (d.bezel + d.band) * sw, bw = sw + 2 * inset, sh = sw * d.aspect, bh = sh + 2 * inset, R = d.radius * sw + inset;
+  const stage = el('div', 'stage');
+  Object.assign(stage.style, { position: 'absolute', left: 0, top: 0, width: W + 'px', height: H + 'px', perspective: 3200 * u + 'px', perspectiveOrigin: `${x + bw / 2}px ${y + bh / 2}px` });
+  const body = el('div', '', stage), t = tilt || {};
+  Object.assign(body.style, { position: 'absolute', left: x + 'px', top: y + 'px', width: bw + 'px', height: bh + 'px', transformStyle: 'preserve-3d',
+    transform: `rotateZ(${t.rz || 0}deg) rotateX(${t.rx || 0}deg) rotateY(${t.ry || 0}deg)` });
+  const deep = !!(t.rx || t.ry), depth = d.depth * bw, layers = deep ? 28 : 1, [c1, c2, c3, c4] = d.bandColor;
+  for (let i = layers; i >= 1; i--) {
+    const e = el('div', '', body);
+    Object.assign(e.style, { position: 'absolute', inset: 0, borderRadius: R + 'px', background: i === layers ? c2 : `linear-gradient(90deg, ${c2}, ${c4} 50%, ${c2})`, transform: `translateZ(${-depth * i / layers}px)` });
+    if (i === layers) e.style.boxShadow = `0 ${60 * u}px ${110 * u}px rgba(20, 10, 4, .38), 0 ${16 * u}px ${30 * u}px rgba(20, 10, 4, .25)`;
+  }
+  // Side buttons sit on the edge, halfway back.
+  const btn = (side, top, len) => { const e = el('div', '', body); Object.assign(e.style, { position: 'absolute', [side]: -sw * .008 + 'px', top: top * bh + 'px', width: sw * .014 + 'px', height: len * bh + 'px', borderRadius: '6px', background: `linear-gradient(90deg, ${c3}, ${c2})`, transform: `translateZ(${-depth / 2}px)` }); };
+  if (kind === 'iphone') { btn('left', .155, .05); btn('left', .235, .085); btn('left', .34, .085); btn('right', .26, .12); btn('right', .62, .07); }
+  else { btn('right', .22, .085); btn('right', .34, .16); }
+  // Front: metal band, black border, screen, a faint glass sheen.
+  const front = el('div', '', body);
+  Object.assign(front.style, { position: 'absolute', inset: 0, borderRadius: R + 'px', background: `linear-gradient(135deg, ${c3}, ${c1} 18%, ${c2} 45%, ${c1} 75%, ${c3})`, transform: 'translateZ(0.5px)', transformStyle: 'preserve-3d' });
+  const glass = el('div', '', front);
+  Object.assign(glass.style, { position: 'absolute', inset: d.band * sw + 'px', borderRadius: R - d.band * sw + 'px', background: '#070707' });
+  const scrBox = el('div', '', front);
+  Object.assign(scrBox.style, { position: 'absolute', left: inset + 'px', top: inset + 'px', width: sw + 'px', height: sh + 'px' });
+  const { statusH, k } = screenContent(scrBox, kind, sw, file);
+  const sheen = el('div', '', front);
+  Object.assign(sheen.style, { position: 'absolute', inset: inset + 'px', borderRadius: d.radius * sw + 'px', background: 'linear-gradient(115deg, rgba(255,255,255,.10), rgba(255,255,255,0) 30%)' });
+  // Pop-outs in device coordinates, lifted towards the viewer so they follow the phone's angle.
+  const box = { x: inset, y: inset + statusH, w: sw, k };
+  pops.forEach(spec => pop(spec, box, front, deep ? 90 * u : 0, deep ? null : { x, y }));
+}
+
+// A crop of a capture "lifted" off the screen: in place and a little bigger, or placed freely (from: another screen).
+function pop(spec, box, parent, lift, flat) {
+  const [cx, cy, cw, ch] = byLang(spec.crop), b = 7 * u, k = box.k, appH = SRC.h * k;
+  let w, x, y;
+  if (spec.from) { w = byLang(spec.w) * box.w; x = box.x + spec.at[0] * box.w; y = box.y + spec.at[1] * appH; }
+  else { w = cw * k * (spec.zoom || 1.1); x = box.x + (cx + cw / 2) * k - w / 2 + (spec.dx || 0) * box.w; y = box.y + (cy + ch / 2) * k - ch * w / cw / 2 + (spec.dy || 0) * appH; }
+  x -= b;
+  if (flat) { const edge = 36 * u; x = Math.max(edge, Math.min(W - edge - w - 2 * b - 14 * u, flat.x + x)) - flat.x; }
+  const s = w / cw, e = el('div', 'pop', parent);
+  Object.assign(e.style, {
+    left: x + 'px', top: y - b + 'px', width: w + 2 * b + 'px', height: ch * s + 2 * b + 'px', transform: `translateZ(${lift}px)`,
+    borderWidth: b + 'px', borderRadius: (spec.radius || 40) * u + 'px', boxShadow: shadow(14, 18),
+    backgroundImage: `url(${shots}${spec.from || img.screen}.png)`, backgroundSize: `${SRC.w * s}px auto`, backgroundPosition: `${-cx * s}px ${-cy * s}px`,
+  });
+}
+function companion(c) {
+  const e = el('img', 'char'); e.src = c.src;
+  const h = c.h * H;
+  e.style.height = h + 'px';
+  const place = () => {
+    const w = e.naturalWidth / e.naturalHeight * h;
+    e.style.left = (c.side === 'left' ? c.dx * W : W - w - c.dx * W) + 'px';
+    e.style.bottom = (c.square ? -.08 * h : 0) + 'px';
+  };
+  e.complete ? place() : e.addEventListener('load', place);
+}
+
+// Google Play: a Pixel at a different angle on each image. App Store: an iPhone, straight on.
+const TILTS = { 1: { ry: 16, rx: 5, rz: -2 }, 2: { rz: -4 }, 3: { ry: -16, rx: 5, rz: 2 }, 5: { ry: -14, rx: 10 }, 6: { ry: 15, rx: 4 }, 7: { rz: 4 }, 8: { ry: -14, rx: 6 }, 9: { ry: 14, rx: 8 }, 10: { rx: 12 } };
+
+document.fonts.ready.then(() => {
+  const headBottom = headTop + head.offsetHeight, gap = (size === 'play' ? 70 : 100) * u;
+  if (img.mode === 'card') {
+    // A big crop of the open exercise card, with the "Last time" line marked.
+    const [cx, cy, cw, ch] = byLang(img.card.crop), avail = H - headBottom - gap - 60 * u;
+    const w = Math.min(W - pad * 1.2, avail * cw / ch), s = w / cw, b = 9 * u, x = (W - w) / 2 - b, y = headBottom + gap;
+    const e = el('div', 'pop');
+    Object.assign(e.style, { left: x + 'px', top: y + 'px', width: w + 2 * b + 'px', height: ch * s + 2 * b + 'px', borderWidth: b + 'px', borderRadius: 64 * u + 'px', boxShadow: shadow(18, 24),
+      backgroundImage: `url(${shots}${img.screen}.png)`, backgroundSize: `${SRC.w * s}px auto`, backgroundPosition: `${-cx * s}px ${-cy * s}px`, backgroundColor: '#FFFFFF' });
+    const [mx, my, mw, mh] = byLang(img.card.mark), m = el('div', 'mark');
+    Object.assign(m.style, { left: x + b + mx * s - 16 * u + 'px', top: y + b + my * s - 10 * u + 'px', width: mw * s + 32 * u + 'px', height: mh * s + 20 * u + 'px', borderWidth: 8 * u + 'px', borderRadius: 999 + 'px' });
+    companion(img.char);
+  } else {
+    const kind = size === 'play' ? 'pixel' : 'iphone', dv = DEVICES[kind], frameK = 1 + 2 * (dv.bezel + dv.band);
+    // As big as the space under the headline allows; on Google Play the bottom bleeds off the image.
+    const bleed = size === 'play' ? .14 : 0, room = H - headBottom - gap - (size === 'play' ? 0 : 90 * u);
+    const sw = Math.min(W * (img.phoneW || .62), room / ((dv.aspect + 2 * (dv.bezel + dv.band)) * (1 - bleed)));
+    const bw = sw * frameK, side = img.char && !img.char2 ? img.char.side : null, m = .07 * W;
+    const x = side === 'left' ? W - m - bw : side === 'right' ? m : (W - bw) / 2;
+    device(kind, x, headBottom + gap, sw, size === 'play' ? TILTS[n] : null, `${shots}${img.screen}.png`, img.pops);
+    // Characters stand in front of the phone.
+    if (img.char) companion(img.char);
+    if (img.char2) companion(img.char2);
+  }
+  Promise.all([...document.images].map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; }))).then(() => setTimeout(() => { document.body.dataset.ready = '1'; }, 250));
+});
+</script>
+</body>
+</html>
