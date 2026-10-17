@@ -25,7 +25,8 @@ import { esc } from './utils/format.js';
 import { personName } from './views/people.js';
 import { splashView } from './views/splash.js';
 import { authView, pwRulesHTML } from './views/auth.js';
-import { homeView } from './views/home.js';
+import { homeView, initial } from './views/home.js';
+import { accountAvatarHTML, isAvatarOnlyWalletChange } from './ui/avatar.js';
 import { routineView } from './views/routine.js';
 import { progressView } from './views/progress.js';
 import { friendsView } from './views/friends.js';
@@ -150,7 +151,10 @@ onSocialChange(() => { const v = getView().name; if (v === 'friends' || v === 'h
 // Points and badges from the server: re-draw Progreso, "+10 puntos" toast, a celebration for new badges.
 // (Not for what was already there when the app opened: the first snapshot is the starting point.)
 onRewardsChange((w, prev) => {
-  if (['home', 'progress', 'friends'].includes(getView().name)) render();
+  if (isAvatarOnlyWalletChange(w, prev)) {
+    const avatar = app.querySelector('[data-action="account"]');
+    if (avatar && w.avatarId !== prev.avatarId) avatar.innerHTML = accountAvatarHTML(initial({ ...getSession(), profile: store.getState().profile }));
+  } else if (['home', 'progress', 'friends'].includes(getView().name)) render();
   if (prev === undefined || !w) return;
   const before = prev || { points: 0, badges: {} };
   const gained = (Number(w.points) || 0) - (Number(before.points) || 0);

@@ -110,4 +110,6 @@ body.scroll-locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 .avatar-confirm { padding:16px; border:2px solid #2d1b10; border-radius:20px; background:#fff; text-align:center; margin:16px 0; }
 .avatar-confirm img { border-radius:50%; }
 .avatar-balance { padding:12px 16px; background:#ffcf4d; border-radius:14px; }
+.avatar-status { min-height:1.5em; }
+.avatar-choice small { min-height:2.8em; }
 @media(max-width:360px) { .avatar-grid { gap:8px; } .avatar-choice { padding:8px 4px; } }
