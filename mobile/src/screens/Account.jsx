@@ -3,7 +3,7 @@ import { Linking, Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { exportFile } from '@/services/export-file';
 import { router } from 'expo-router';
-import { AccountAvatar, Button, initialLine, Field, RouteSheet, Row, Sheet, Tabs, TextButton, Txt } from '@/components/native-ui';
+import { AccountAvatar, Button, InPlaceSheets, initialLine, Field, RouteSheet, Row, Sheet, Tabs, TextButton, Txt } from '@/components/native-ui';
 import { useApp } from '@/providers/AppProvider';
 import { ProfileForm } from './Access';
 import * as store from '@/core/state/store';
@@ -27,6 +27,9 @@ export default function Account() {
   const name = (profile?.displayName || user?.displayName || '').trim(), handle = profile?.username ? `@${profile.username}` : '';
   const initial = session.localMode ? '·' : ((name || profile?.username || user?.email || '?').trim()[0] || '?').toUpperCase();
   const language = <Row><Txt bold size={17}>{L.language}</Txt><Tabs compact items={[['es','ES'],['en','EN']]} value={lang} onChange={key => { if (key === lang) return; setLang(key); if (!session.localMode) store.updateProfile({ lang: key }); }} /></Row>;
+  const back = () => setSheet(null);
+  const open = { profile: <Sheet title={L.editProfile} onClose={back}><ProfileForm onDone={back} /></Sheet>, avatars: <AvatarSheet onClose={back} />, privacy: <PrivacySheet onClose={back} />, delete: <DeleteSheet onClose={back} exportData={exportData} exporting={exporting} /> }[sheet];
+  if (open) return <InPlaceSheets>{open}</InPlaceSheets>;
   return <RouteSheet title={L.account}>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, padding: 16, borderWidth: 2.5, borderColor: colors.ink, borderRadius: 20, backgroundColor: colors.card }}>
       <View style={{ width: 60, height: 60, borderRadius: 30, borderWidth: 2.5, borderColor: colors.ink, backgroundColor: colors.teal, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>{session.localMode ? <Txt bold size={25.6} style={{ lineHeight: initialLine(25.6) }}>{initial}</Txt> : <AccountAvatar initial={initial} size={60} />}</View>
@@ -44,10 +47,6 @@ export default function Account() {
       <TextButton title={L.deleteAccount} color={danger} onPress={() => setSheet('delete')} style={{ alignSelf: 'center' }} />
       <Txt muted size={14.4} style={{ textAlign: 'center', marginTop: 14 }}><Txt size={14.4} style={{ color: colors.tealInk }} onPress={() => Linking.openURL(SITE + 'legal/privacy.html')}>{L.privacyPolicy}</Txt> · <Txt size={14.4} style={{ color: colors.tealInk }} onPress={() => Linking.openURL(SITE + 'legal/terms.html')}>{L.terms}</Txt></Txt>
     </View>}
-    {sheet === 'profile' && <Sheet title={L.editProfile} onClose={() => setSheet(null)}><ProfileForm onDone={() => setSheet(null)} /></Sheet>}
-    {sheet === 'avatars' && <AvatarSheet onClose={() => setSheet(null)} />}
-    {sheet === 'privacy' && <PrivacySheet onClose={() => setSheet(null)} />}
-    {sheet === 'delete' && <DeleteSheet onClose={() => setSheet(null)} exportData={exportData} exporting={exporting} />}
   </RouteSheet>;
 }
 
