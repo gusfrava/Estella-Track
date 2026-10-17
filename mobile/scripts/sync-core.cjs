@@ -36,6 +36,16 @@ patch('controllers/friends.js', [
   ['localStorage.getItem(seenKey())', 'lsGet(seenKey())'],
   ['localStorage.setItem(seenKey(), String(newest))', 'lsSet(seenKey(), String(newest))'],
 ]);
+// Account avatars: the website builds an image URL from import.meta.url; native bundles the same WebP files.
+const avatarDir = path.join(mobile, 'assets/avatars');
+fs.mkdirSync(avatarDir, { recursive: true });
+const avatarFiles = fs.readdirSync(path.join(root, 'icons/avatars')).filter(f => f.endsWith('.webp'));
+for (const file of avatarFiles) fs.copyFileSync(path.join(root, 'icons/avatars', file), path.join(avatarDir, file));
+fs.copyFileSync(path.join(root, 'js/data/avatars.js'), path.join(target, 'data/avatars.js'));
+patch('data/avatars.js', [
+  ["export const avatarPath = id => new URL(`../../icons/avatars/${id}.webp`, import.meta.url).href;",
+   'const IMAGES = {\n' + avatarFiles.map(f => `  ${JSON.stringify(f.replace('.webp', ''))}: require('../../../assets/avatars/${f}'),`).join('\n') + '\n};\nexport const avatarPath = id => IMAGES[id];'],
+]);
 let library = fs.readFileSync(path.join(root, 'js/services/library.js'), 'utf8');
 library = library.replace("const get = path => fetch(path).then(r => { if (!r.ok) throw new Error(`${path}: ${r.status}`); return r.json(); });", "const get = path => Promise.resolve(path.endsWith('exercise-videos.json') ? require('../data/exercise-videos.json') : require('../data/exercises.json'));");
 fs.writeFileSync(path.join(target, 'services/library.js'), library);
