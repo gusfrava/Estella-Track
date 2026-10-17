@@ -113,7 +113,7 @@ export function closeSheet(instant) {
     setTimeout(() => { s.remove(); sc.remove(); }, 280);
   }
   if (lastFocus && lastFocus.isConnected) { try { lastFocus.focus({ preventScroll: true }); } catch (e) {} }
-  setTimeout(() => closeListeners.forEach(fn => fn()), 0);
+  setTimeout(() => closeListeners.forEach(fn => fn(s)), 0);
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });

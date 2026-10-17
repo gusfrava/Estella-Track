@@ -46,7 +46,7 @@ function colRef(path, filters = [], order = null, lim = null) {
 }
 const db = {
   collection: name => colRef(name),
-  runTransaction: async fn => { const writes = []; await fn({ get: ref => ref.get(), set: (ref, d) => writes.push(() => ref.set(d)) }); for (const w of writes) await w(); },
+  runTransaction: async fn => { const writes = []; const result = await fn({ get: ref => ref.get(), set: (ref, d) => writes.push(() => ref.set(d)) }); for (const w of writes) await w(); return result; },
 };
 const realLoad = Module._load;
 Module._load = function (req, ...rest) {
@@ -215,4 +215,17 @@ test('rewards: workout + weekly goal points, records, cheers, friends, copies; w
   store.delete('users/u1');
   await fns.cardOnProfile.run(ev({ uid: 'u1' }, p, null));
   assert.ok(!store.has('users/u1/wallet/main'));
+});
+
+test('avatar callable authenticates, uses the caller wallet and handles duplicate purchases', async () => {
+  store.clear();
+  store.set('users/buyer', profile);
+  store.set('users/buyer/wallet/main', { ...require('../rewards').newWallet('2026-10-01'), points: 100 });
+  await assert.rejects(fns.chooseAvatar.run({ data: { avatarId: 'release-estella' } }), { code: 'unauthenticated' });
+  const request = { auth: { uid: 'buyer' }, data: { uid: 'someone-else', avatarId: 'halloween-estella', purchase: true, price: 0 } };
+  assert.equal((await fns.chooseAvatar.run(request)).points, 0);
+  assert.equal((await fns.chooseAvatar.run(request)).points, 0);
+  assert(!store.has('users/someone-else/wallet/main'));
+  await assert.rejects(fns.chooseAvatar.run({ ...request, data: { avatarId: 'halloween-diego', purchase: true } }), { code: 'failed-precondition' });
+  assert.equal(store.get('users/buyer/wallet/main').avatarId, 'halloween-estella');
 });

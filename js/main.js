@@ -150,7 +150,7 @@ onSocialChange(() => { const v = getView().name; if (v === 'friends' || v === 'h
 // Points and badges from the server: re-draw Progreso, "+10 puntos" toast, a celebration for new badges.
 // (Not for what was already there when the app opened: the first snapshot is the starting point.)
 onRewardsChange((w, prev) => {
-  if (getView().name === 'progress') render();
+  if (['home', 'progress', 'friends'].includes(getView().name)) render();
   if (prev === undefined || !w) return;
   const before = prev || { points: 0, badges: {} };
   const gained = (Number(w.points) || 0) - (Number(before.points) || 0);

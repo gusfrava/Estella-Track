@@ -34,6 +34,12 @@ export async function loadFirebase(lang) {
 }
 
 export const isLoaded = () => !!FB;
+export async function chooseAvatar(avatarId, purchase = false) {
+  if (!FB || !FB.auth.currentUser) throw Object.assign(new Error('Sign in required'), { code: 'functions/unauthenticated' });
+  const sdk = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-functions.js`);
+  const callable = sdk.httpsCallable(sdk.getFunctions(FB.auth.app, 'us-central1'), 'chooseAvatar');
+  return (await callable({ avatarId, purchase })).data;
+}
 export function setAuthLanguage(lang) { if (FB) FB.auth.languageCode = lang; }
 
 // ---------- auth ----------

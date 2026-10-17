@@ -13,6 +13,8 @@
 //  - cardOnProfile also rebuilds it with the card, follows the "Rutinas" sharing setting and deletes it with the account.
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { onDocumentWritten, onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { selectAvatar } = require('./avatars');
 const logger = require('firebase-functions/logger');
 const card = require('./card');
 const shared = require('./routines');
@@ -41,6 +43,30 @@ const sessionsOf = uid => db.collection('users').doc(uid).collection('sessions')
 const sharedRef = uid => db.collection('sharedRoutines').doc(uid);
 const walletRef = uid => db.collection('users').doc(uid).collection('wallet').doc('main');
 const todayUTC = () => new Date().toISOString().slice(0, 10);
+
+// Purchase and equip atomically. Concurrent requests/retries cannot spend the same points twice.
+exports.chooseAvatar = onCall(async request => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError('unauthenticated', 'Sign in to choose an avatar.');
+  const { avatarId, purchase } = request.data || {};
+  return fsdb().db.runTransaction(async tx => {
+    const [profile, snap] = await Promise.all([
+      tx.get(db.collection('users').doc(uid)), tx.get(walletRef(uid)),
+    ]);
+    if (!profile.exists) throw new HttpsError('failed-precondition', 'Account not found.');
+    const wallet = snap.exists ? snap.data() : rewards.newWallet(card.addDays(todayUTC(), -1));
+    let next;
+    try { next = selectAvatar(wallet, avatarId, purchase === true); }
+    catch (err) {
+      if (['invalid-argument', 'permission-denied', 'failed-precondition'].includes(err.code)) {
+        throw new HttpsError(err.code, err.message);
+      }
+      throw err;
+    }
+    tx.set(walletRef(uid), next);
+    return { avatarId: next.avatarId, points: next.points };
+  });
+});
 
 // Applies reward events to someone's wallet in one transaction (several functions can run at once for one person).
 // Skips people whose account doesn't exist. Friends see the number of badges on the friend card.
