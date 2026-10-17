@@ -1,5 +1,5 @@
-// Progress tab: overall stats (free, from state/progress.js), then personal records — the best you've ever done
-// on each exercise, grouped by routine.
+// Progress tab: overall stats (free, from state/progress.js), streak and badges, then personal records — the best
+// you've ever done on each exercise, grouped by routine.
 // Records come from the history points in exerciseStats (see selectors.personalRecord).
 import { rewardsBlock } from './badges.js';
 import { weekRecap, hasRecap } from '../state/recap.js';
@@ -29,7 +29,6 @@ export function progressView(state, opts) {
   let h = `${appHeader(state, opts)}
   <h1>${L.progressTitle}</h1>
   ${overallBlock(state)}
-  <p class="sub">${L.recordsSub}</p>
   ${streakCard(weeklyStreak(state), weekGoalProgress(state))}
   ${rewardsBlock()}
   ${hasRecap(weekRecap()) ? `<button class="textbtn recap-link" data-action="recap-open">${ICONS.trophy}<span>${L.rc.fromProgress}</span></button>` : ''}`;
@@ -37,6 +36,7 @@ export function progressView(state, opts) {
   if (!groups.length) {
     h += `<div class="empty" style="margin-top:26px">${ICONS.trophy}<h3>${L.noRecordsTitle}</h3><p>${L.noRecordsBody}</p></div>`;
   } else {
+    h += `<div class="recs-head"><h2>${L.recordsTitle}</h2><p class="sub">${L.recordsSub}</p></div>`;
     if (newThisMonth) h += `<div class="banner rec-banner">${ICONS.trophy}<span>${esc(L.recordsThisMonth(newThisMonth))}</span></div>`;
     for (const g of groups) {
       h += `<div class="section-head"><h2>${esc(routineName(g.routine))}</h2></div>
@@ -96,19 +96,21 @@ function streakCard(s, g) {
 }
 
 // One record: name, date and gain on the left, the record value on the right.
+// With no earlier best (logged once) it's a "First log": the value goes in the small line and the right
+// side is a muted label, so a single workout doesn't look like a record.
 function recordItem(ex, { point, prev }) {
   const L = t();
   const isNew = !!prev && point.d >= daysAgo(NEW_DAYS - 1);
   const sameYear = point.d.slice(0, 4) === String(new Date().getFullYear());
   const when = fmtDay(parseYmd(point.d), sameYear ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
   const gain = gainText(ex.type, point, prev);
-  return `<li class="rec${isNew ? ' new' : ''}">
+  return `<li class="rec${isNew ? ' new' : ''}${prev ? '' : ' first'}">
     <span class="rec-text">
       <b>${esc(exerciseName(ex))}</b>
-      <span>${esc(when)}${gain ? ` · <span class="delta">${esc(gain)}</span>` : ''}</span>
+      <span>${esc(when)}${prev ? (gain ? ` · <span class="delta">${esc(gain)}</span>` : '') : ` · <span class="num">${esc(valueText(ex.type, point))}</span>`}</span>
       ${isNew ? `<span class="chip rec-chip">${L.newRecord}</span>` : ''}
     </span>
-    <span class="rec-val num">${valueHTML(ex.type, point)}</span>
+    ${prev ? `<span class="rec-val num">${valueHTML(ex.type, point)}</span>` : `<span class="rec-first">${L.firstLog}</span>`}
   </li>`;
 }
 
@@ -118,6 +120,14 @@ function valueHTML(type, p) {
   if (type === 'time') return `<b>${fmtClock(p.t)}</b>`;
   if (type === 'reps' || !(p.w > 0)) return `<b>${p.r}</b><small>${L.repsU}</small>`;
   return `<b>${fmtNum(p.w)}</b><small>${p.u}</small><em>× ${p.r}</em>`;
+}
+
+// The same value on one line: "62,5 kg × 9", "15 reps", "1:30"
+function valueText(type, p) {
+  const L = t();
+  if (type === 'time') return fmtClock(p.t);
+  if (type === 'reps' || !(p.w > 0)) return `${p.r} ${L.repsU}`;
+  return `${fmtNum(p.w)} ${p.u} × ${p.r}`;
 }
 
 // How much better than the previous best: "↑ +2,5 kg", "↑ +1 rep", "↑ +0:15". '' for a first record.

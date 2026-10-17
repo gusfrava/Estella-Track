@@ -133,7 +133,7 @@ export default {
   },
   feelSound:'Sounds', feelSoundHint:'Soft sounds when you check sets, finish and earn badges', feelHaptics:'Vibration', feelHapticsHint:'A short buzz when you tap and complete things',
   tabsLabel:'Sections', tabRoutines:'Routines', tabProgress:'Progress',
-  progressTitle:'Progress', recordsSub:'Your personal records: the best you’ve done on each exercise.',
+  progressTitle:'Progress', recordsTitle:'Personal bests', firstLog:'First log', recordsSub:'Your personal records: the best you’ve done on each exercise.',
   noRecordsTitle:'No records yet', noRecordsBody:'Finish exercises in your routines and your best for each one shows up here.',
   recordsThisMonth:n=>n===1?'1 new record this month. Keep it up!':`${n} new records this month. Keep it up!`,
   ov:{

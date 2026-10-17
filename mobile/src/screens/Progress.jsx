@@ -25,12 +25,12 @@ export default function ProgressScreen() {
   const newThisMonth = groups.reduce((n, g) => n + g.items.filter(i => i.record.prev && i.record.point.d >= monthFrom).length, 0);
   return <Page tab="progress"><View style={{ gap: 6 }}><Title>{L.progressTitle}</Title></View>
     <Overall state={state} />
-    <Txt muted>{L.recordsSub}</Txt>
     <StreakCard s={weeklyStreak(state)} g={weekGoalProgress(state)} />
     {getWallet() !== undefined && <Rewards />}
     {hasRecap(weekRecap()) && <Pressable accessibilityRole="button" onPress={() => router.push('/recap')} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start' }}><Icon name="ui-trophy" size={24} /><Txt bold>{L.rc.fromProgress}</Txt></Pressable>}
     {!groups.length ? <View style={{ borderWidth: 2.5, borderStyle: 'dashed', borderColor: colors.ink, borderRadius: 24, paddingVertical: 28, paddingHorizontal: 22, alignItems: 'center', backgroundColor: '#FFFFFF80', gap: 4 }}><Icon name="ui-trophy" size={44} /><Txt bold size={21.5} style={{ textAlign: 'center' }}>{L.noRecordsTitle}</Txt><Txt muted style={{ textAlign: 'center', maxWidth: 280 }}>{L.noRecordsBody}</Txt></View>
-      : <>{!!newThisMonth && <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 16, borderWidth: 2.5, borderColor: colors.ink, borderRadius: 18, backgroundColor: colors.yellow }}><Icon name="ui-trophy" size={26} /><Txt style={{ flex: 1, fontWeight: '600' }}>{L.recordsThisMonth(newThisMonth)}</Txt></View>}
+      : <><View style={{ gap: 4, marginTop: 18 }}><Txt bold size={24}>{L.recordsTitle}</Txt><Txt muted>{L.recordsSub}</Txt></View>
+        {!!newThisMonth && <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 16, borderWidth: 2.5, borderColor: colors.ink, borderRadius: 18, backgroundColor: colors.yellow }}><Icon name="ui-trophy" size={26} /><Txt style={{ flex: 1, fontWeight: '600' }}>{L.recordsThisMonth(newThisMonth)}</Txt></View>}
         {groups.map(g => <View key={g.routine.id} style={{ gap: 14, marginTop: 12 }}><Txt bold size={21}>{routineName(g.routine)}</Txt>{g.items.map(({ ex, record }) => <RecordItem key={ex.id} ex={ex} record={record} />)}</View>)}</>}
   </Page>;
 }
@@ -82,17 +82,20 @@ function Rewards() {
   </View>;
 }
 
-// One record: name, date and gain on the left, the record value on the right.
+// One record: name, date and gain on the left, the record value on the right. With no earlier best (logged once)
+// it's a "First log": the value goes in the small line and the right side is a muted label.
 function RecordItem({ ex, record: { point: p, prev } }) {
   const { L } = useApp(), isNew = !!prev && p.d >= daysAgo(NEW_DAYS - 1);
   const when = fmtDay(parseYmd(p.d), p.d.slice(0, 4) === String(new Date().getFullYear()) ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
   const moreReps = d => `↑ +${d} ${d === 1 ? L.repU : L.repsU}`;
   const gain = !prev ? '' : ex.type === 'time' ? `↑ +${fmtClock(p.t - prev.t)}` : ex.type === 'reps' || !(p.w > 0) ? moreReps(p.r - prev.r) : prev.u !== p.u ? '' : p.w > prev.w ? `↑ +${fmtNum(p.w - prev.w)} ${p.u}` : moreReps(p.r - prev.r);
   const big = text => <Txt bold size={27} style={{ lineHeight: 30 }}>{text}</Txt>, small = text => <Txt muted size={14.4} style={{ fontWeight: '700' }}>{text}</Txt>;
-  return <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: isNew ? colors.yellowSoft : colors.card, borderWidth: 2.5, borderColor: colors.ink, borderRadius: 20, paddingVertical: 14, paddingHorizontal: 16, boxShadow: `3px 4px 0 ${colors.ink}` }}>
-    <View style={{ flex: 1, gap: 2 }}><Txt bold size={18.4} style={{ lineHeight: 21 }}>{exerciseName(ex)}</Txt><Txt muted size={14.4}>{when}{!!gain && <> · <Txt bold size={14.4} style={{ color: colors.tealInk }}>{gain}</Txt></>}</Txt>
+  const value = ex.type === 'time' ? fmtClock(p.t) : ex.type === 'reps' || !(p.w > 0) ? `${p.r} ${L.repsU}` : `${fmtNum(p.w)} ${p.u} × ${p.r}`;
+  return <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: isNew ? colors.yellowSoft : colors.card, borderWidth: 2.5, borderColor: colors.ink, borderRadius: 20, paddingVertical: 14, paddingHorizontal: 16, boxShadow: prev ? `3px 4px 0 ${colors.ink}` : 'none' }}>
+    <View style={{ flex: 1, gap: 2 }}><Txt bold size={18.4} style={{ lineHeight: 21 }}>{exerciseName(ex)}</Txt><Txt muted size={14.4}>{when}{!prev ? ` · ${value}` : !!gain && <> · <Txt bold size={14.4} style={{ color: colors.tealInk }}>{gain}</Txt></>}</Txt>
       {isNew && <View style={{ alignSelf: 'flex-start', marginTop: 6, paddingHorizontal: 10, paddingVertical: 1, borderWidth: 2, borderColor: colors.ink, borderRadius: 99, backgroundColor: colors.orange }}><Txt bold size={13}>{L.newRecord}</Txt></View>}</View>
-    <View style={{ maxWidth: '50%', alignItems: 'flex-end' }}>{ex.type === 'time' ? big(fmtClock(p.t)) : ex.type === 'reps' || !(p.w > 0) ? <Row style={{ gap: 4, alignItems: 'baseline' }}>{big(p.r)}{small(L.repsU)}</Row> : <><Row style={{ gap: 4, alignItems: 'baseline' }}>{big(fmtNum(p.w))}{small(p.u)}</Row>{small(`× ${p.r}`)}</>}</View>
+    {!prev ? <View style={{ paddingHorizontal: 10, paddingVertical: 2, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.muted, borderRadius: 99 }}><Txt muted bold size={13.6}>{L.firstLog}</Txt></View>
+      : <View style={{ maxWidth: '50%', alignItems: 'flex-end' }}>{ex.type === 'time' ? big(fmtClock(p.t)) : ex.type === 'reps' || !(p.w > 0) ? <Row style={{ gap: 4, alignItems: 'baseline' }}>{big(p.r)}{small(L.repsU)}</Row> : <><Row style={{ gap: 4, alignItems: 'baseline' }}>{big(fmtNum(p.w))}{small(p.u)}</Row>{small(`× ${p.r}`)}</>}</View>}
   </View>;
 }
 

@@ -133,7 +133,7 @@ export default {
   },
   feelSound:'Sonidos', feelSoundHint:'Sonidos suaves al marcar series, terminar y ganar insignias', feelHaptics:'Vibración', feelHapticsHint:'Una vibración corta al tocar y al completar cosas',
   tabsLabel:'Secciones', tabRoutines:'Rutinas', tabProgress:'Progreso',
-  progressTitle:'Progreso', recordsSub:'Tus récords personales: lo mejor que has hecho en cada ejercicio.',
+  progressTitle:'Progreso', recordsTitle:'Récords personales', firstLog:'Primer registro', recordsSub:'Tus récords personales: lo mejor que has hecho en cada ejercicio.',
   noRecordsTitle:'Aún no hay récords', noRecordsBody:'Completa ejercicios en tus rutinas y aquí verás lo mejor que has hecho en cada uno.',
   recordsThisMonth:n=>n===1?'1 récord nuevo este mes. ¡Sigue así!':`${n} récords nuevos este mes. ¡Sigue así!`,
   ov:{

@@ -243,6 +243,9 @@
 .cheer-item small{flex:none;color:var(--muted)}
 
 /* ---------- progress: personal records ---------- */
+.recs-head{margin:34px 0 0}
+.recs-head h2{font-size:1.5rem}
+.recs-head .sub{margin-top:.2rem}
 .rec-banner{background:var(--yellow)}
 .rec{display:flex;align-items:center;gap:12px;background:var(--card);border:var(--line) solid var(--ink);border-radius:20px;padding:14px 16px;box-shadow:3px 4px 0 var(--ink)}
 .rec.new{background:var(--yellow-soft)}
@@ -254,6 +257,8 @@
 .rec-val b{font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1}
 .rec-val small{font-weight:700;color:var(--muted)}
 .rec-val em{font-style:normal;font-weight:700;width:100%;text-align:right;color:var(--muted)}
+.rec.first{box-shadow:none}
+.rec-first{flex:none;font-weight:700;font-size:.85rem;color:var(--muted);border:2px dashed var(--muted);border-radius:99px;padding:2px 10px;white-space:nowrap}
 .empty svg{width:44px;height:44px;margin-bottom:6px}
 /* ---------- weekly streak ---------- */
 .streak{margin-top:22px;background:var(--card);border:var(--line) solid var(--ink);border-radius:24px;padding:16px 18px;box-shadow:4px 5px 0 var(--ink)}
