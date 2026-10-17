@@ -11,5 +11,5 @@
 .legal a{color:var(--teal-ink);font-weight:600}
 .legal .callout{padding:14px 16px;border:var(--line) solid var(--ink);border-radius:18px;background:var(--yellow)}
 .legal .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}
-.legal .top .brand{font-family:var(--display);font-weight:800;font-size:1.1rem}
+.legal .top .brand{min-height:44px}
 .legal .top .lang{flex:none}

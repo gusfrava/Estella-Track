@@ -53,7 +53,7 @@ export function authView(ui, { configured, fatal }) {
   <div class="or"><span>${L.or}</span></div>
   <button class="btn secondary" data-action="google" ${ui.busy ? 'disabled' : ''}>${L.google}</button>
   <p class="fine">${L.googleConsent(LEGAL.termsUrl, LEGAL.privacyUrl)}</p>`;
-  if (!configured) h += `<button class="textbtn link center" data-action="local-mode">${L.tryLocal}</button>`;
+  h += `<button class="textbtn link center" data-action="local-mode">${L.tryLocal}</button>`;
   return h + legalLinks();
 }
 

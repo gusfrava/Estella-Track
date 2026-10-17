@@ -55,8 +55,8 @@ export function needsOnboarding(state = getState()) {
   const o = state.profile && state.profile.onboarding;
   if (o && (o.completedAt || o.skippedAt)) return false;
   if (o && o.startedAt) return true;                 // started on this account → finish it, even offline
-  const { synced = {} } = getSession();
-  if (!synced.routines || !synced.sessions) return false;
+  const { synced = {}, localMode } = getSession();
+  if (!localMode && (!synced.routines || !synced.sessions)) return false;
   const hasData = Object.keys(state.routines).length > 0 || Object.keys(state.sessions).length > 0;
   return !hasData;
 }

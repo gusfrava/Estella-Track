@@ -7,7 +7,7 @@ import { exerciseName } from '../services/library.js';
 import { esc, fmtClock } from '../utils/format.js';
 import { mascotHTML } from '../ui/mascot.js';
 import { onboardingMotionHTML, focusMotion, goalMotion, experienceMotion } from '../ui/onboarding-motion.js';
-import { progressBar } from './partials.js';
+import { brand, langToggle, progressBar } from './partials.js';
 import { STEPS, OPTIONAL, CHOICES, AVAILABLE_CHARACTERS, isCharacterLocked, canContinue } from '../controllers/onboarding.js';
 
 // ---------- language (first screen, before sign-up) ----------
@@ -73,11 +73,11 @@ function option({ key, value, icon, title, desc = '', on, disabled = false, extr
 const question = (title, sub = '') => `<h1>${esc(title)}</h1>${sub ? `<p class="sub">${esc(sub)}</p>` : ''}`;
 
 const SCREENS = {
-  welcome: (ui, L) => `<div class="ob-center">
-      ${onboardingMotionHTML('welcome', { character: ui.answers.character })}
-      <h1>${ui.answers.character === 'diego' ? L.ob.welcomeTitle.replace('Estella', 'Diego') : L.ob.welcomeTitle}</h1><p class="sub">${L.ob.welcomeBody}</p></div>
-    <div class="ob-foot"><button class="btn" data-action="ob-next">${L.ob.start}</button>
-      <button class="textbtn" data-action="ob-skip-all">${L.ob.skipAll}</button></div>`,
+  welcome: (ui, L) => `<header class="top">${brand()}${langToggle()}</header><div class="ob-center">
+      ${ui.answers.character === 'diego' ? onboardingMotionHTML('welcome', { character: 'diego' }) : '<img class="intro-portrait" src="icons/onboarding-motion/welcome-0.webp" width="244" height="650" alt="Estella">'}
+      <h1>${ui.answers.character === 'diego' ? L.ob.welcomeTitle.replace('Estella', 'Diego') : L.ob.welcomeTitle}</h1><p class="sub">${L.opening.invitation}</p></div>
+    <div class="ob-foot"><button class="btn" data-action="ob-next">${L.opening.accept}</button>
+      <button class="textbtn" data-action="ob-skip-all">${L.opening.ownRoutine}</button></div>`,
 
   character: (ui, L) => `${question(L.ob.charTitle, L.ob.charSub)}
     <div class="ob-chars">${CHOICES.character.map(c => {

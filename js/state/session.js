@@ -1,7 +1,7 @@
 // Who is using the app and which top-level screen to show.
 //   mode: 'loading' (splash) | 'auth' (sign-in screens) | 'app' (routines)
 //   user: the Firebase user, or null
-//   localMode: true when using the app without an account (only while Firebase isn't configured)
+//   localMode: true when trying the app on this device without an account
 //   fatal: i18n key of a blocking error shown on the sign-in screen (e.g. 'loadFailed')
 //   synced: { routines, sessions } – true once Firestore's server (not this device's cache) has answered
 import { logger } from '../utils/log.js';

@@ -10,6 +10,8 @@ input,textarea{font:inherit;color:inherit}
 .wrap{max-width:480px;margin:0 auto;padding-inline:20px;padding-block:calc(20px + var(--safe-top)) calc(150px + var(--tabbar-h))}
 
 /* ---------- shared bits ---------- */
+.brand{display:flex;align-items:center;flex:none}
+.brand-wordmark{display:block;width:clamp(102.4px,28vw,134.4px);height:auto}
 h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.05}
 h1{font-size:2.5rem;font-weight:800;letter-spacing:-.01em}
 h2{font-size:1.3rem;font-weight:800}

@@ -1,5 +1,23 @@
 // English strings. Keys must match es.js.
 export default {
+  opening: {
+    "sample": "Example preview",
+    "routineLabel": "Your routine",
+    "routineName": "Full body · A",
+    "setLabel": "One set at a time",
+    "setName": "8 reps logged",
+    "weekLabel": "See yourself show up",
+    "weekName": "Your weekly goal",
+    "titleRoutine": "Build your routine.",
+    "titleProgress": "See your progress.",
+    "body": "Log your workouts, pick up where you left off, and keep going with Estella.",
+    "start": "Let’s get started",
+    "signin": "I already have an account",
+    "local": "Try on this device. Create an account later.",
+    "invitation": "Thanks for being here! Can I ask a few questions to build a starter routine around your goals and schedule?",
+    "accept": "Yes, let’s do it",
+    "ownRoutine": "I’ll build my own routine"
+},
   language:'Language',
   yourRoutines:'Your routines',
   weekOf:(a,b)=>`Week of ${a} – ${b}`,

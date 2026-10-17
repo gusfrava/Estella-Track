@@ -13,6 +13,7 @@ import { AVATARS, avatarPath } from '@/core/data/avatars';
 import { getWallet, setWallet } from '@/core/state/rewards';
 import { colors } from '@/theme/tokens';
 import { googleSignInAvailable } from '@/services/google-sign-in';
+import { RevenueCatStatus } from '@/components/RevenueCatStatus';
 import { canVibrate, feel, feelPrefs, setFeelPref } from '@/services/feel';
 const SITE = 'https://gusfrava.github.io/Estella-Track/';
 const danger = '#C8371F';
@@ -36,6 +37,7 @@ export default function Account() {
       <View style={{ flex: 1, minWidth: 0 }}>{session.localMode ? <><Txt bold size={19.2}>{L.localMode}</Txt><Txt muted>{L.localModeBody}</Txt></> : <>{!!name && <Txt bold size={19.2}>{name}</Txt>}{!!handle && <Txt bold style={{ color: colors.tealInk }}>{handle}</Txt>}<Txt muted>{user?.email || ''}</Txt></>}</View>
     </View>
     {language}
+    {__DEV__ && <RevenueCatStatus lang={lang} />}
     <FeelSwitches />
     {session.localMode ? <Button secondary title={L.exitLocal} onPress={leave} /> : <View style={{ gap: 12 }}>
       <Button secondary title={avatarLabels(lang).title} onPress={() => setSheet('avatars')} />

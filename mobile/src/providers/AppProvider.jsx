@@ -13,6 +13,7 @@ import { hydrateStorage, KEYS, readJSON, writeJSON, lsGet, lsSet, lsDel, flushSt
 import { t, getLang, setLang, previewLang, chooseLang, hasChosenLang, onLangChange, routineName } from '@/core/i18n';
 import { toast } from '@/components/toast-bus';
 import { feel, prepareFeel } from '@/services/feel';
+import { billing } from '@/services/revenuecat';
 const CHEER_ICONS = { fire: 'streak-flame', strong: 'dumbbell', clap: 'cheer' };
 
 const Context = createContext(null);
@@ -91,7 +92,11 @@ export function AppProvider({ children }) {
       if (fresh.length) setTimeout(() => { toast({ icon: 'badge-' + fresh[0], title: fresh.length > 1 ? P.newBadges : P.newBadge, body: fresh.map(id => P.names[id] || id).join(', ') }); feel('badge'); }, gained > 0 ? 1600 : 0);
     });
     prepareFeel();
-    const languageStop = onLangChange(notify), rewardsStop = rewards.onRewardsChange(notify), socialStop = social.onSocialChange(notify), sessionStop = session.onSessionChange(notify);
+    const billingStop = billing.subscribe(notify);
+    const languageStop = onLangChange(notify), rewardsStop = rewards.onRewardsChange(notify), socialStop = social.onSocialChange(notify), sessionStop = session.onSessionChange(s => {
+      void billing.setUser(s.localMode ? null : s.user?.uid);
+      notify();
+    });
     const onboardingStop = ob.onOnboardingChange(notify);
     // A cheer that arrives while the app is open: a short toast, as on the website (not for the ones already there).
     let cheersShownUpTo = Date.now();
@@ -104,7 +109,7 @@ export function AppProvider({ children }) {
       toast({ icon: CHEER_ICONS[c.kind] || CHEER_ICONS.fire, title: t().fr.cheerToast((f.displayName || '').trim() || `@${f.username || '?'}`), body: routineName({ name: c.workout }) });
     });
     const retry = setInterval(() => { void flush(); }, 10000);
-    const foreground = AppState.addEventListener('change', state => { if (state === 'active') { store.checkNewWeek(); void flush(); } });
+    const foreground = AppState.addEventListener('change', state => { if (state === 'active') { store.checkNewWeek(); void flush(); void billing.refresh(); } });
     (async () => {
       await hydrateStorage(); if (!active) return;
       const lang = lsGet(KEYS.lang); if (lang) setLang(lang);
@@ -178,7 +183,7 @@ export function AppProvider({ children }) {
         void flush(); setReady(true);
       });
     })().catch(e => { report(e); if (!session.getSession().localMode) session.setSession({ mode: 'auth' }); setReady(true); });
-    return () => { active = false; authStop?.(); stop(); unsub(); languageStop(); rewardsStop(); socialStop(); sessionStop(); onboardingStop(); cheerToastStop(); pointsStop(); clearInterval(retry); foreground.remove(); };
+    return () => { active = false; authStop?.(); stop(); unsub(); languageStop(); rewardsStop(); socialStop(); sessionStop(); billingStop(); void billing.setUser(null); onboardingStop(); cheerToastStop(); pointsStop(); clearInterval(retry); foreground.remove(); };
   }, []);
   async function run(action) { setError(''); try { return await action(); } catch (e) { report(e); throw e; } }
   return <Context.Provider value={{ revision, ready, error, clearError: () => setError(''), run, state: store.getState(), session: session.getSession(), L: t(), lang: getLang(), setLang, previewLang, chooseLang: value => { chooseLang(value); void flushStorage(); notify(); }, languageChosen: hasChosenLang(), enterLocal, logout, deleteAccount, notify }}>{children}</Context.Provider>;
