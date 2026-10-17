@@ -60,6 +60,8 @@ for (const [from, to] of [
   ['export async function signInWithGoogle() {', `${native}\nexport async function signInWithGoogle() {\n  const g = await nativeGoogle();\n  if (g.googleSignInAvailable) {\n    const idToken = await g.googleIdToken();\n    if (idToken) await FB.a.signInWithCredential(FB.auth, FB.a.GoogleAuthProvider.credential(idToken));\n    return;\n  }`],
   ['    await FB.a.reauthenticateWithPopup(user, new FB.a.GoogleAuthProvider());', `    const g = await nativeGoogle();\n    if (!g.googleSignInAvailable) { await FB.a.reauthenticateWithPopup(user, new FB.a.GoogleAuthProvider()); return; }\n    const idToken = await g.googleIdToken();\n    if (!idToken) throw Object.assign(new Error('cancelled'), { code: 'auth/popup-closed-by-user' });\n    await FB.a.reauthenticateWithCredential(user, FB.a.GoogleAuthProvider.credential(idToken));`],
   ['export const signOut = () => FB.a.signOut(FB.auth);', 'export const signOut = async () => { await (await nativeGoogle()).googleSignOut(); return FB.a.signOut(FB.auth); };'],
+  // The website loads Cloud Functions from the CDN at runtime; the app bundles the installed SDK instead.
+  ["  const sdk = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-functions.js`);", "  const sdk = await import('firebase/functions');"],
 ]) { if (!firebase.includes(from)) throw new Error(`services/firebase.js changed: ${from}`); firebase = firebase.replace(from, to); }
 fs.writeFileSync(path.join(target, 'services/firebase.js'), firebase);
 const motionDir = path.join(mobile, 'assets/motion');

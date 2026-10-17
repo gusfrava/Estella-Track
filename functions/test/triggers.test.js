@@ -181,23 +181,23 @@ test('rewards: workout + weekly goal points, records, cheers, friends, copies; w
   store.set('users/u1/sessions/s1', s1);
   await fns.cardOnSession.run(ev({ uid: 'u1', sid: 's1' }, null, s1));
   let w = store.get('users/u1/wallet/main');
-  assert.strictEqual(w.points, 10 + 15 + 5);                          // workout + goal (1 day) + streak 1 week
+  assert.strictEqual(w.points, 10 + 20 + 2 + 25);                     // workout + goal (1 day) + streak 1 week + w1 badge
   assert.ok(w.badges.w1 && !w.badges.s2);
   assert.strictEqual(store.get('profileCards/u1').badges, 1);
 
   // the same session written again: nothing new
   await fns.cardOnSession.run(ev({ uid: 'u1', sid: 's1' }, { ...s1, exercises: [{ sets: [{ done: false }] }] }, s1));
-  assert.strictEqual(store.get('users/u1/wallet/main').points, 30);
+  assert.strictEqual(store.get('users/u1/wallet/main').points, 57);
 
   // a record
   const pt = (d, wt) => ({ d, w: wt, r: 8, u: 'kg' });
   await fns.rewardsOnStats.run(ev({ uid: 'u1', sid: 'e1' }, { points: [pt('2026-01-01', 50)] }, { points: [pt('2026-01-01', 50), pt(today, 60)] }));
-  assert.strictEqual(store.get('users/u1/wallet/main').points, 50);
+  assert.strictEqual(store.get('users/u1/wallet/main').points, 57 + 10 + 25);   // record + r1 badge
 
   // a cheer from u2 (u2 exists) → +1 for u1, a badge for u2
   store.set('users/u2', { username: 'est' });
   await fns.rewardsOnCheer.run({ params: { id: 'u2_u1_x' }, data: { exists: true, data: () => ({ from: 'u2', to: 'u1' }) } });
-  assert.strictEqual(store.get('users/u1/wallet/main').points, 51);
+  assert.strictEqual(store.get('users/u1/wallet/main').points, 92 + 1 + 25);    // cheer + cr1 badge
   assert.ok(store.get('users/u2/wallet/main').badges.c1);
 
   // friend + copied routine

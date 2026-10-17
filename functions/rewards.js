@@ -11,21 +11,24 @@
 //   updatedAt
 // }
 
-const POINTS = { workout: 10, activity: 5, record: 20, goal: 15, streakPerWeek: 5, streakMax: 50, cheer: 1 };
-const CAPS = { workoutsPerDay: 2, recordsPerDay: 3, cheersPerDay: 5 };
+// Balanced so working out is the biggest source: a regular user (3 days a week, goal met) earns ~350–400 a month.
+const POINTS = { workout: 10, activity: 5, record: 10, goal: 20, streakPerWeek: 2, streakMax: 20, cheer: 1 };
+const CAPS = { workoutsPerDay: 2, recordsPerDay: 2, cheersPerDay: 5 };
+// Earning a badge also pays points, by its artwork tier (icons/badges, design/estella-sticker-pack/milestones).
+const TIER_POINTS = { bronze: 25, silver: 50, gold: 75, platinum: 100, diamond: 150, titanium: 200 };
 const ACTIVITY_MIN_MINUTES = 20;
 
 // The badges. KEEP IN SYNC with js/data/badges.js (a test checks they match).
-//   counter = which counter it watches, at = the value that earns it.
+//   counter = which counter it watches, at = the value that earns it, tier = its artwork tier (sets its points).
 const BADGES = [
-  ['w1', 'workouts', 1], ['w10', 'workouts', 10], ['w25', 'workouts', 25], ['w50', 'workouts', 50], ['w100', 'workouts', 100], ['w250', 'workouts', 250],
-  ['s2', 'bestStreak', 2], ['s4', 'bestStreak', 4], ['s8', 'bestStreak', 8], ['s12', 'bestStreak', 12], ['s26', 'bestStreak', 26], ['s52', 'bestStreak', 52],
-  ['r1', 'records', 1], ['r10', 'records', 10], ['r25', 'records', 25],
-  ['f1', 'friends', 1], ['f5', 'friends', 5],
-  ['c1', 'cheersSent', 1], ['c10', 'cheersSent', 10], ['c50', 'cheersSent', 50],
-  ['cr10', 'cheersReceived', 10],
-  ['cp1', 'copies', 1],
-].map(([id, counter, at]) => ({ id, counter, at }));
+  ['w1', 'workouts', 1, 'bronze'], ['w10', 'workouts', 10, 'silver'], ['w25', 'workouts', 25, 'gold'], ['w50', 'workouts', 50, 'platinum'], ['w100', 'workouts', 100, 'diamond'], ['w250', 'workouts', 250, 'titanium'],
+  ['s2', 'bestStreak', 2, 'bronze'], ['s4', 'bestStreak', 4, 'silver'], ['s8', 'bestStreak', 8, 'gold'], ['s12', 'bestStreak', 12, 'platinum'], ['s26', 'bestStreak', 26, 'diamond'], ['s52', 'bestStreak', 52, 'titanium'],
+  ['r1', 'records', 1, 'bronze'], ['r10', 'records', 10, 'silver'], ['r25', 'records', 25, 'gold'], ['r50', 'records', 50, 'platinum'], ['r100', 'records', 100, 'diamond'], ['r250', 'records', 250, 'titanium'],
+  ['f1', 'friends', 1, 'bronze'], ['f5', 'friends', 5, 'silver'], ['f10', 'friends', 10, 'gold'], ['f25', 'friends', 25, 'platinum'], ['f50', 'friends', 50, 'diamond'], ['f100', 'friends', 100, 'titanium'],
+  ['c1', 'cheersSent', 1, 'bronze'], ['c10', 'cheersSent', 10, 'silver'], ['c25', 'cheersSent', 25, 'gold'], ['c50', 'cheersSent', 50, 'platinum'], ['c100', 'cheersSent', 100, 'diamond'], ['c250', 'cheersSent', 250, 'titanium'],
+  ['cr1', 'cheersReceived', 1, 'bronze'], ['cr10', 'cheersReceived', 10, 'silver'], ['cr25', 'cheersReceived', 25, 'gold'], ['cr50', 'cheersReceived', 50, 'platinum'], ['cr100', 'cheersReceived', 100, 'diamond'], ['cr250', 'cheersReceived', 250, 'titanium'],
+  ['cp1', 'copies', 1, 'bronze'],
+].map(([id, counter, at, tier]) => ({ id, counter, at, tier, points: TIER_POINTS[tier] }));
 
 const COUNTERS = ['workouts', 'records', 'cheersSent', 'cheersReceived', 'copies', 'friends', 'bestStreak'];
 
@@ -56,10 +59,13 @@ function applyEvent(input, ev, now = Date.now()) {
     if (ev.date && ev.date < w.since) return { wallet: input, gained: 0, badges: [] };
     const day = w.daily[ev.date] = w.daily[ev.date] || { w: 0, r: 0, c: 0 };
     if (ev.type === 'workout') {
+      // An activity under 20 minutes isn't a workout: no points and it doesn't count toward workout badges.
+      // Not marked as paid, so lengthening it later (to 20+ minutes) still counts.
+      if (ev.kind === 'activity' && (Number(ev.minutes) || 0) < ACTIVITY_MIN_MINUTES) return { wallet: input, gained: 0, badges: [] };
       if (day.w >= CAPS.workoutsPerDay) return { wallet: input, gained: 0, badges: [] };
       day.w++;
       w.counters.workouts++;
-      gained = ev.kind === 'activity' ? ((Number(ev.minutes) || 0) >= ACTIVITY_MIN_MINUTES ? POINTS.activity : 0) : POINTS.workout;
+      gained = ev.kind === 'activity' ? POINTS.activity : POINTS.workout;
       why = ev.kind === 'activity' ? 'activity' : 'workout';
     } else if (ev.type === 'goal') {
       const streak = Math.max(0, Number(ev.streak) || 0);
@@ -83,17 +89,17 @@ function applyEvent(input, ev, now = Date.now()) {
     w.awarded[ev.key] = gained;
   }
 
+  const earned = BADGES.filter(b => !w.badges[b.id] && w.counters[b.counter] >= b.at);
+  for (const b of earned) { w.badges[b.id] = now; gained += b.points; }
   w.points = (Number(w.points) || 0) + gained;
-  const earned = BADGES.filter(b => !w.badges[b.id] && w.counters[b.counter] >= b.at).map(b => b.id);
-  for (const id of earned) w.badges[id] = now;
   if (gained || earned.length) {
-    w.log = [{ at: now, why, pts: gained, ...(earned.length ? { badges: earned } : {}) }, ...(w.log || [])].slice(0, 20);
+    w.log = [{ at: now, why, pts: gained, ...(earned.length ? { badges: earned.map(b => b.id) } : {}) }, ...(w.log || [])].slice(0, 20);
   }
   // keep the per-day caps for two weeks only
   const cutoff = new Date(now - 14 * 864e5).toISOString().slice(0, 10);
   for (const d of Object.keys(w.daily)) if (d < cutoff) delete w.daily[d];
   w.updatedAt = now;
-  return { wallet: w, gained, badges: earned };
+  return { wallet: w, gained, badges: earned.map(b => b.id) };
 }
 
 // ---------- records from exercise history (exerciseStats points { d, r, w, u, t? }) ----------
@@ -131,4 +137,4 @@ function newRecord(before, after) {
   return { date: a.point.d };
 }
 
-module.exports = { POINTS, CAPS, BADGES, COUNTERS, newWallet, applyEvent, newRecord };
+module.exports = { POINTS, CAPS, TIER_POINTS, BADGES, COUNTERS, newWallet, applyEvent, newRecord };

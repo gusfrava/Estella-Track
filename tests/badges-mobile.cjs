@@ -40,7 +40,7 @@ const output = path.join(ROOT, 'tools');
        await page.locator('.header-points').click();
        await page.waitForSelector('.sheet.open .badge-list');
        await page.locator('.sheet .medal-art img').evaluateAll(images => Promise.all(images.map(img => img.decode())));
-       assert.equal(await page.locator('.sheet .medal-art').count(), 22);
+       assert.equal(await page.locator('.sheet .medal-art').count(), BADGES.length);
        assert.equal(await page.locator('.sheet .medal-art.earned').count(), 3);
        const locked = page.locator('.sheet .medal-art.locked[data-badge="w10"]');
        assert.ok((await locked.locator('img').getAttribute('src')).includes('/static/'));
