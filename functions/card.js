@@ -39,11 +39,12 @@ function sessionCounts(s) {
 }
 
 // The bits of a session that matter for the card. If these didn't change, the card doesn't either
-// (most session writes are a set being checked in the middle of a workout).
+// (most session writes are a set being checked in the middle of a workout). An activity's minutes are included because
+// reaching 20 minutes is what makes it count for points and workout badges.
 function sessionKey(s) {
   if (!s) return null;
   return JSON.stringify([sessionCounts(s), s.date || null, s.kind || null, s.routineName || null,
-    (s.activity && s.activity.sport) || null]);
+    (s.activity && s.activity.sport) || null, (s.activity && Number(s.activity.minutes)) || null]);
 }
 
 // Set of weekday digits → '024'

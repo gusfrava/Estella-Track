@@ -6,6 +6,7 @@ import { Icon, Page, RouteSheet, Row, TextButton, Title, Txt } from '@/component
 import { useApp } from '@/providers/AppProvider';
 import { recordsByRoutine, weeklyStreak, weekGoalProgress } from '@/core/state/selectors';
 import { badgeList, earnedCount, getWallet, points } from '@/core/state/rewards';
+import { TIER_POINTS } from '@/core/data/badges';
 import { weekRecap, hasRecap } from '@/core/state/recap';
 import { routineName } from '@/core/i18n';
 import { exerciseName } from '@/core/services/library';
@@ -75,12 +76,18 @@ function RecordItem({ ex, record: { point: p, prev } }) {
   </View>;
 }
 
+// What a badge pays when earned (by its tier): a small pill next to its name, muted once earned.
+function BadgePoints({ value, earned, label }) {
+  if (!value) return null;
+  return <View style={{ marginTop: 2, paddingHorizontal: 8, paddingVertical: 1, borderRadius: 99, borderWidth: 1.5, borderColor: earned ? hairline : colors.ink, backgroundColor: earned ? 'transparent' : colors.yellowSoft }}><Txt bold size={12} style={{ color: earned ? colors.muted : colors.ink }}>{label(value)}</Txt></View>;
+}
+
 // The full badge list (the website's "Your badges" sheet).
 export function BadgesScreen() {
   const { L } = useApp(), P = L.pts, badges = badgeList(), [how,setHow] = useState(false);
   return <RouteSheet title={P.allTitle}><Txt muted style={{ marginTop: -16 }}>{P.earned(earnedCount(),badges.length)} · {P.points(points())}</Txt>
     <View style={{ gap: 12 }}>{badges.map(b => <View key={b.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}><Icon name={'badge-'+b.id} size={72} locked={!b.earned} />
-      <View style={{ flex: 1, gap: 2 }}><Txt bold size={17} style={{ color: b.earned ? colors.ink : colors.muted }}>{P.names[b.id] || b.id}</Txt><Txt muted size={14.4}>{(P.desc[b.counter] || (() => ''))(b.at)}</Txt>
+      <View style={{ flex: 1, gap: 2 }}><Row style={{ justifyContent: 'flex-start', alignItems: 'flex-start', gap: 8 }}><Txt bold size={17} style={{ flexShrink: 1, color: b.earned ? colors.ink : colors.muted }}>{P.names[b.id] || b.id}</Txt><BadgePoints value={TIER_POINTS[b.tier]} earned={!!b.earned} label={P.gained} /></Row><Txt muted size={14.4}>{(P.desc[b.counter] || (() => ''))(b.at)}</Txt>
         {b.earned ? <Txt muted size={13.6}>{P.earnedOn(fmtDay(new Date(b.earned)))}</Txt> : <><View style={{ height: 8, marginTop: 4, borderRadius: 99, backgroundColor: hairline, overflow: 'hidden' }}><View style={{ width: `${Math.round(b.progress * 100)}%`, height: '100%', backgroundColor: colors.orange }} /></View><Txt muted size={13.6}>{Math.min(b.count, b.at)}/{b.at}</Txt></>}</View></View>)}</View>
     <View style={{ borderTopWidth: 2, borderStyle: 'dashed', borderColor: hairline, paddingTop: 10 }}><Pressable accessibilityRole="button" accessibilityState={{ expanded: how }} onPress={() => setHow(!how)}><Txt bold>{how ? '▾' : '▸'} {P.howTitle}</Txt></Pressable>{how && <Txt muted style={{ marginTop: 8 }}>{P.how}</Txt>}</View>
   </RouteSheet>;
