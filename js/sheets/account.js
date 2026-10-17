@@ -14,6 +14,8 @@ import { openProfileSheet } from './profile-form.js';
 import { openDeleteAccountSheet } from './delete-account.js';
 import { prepareMyData, saveMyData, usesShareSheet } from '../controllers/account.js';
 import { logger } from '../utils/log.js';
+import { accountAvatarHTML } from '../ui/avatar.js';
+import { openAvatarsSheet, avatarLabels } from './avatars.js';
 
 
 const log = logger('account');
@@ -36,10 +38,11 @@ export function openAccountSheet({ replace = false } = {}) {
   const name = displayNameOf(profile, user);
   const handle = profile && profile.username ? `@${profile.username}` : '';
   show(`<h2>${L.account}</h2>
-    <div class="acct"><span class="avatar big" aria-hidden="true">${esc(initial({ user, profile }))}</span>
+    <div class="acct"><span class="avatar big" aria-hidden="true">${accountAvatarHTML(initial({ user, profile }))}</span>
       <span>${name ? `<b>${esc(name)}</b>` : ''}${handle ? `<span class="handle-text">${esc(handle)}</span>` : ''}<span>${esc(user.email || '')}</span></span></div>
     ${languageSetting()}
     <div class="actions">
+      <button class="btn secondary" data-k="avatars">${avatarLabels().title}</button>
       <button class="btn secondary" data-k="edit">${L.editProfile}</button>
       <button class="btn secondary" data-k="privacy">${L.privacy}</button>
       <button class="btn secondary" data-k="export">${L.exportData}</button>
@@ -51,6 +54,7 @@ export function openAccountSheet({ replace = false } = {}) {
     ${legalLinks()}`,
   s => {
     wireLanguage(s);
+    s.querySelector('[data-k=avatars]').onclick = () => openAvatarsSheet();
     s.querySelector('[data-k=edit]').onclick = () => openProfileSheet();
     s.querySelector('[data-k=privacy]').onclick = () => openPrivacySheet();
     s.querySelector('[data-k=delete]').onclick = () => openDeleteAccountSheet();

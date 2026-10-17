@@ -97,3 +97,17 @@ body.scroll-locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
 .video-frame.vertical{aspect-ratio:9/16;width:min(100%, calc(56vh * 9 / 16));margin:0 auto}
 .video-note a{color:var(--teal-ink);font-weight:600}
 .video-note{margin:10px 0 4px}
+/* Account avatar collection: static artwork, locked premium options and explicit purchases. */
+.account-avatar-image { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.avatar-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:16px 0 28px; }
+.avatar-choice { display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 6px; border:2px solid var(--ink,#2d1b10); border-radius:20px; background:#fff; color:#2d1b10; font:inherit; cursor:pointer; min-width:0; }
+.avatar-choice img { width:100%; height:auto; aspect-ratio:1; border-radius:50%; }
+.avatar-choice[aria-pressed="true"] { background:#ffcf4d; box-shadow:0 4px 0 #2d1b10; }
+.avatar-choice.is-locked img { filter:grayscale(1); opacity:.6; }
+.avatar-choice:disabled { cursor:default; }
+.avatar-choice span,.avatar-choice small { font-size:12px; text-align:center; }
+.avatar-choice:focus-visible { outline:3px solid #187e75; outline-offset:3px; }
+.avatar-confirm { padding:16px; border:2px solid #2d1b10; border-radius:20px; background:#fff; text-align:center; margin:16px 0; }
+.avatar-confirm img { border-radius:50%; }
+.avatar-balance { padding:12px 16px; background:#ffcf4d; border-radius:14px; }
+@media(max-width:360px) { .avatar-grid { gap:8px; } .avatar-choice { padding:8px 4px; } }

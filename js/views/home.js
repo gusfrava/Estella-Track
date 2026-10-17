@@ -8,6 +8,7 @@ import { getWallet, points } from '../state/rewards.js';
 import { nextMonday, parseYmd, todayStr, ymd } from '../utils/dates.js';
 import { orderedRoutines, routineProgress, weekSummary, isRoutineDone, routinesList, activities, weeklyStreak, trainedToday, weekGoalProgress } from '../state/selectors.js';
 import { mascotHTML } from '../ui/mascot.js';
+import { accountAvatarHTML } from '../ui/avatar.js';
 import { brand, editDeleteButtons, progressBar, tabBar } from './partials.js';
 
 // opts = { user, localMode, highlightId, showOlder, verify: { needed, ui } }
@@ -48,7 +49,7 @@ export function appHeader(state, opts) {
   return `<header class="top">${brand()}
     <div class="top-right">
       ${getWallet() !== undefined ? `<button class="header-points" data-action="badges" aria-label="${esc(L.pts.points(points()) + ' · ' + L.pts.title)}">${ICONS.star}<span><b class="num" data-count-key="points" data-count="${points()}">${esc(fmtNum(points()))}</b> ${esc(L.pts.pointsWord(points()))}</span></button>` : ''}
-      <button class="avatar" data-action="account" aria-label="${L.account}">${esc(initial({ ...opts, profile: state.profile }))}</button>
+      <button class="avatar" data-action="account" aria-label="${L.account}">${accountAvatarHTML(initial({ ...opts, profile: state.profile }))}</button>
     </div>
   </header>`;
 }
