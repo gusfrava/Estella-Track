@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, Share, TextInput, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
+import { useLocalSearchParams } from 'expo-router';
 import { Bust, Button, Icon, initialLine, Page, Row, Sheet, Title, Txt, s as ui, toast } from '@/components/native-ui';
 import { useApp } from '@/providers/AppProvider';
 import * as social from '@/core/state/social';
@@ -28,6 +29,14 @@ export default function Friends() {
   const { L,session,run,state } = useApp(), F = L.fr; const [search,setSearch] = useState(false), [person,setPerson] = useState(null), [seenAt] = useState(() => friends.cheersSeenAt());
   const signedIn = !session.localMode && !!session.user;
   useEffect(() => { if (signedIn) friends.markCheersSeen(); });   // the dots on new cheers stay until the next visit; the tab badge clears now
+  // Website openInviteOnce: opened from an invite link (?add=username, see app/+native-intent), show that person
+  // once signed in. Each invite is looked up once, even if the screen re-renders with it still in the address.
+  const { add } = useLocalSearchParams(), invite = typeof add === 'string' ? add : '', handled = useRef('');
+  useEffect(() => {
+    if (!invite || !signedIn || handled.current === invite) return;
+    handled.current = invite;
+    friends.findByUsername(invite).then(p => { if (p) setPerson(p); else toast({ title: F.inviteNotFound }); }, () => toast({ title: F.failed }));
+  }, [invite, signedIn, F]);
   const execute = action => run(action).catch(() => {});
   const head = <View style={{ gap: 6 }}><Title>{F.title}</Title><Txt muted>{F.sub}</Txt></View>;
   if (!signedIn) return <Page tab="friends">{head}<View style={s.empty}><Txt bold size={21.5} style={{ textAlign: 'center' }}>{F.needAccount}</Txt><Txt muted style={{ textAlign: 'center', maxWidth: 280 }}>{F.needAccountBody}</Txt></View></Page>;
