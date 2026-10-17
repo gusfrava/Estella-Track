@@ -43,7 +43,10 @@ import { orderedExercises, personalRecord, beatsRecord } from './state/selectors
 import { todayStr } from './utils/dates.js';
 import { usernameView, statusHTML, errorHTML } from './views/username.js';
 import { consentView } from './views/consent.js';
-import { languageView, renderOnboarding } from './views/onboarding.js';
+import { renderOnboarding } from './views/onboarding.js';
+import { renderOpening, stopOpeningMotion } from './ui/opening-motion.js';
+import { KEYS, lsGet, lsSet } from './services/storage.js';
+import { billing } from './services/revenuecat.js';
 import * as onboarding from './controllers/onboarding.js';
 import { openPlusMenu } from './sheets/plus-menu.js';
 import { openRoutineForm } from './sheets/routine-form.js';
@@ -66,6 +69,7 @@ let consentError = '';    // "tick the box" message on the consent screen
 let openId = null;        // exercise opened to log its sets (routine screen)
 let renderLater = false;  // a set value changed while typing → re-render once you leave the field
 let lastObStep = null;    // onboarding screen last shown (scroll to top / confetti only when it changes)
+let openingPending = lsGet(KEYS.opening) === 'pending' || (lsGet(KEYS.opening) !== 'done' && !hasChosenLang());
 
 // ---------- render ----------
 // paint() draws the current screen and returns a key for it ('home', 'routine:<id>', 'ob:goal'…);
@@ -94,8 +98,12 @@ function paint() {
   document.documentElement.lang = getLang();
   const s = getSession();
   if (s.mode === 'loading') { app.innerHTML = splashView(); return 'loading'; }
-  // Very first screen on a phone that hasn't picked a language yet.
-  if (s.mode === 'auth' && !hasChosenLang()) { app.innerHTML = languageView(); return 'lang'; }
+  if (s.mode === 'auth' && openingPending) {
+    lsSet(KEYS.opening, 'pending');
+    renderOpening(app);
+    return 'opening';
+  }
+  stopOpeningMotion();
   if (s.mode === 'auth') { app.innerHTML = authView(auth.getAuthUI(), { configured: isFirebaseConfigured(), fatal: s.fatal }); return `auth:${auth.getAuthUI().screen}`; }
   // One-time gates for signed-in accounts: accept the privacy policy/terms, then pick a username.
   const profile = store.getState().profile;
@@ -108,7 +116,7 @@ function paint() {
     return 'username';
   }
   // New accounts: a few questions (goal, days, weight…), saved as they're answered.
-  if (!s.localMode && s.user && profile && onboarding.needsOnboarding()) {
+  if ((s.localMode || (s.user && profile)) && onboarding.needsOnboarding()) {
     const ui = onboarding.getOnboardingUI();
     let step = onboarding.STEPS[ui.step];
     if (step === 'done' && (ui.plan === null || ui.plan === 'loading')) step = 'done-loading';   // confetti once the plan shows
@@ -192,6 +200,7 @@ onRouteChange(() => { openId = null; render(); });
 auth.onAuthUIChange(render);
 onLangChange(lang => { fb.setAuthLanguage(lang); render(); });
 onSessionChange((s, prev) => {
+  void billing.setUser(s.localMode ? null : s.user?.uid);
   if (s.user !== prev.user) { profileForm.resetProfileForm(); account.resetVerifyUI(); onboarding.resetOnboardingUI(); consentError = ''; }
   if (s.mode === 'app' && prev.mode !== 'app') resetRoute();
   if (s.mode !== 'app') closeSheet(true);
@@ -304,6 +313,18 @@ const ACTIONS = {
   'toggle-pw': () => { auth.togglePassword(); const pw = document.getElementById('a-pw'); if (pw) pw.focus(); },
   google: () => auth.google(),
   'local-mode': () => sync.enterLocalMode(),
+  'opening-start': () => {
+    openingPending = false;
+    lsSet(KEYS.opening, 'done');
+    chooseLang(getLang());
+    sync.enterLocalMode();
+  },
+  'opening-signin': () => {
+    openingPending = false;
+    lsSet(KEYS.opening, 'done');
+    chooseLang(getLang());
+    auth.showScreen('login');
+  },
   // first screen (language) + onboarding
   'pick-lang': (d, el) => {
     app.querySelectorAll('[data-action="pick-lang"]').forEach(b => b.setAttribute('aria-pressed', b === el));
@@ -458,12 +479,17 @@ function registerServiceWorker() {
 
 // ---------- start ----------
 async function boot() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void billing.refresh();
+  });
+  if (billing.getState().status !== 'disabled') window.estellaBilling = billing;
   initRouter({ onBack: () => closeSheet(true) });
   friends.readInviteFromUrl();   // opened from an invite link (?add=username): remembered until the app shows
   // The exercise library loads in the background; once it's there, screens can show exercise names in the
   // current language and the technique videos.
   loadLibrary().then(() => { const f = document.activeElement; if (!f || !f.matches('input, textarea')) render(); }, () => {});
   registerServiceWorker();
+  if (sync.wantsLocalMode()) sync.enterLocalMode();
 
   if (DEBUG) {
     window.estella = { state: store.getState, session: getSession, view: getView };
@@ -472,22 +498,22 @@ async function boot() {
 
   if (!isFirebaseConfigured()) {
     log.debug('Firebase not configured — sign-in screen shows the setup notice');
-    if (sync.wantsLocalMode()) sync.enterLocalMode();
-    else setSession({ mode: 'auth' });
+    if (!getSession().localMode) setSession({ mode: 'auth' });
     return;
   }
 
-  setSession({ mode: 'loading' });
+  if (!getSession().localMode) setSession({ mode: 'loading' });
   try {
     await fb.loadFirebase(getLang());
   } catch (err) {
     log.error('Firebase failed to load', err);
-    setSession({ mode: 'auth', fatal: 'loadFailed' });
+    if (!getSession().localMode) setSession({ mode: 'auth', fatal: 'loadFailed' });
     return;
   }
   fb.consumeRedirectResult().catch(err => auth.showError(err));
   fb.onAuthChange(user => {
     const s = getSession();
+    if (s.localMode) return; // Background auth restoration must not replace local onboarding or workouts.
     if (user) {
       if (!s.user || s.user.uid !== user.uid) sync.startUserSession(user);
     } else if (s.user || s.mode !== 'auth') {

@@ -7,7 +7,7 @@ import { LEGAL } from '../config.js';
 import { pendingIncoming, unseenCheers } from '../state/social.js';
 import { cheersSeenAt } from '../controllers/friends.js';
 
-export const brand = () => `<div class="brand">${ICONS.star}<span>Estella</span></div>`;
+export const brand = () => `<div class="brand"><img class="brand-wordmark" src="icons/brand/estella-track.svg" width="168" height="56" alt="Estella Track"></div>`;
 
 export function langToggle() {
   const lang = getLang();

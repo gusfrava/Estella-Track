@@ -1,0 +1,46 @@
+/* Approved first-visit scene: one entrance, rounded star, no shine loop. */
+.intro{--st-line:#EEDFCB;--st-muted:var(--muted);--st-ink:var(--ink);--st-card:var(--card);--st-soft:#E0F5EE;--st-teal:#127F73;--st-bg:var(--bg);--st-yellow:#FFC94D}
+.intro,.ob-s-welcome{max-width:370px;margin:0 auto}
+.intro .scene{width:320px;max-width:calc(100% - 24px);margin-left:auto;margin-right:auto;flex-shrink:0}
+.intro h1,.ob-s-welcome h1{font:800 34px/1.08 'Baloo 2',sans-serif;letter-spacing:-.65px;text-align:center;margin:27px 0 12px}
+.intro-copy,.ob-s-welcome .sub{font-size:15px;line-height:1.5;text-align:center;color:var(--muted);margin:0 auto 22px;max-width:300px}
+.intro-actions .btn,.ob-s-welcome .ob-foot .btn{width:100%;min-height:52px}
+.intro-actions .textbtn,.ob-s-welcome .ob-foot .textbtn{display:block;width:100%;min-height:44px;margin-top:7px}
+.intro-hint{text-align:center;color:var(--muted);font-size:11px;margin:13px 0 0}
+.intro-portrait{height:270px;width:100%;object-fit:contain;display:block;margin-top:8px}
+.ob-s-welcome .ob-center{flex:none;padding:0}
+.ob-s-welcome .ob-foot{position:static;margin-top:20px}
+.wrap:has(.intro),.wrap:has(.ob-s-welcome){padding-bottom:32px}
+.intro .scene{height:310px;position:relative;isolation:isolate;margin-top:4px}
+.intro .halo{position:absolute;width:238px;height:238px;border:1px solid var(--st-line);border-radius:50%;left:50%;top:18px;transform:translateX(-50%)}
+.intro .halo:after{content:'';position:absolute;inset:25px;border:1px solid var(--st-line);border-radius:50%}
+.intro .sample{position:absolute;top:10px;left:6px;font-size:11px;color:var(--st-muted)}
+.intro .piece{position:absolute;border:2px solid var(--st-ink);border-radius:16px;background:var(--st-card);box-shadow:3px 4px 0 var(--st-ink);padding:13px 15px;transform-origin:center;z-index:1}
+.intro .routine{left:0;top:41px;width:216px;transform:rotate(-5deg)}
+.intro .logging{right:0;top:111px;width:222px;transform:rotate(3deg)}
+.intro .weekly{left:17px;top:198px;width:205px;transform:rotate(-2deg);background:var(--st-soft)}
+.intro .smalllabel{font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--st-muted);font-weight:700}
+.intro .piece strong{display:block;font-size:17px;font-weight:700;margin-top:2px}
+.intro .setrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px}
+.intro .tick{width:28px;height:28px;background:var(--st-teal);color:var(--st-bg);display:grid;place-items:center;border-radius:50%}
+.intro .weekrow{display:flex;gap:7px;margin-top:7px;align-items:center}
+.intro .day{width:22px;height:22px;min-height:0;padding:0;margin:0;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--st-teal);color:var(--st-bg);font-size:12px;font-weight:700}
+.intro .day.empty{color:var(--st-muted);background:var(--st-card);border:1px solid var(--st-line)}
+.intro .weektext{font-size:12px;color:var(--st-teal);font-weight:700}
+.intro .spark-traveler{position:absolute;left:0;top:0;width:26px;height:26px;offset-path:var(--spark-path);offset-distance:100%;offset-rotate:0deg;z-index:0;pointer-events:none}
+.intro .spark-traveler{--spark-star:polygon(45.592% 9.632%,47.061% 7.234%,48.531% 5.796%,50.000% 5.316%,51.469% 5.796%,52.939% 7.234%,54.408% 9.632%,61.462% 23.444%,62.645% 25.410%,64.038% 27.085%,65.641% 28.472%,67.455% 29.568%,69.480% 30.375%,71.714% 30.893%,87.030% 33.333%,89.764% 33.990%,91.587% 34.943%,92.497% 36.192%,92.495% 37.738%,91.581% 39.580%,89.754% 41.718%,78.798% 52.695%,77.294% 54.427%,76.131% 56.270%,75.308% 58.223%,74.826% 60.287%,74.684% 62.462%,74.882% 64.747%,77.294% 80.067%,77.515% 82.871%,77.171% 84.898%,76.264% 86.150%,74.794% 86.626%,72.759% 86.325%,70.161% 85.249%,56.336% 78.221%,54.224% 77.326%,52.112% 76.790%,50.000% 76.611%,47.888% 76.790%,45.776% 77.326%,43.664% 78.221%,29.839% 85.249%,27.241% 86.325%,25.206% 86.626%,23.736% 86.150%,22.829% 84.898%,22.485% 82.871%,22.706% 80.067%,25.118% 64.747%,25.316% 62.462%,25.174% 60.287%,24.692% 58.223%,23.869% 56.270%,22.706% 54.427%,21.202% 52.695%,10.246% 41.718%,8.419% 39.580%,7.505% 37.738%,7.503% 36.192%,8.413% 34.943%,10.236% 33.990%,12.970% 33.333%,28.286% 30.893%,30.520% 30.375%,32.545% 29.568%,34.359% 28.472%,35.962% 27.085%,37.355% 25.410%,38.538% 23.444%);--spark-ball:polygon(44.681% 1.290%,46.641% 1.115%,48.372% 1.027%,50.000% 1.000%,51.628% 1.027%,53.359% 1.115%,55.319% 1.290%,69.418% 5.012%,72.407% 6.424%,75.597% 8.217%,78.801% 10.358%,81.828% 12.745%,84.519% 15.223%,86.786% 17.631%,94.683% 29.889%,95.454% 31.699%,96.073% 33.318%,96.602% 34.858%,97.079% 36.415%,97.530% 38.089%,97.970% 40.007%,98.787% 54.565%,98.368% 57.845%,97.648% 61.432%,96.602% 65.142%,95.268% 68.758%,93.742% 72.083%,92.153% 74.983%,82.935% 86.281%,81.452% 87.574%,80.103% 88.663%,78.801% 89.642%,77.469% 90.577%,76.016% 91.523%,74.328% 92.534%,60.734% 97.810%,57.486% 98.425%,53.851% 98.848%,50.000% 99.000%,46.149% 98.848%,42.514% 98.425%,39.266% 97.810%,25.672% 92.534%,23.984% 91.523%,22.531% 90.577%,21.199% 89.642%,19.897% 88.663%,18.548% 87.574%,17.065% 86.281%,7.847% 74.983%,6.258% 72.083%,4.732% 68.758%,3.398% 65.142%,2.352% 61.432%,1.632% 57.845%,1.213% 54.565%,2.030% 40.007%,2.470% 38.089%,2.921% 36.415%,3.398% 34.858%,3.927% 33.318%,4.546% 31.699%,5.317% 29.889%,13.214% 17.631%,15.481% 15.223%,18.172% 12.745%,21.199% 10.358%,24.403% 8.217%,27.593% 6.424%,30.582% 5.012%);}
+.intro .spark-shape{position:absolute;inset:0;background:var(--st-yellow);clip-path:var(--spark-star)}
+.intro .play .spark-traveler{animation:st-orbit 5s cubic-bezier(.33,0,.32,1) both}
+.intro .play .spark-shape{animation:st-morph 5s ease both}
+@keyframes st-orbit{0%,12%{offset-distance:0%}38%{offset-distance:32%}65%{offset-distance:67%}86%,100%{offset-distance:100%}}
+@keyframes st-morph{0%,77%{transform:scale(.43) rotate(-36deg);clip-path:var(--spark-ball);border-radius:50%}90%{transform:scale(1.15) rotate(8deg)}100%{transform:scale(1) rotate(0);clip-path:var(--spark-star);border-radius:0}}
+.intro .play .routine{animation:st-plan 5s ease both}
+.intro .play .logging{animation:st-log 5s ease both}
+.intro .play .weekly{animation:st-week 5s ease both}
+.intro .play .tick{animation:st-tick 5s ease both}
+@keyframes st-plan{0%{transform:translateY(13px) rotate(-9deg);opacity:.2}18%,100%{transform:translateY(0) rotate(-5deg);opacity:1}}
+@keyframes st-log{0%,15%{transform:translate(20px,10px) rotate(7deg);opacity:0}38%,100%{transform:translate(0,0) rotate(3deg);opacity:1}}
+@keyframes st-week{0%,40%{transform:translateY(16px) rotate(-6deg);opacity:0}67%,100%{transform:translateY(0) rotate(-2deg);opacity:1}}
+@keyframes st-tick{0%,32%{transform:scale(.2);opacity:0}43%{transform:scale(1.18);opacity:1}49%,100%{transform:scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){.intro .play *,.intro .play *:after{animation:none!important}}
+@media(max-width:380px){.intro h1,.ob-s-welcome h1{font-size:29px}.intro .scene{height:299px}.intro .routine{width:202px}.intro .logging{width:206px}.intro .weekly{left:6px}}

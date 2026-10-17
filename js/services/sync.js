@@ -255,13 +255,13 @@ export const wantsLocalMode = () => lsGet(KEYS.localMode) === '1';
 export function enterLocalMode() {
   log.debug('local mode on');
   lsSet(KEYS.localMode, '1');
-  setSession({ localMode: true, user: null, mode: 'app' });
   let data = readJSON(KEYS.localV2);
   if (!data) {
     const v1 = readJSON(KEYS.local);
     data = hasV1Data(v1) ? convertV1(v1) : {};
   }
   loadState(data, 'load');
+  setSession({ localMode: true, user: null, mode: 'app' });
 }
 
 export function exitLocalMode() {

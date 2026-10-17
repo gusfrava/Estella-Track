@@ -1,5 +1,23 @@
 // Spanish strings (default language). Keys must match en.js.
 export default {
+  opening: {
+    "sample": "Vista de ejemplo",
+    "routineLabel": "Tu rutina",
+    "routineName": "Cuerpo completo · A",
+    "setLabel": "Una serie a la vez",
+    "setName": "8 repeticiones listas",
+    "weekLabel": "Cada entrenamiento cuenta",
+    "weekName": "Tu meta semanal",
+    "titleRoutine": "Crea tu rutina.",
+    "titleProgress": "Mira tu progreso.",
+    "body": "Registra tus entrenamientos, retoma donde lo dejaste y sigue adelante con Estella.",
+    "start": "Vamos a empezar",
+    "signin": "Ya tengo una cuenta",
+    "local": "Pruébala en este dispositivo. Crea tu cuenta después.",
+    "invitation": "¡Gracias por estar aquí! ¿Te hago unas preguntas para preparar una rutina inicial según tus objetivos y tu horario?",
+    "accept": "Sí, vamos",
+    "ownRoutine": "Prefiero crear mi propia rutina"
+},
   language:'Idioma',
   yourRoutines:'Tus rutinas',
   weekOf:(a,b)=>`Semana del ${a} al ${b}`,

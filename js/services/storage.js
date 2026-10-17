@@ -2,6 +2,7 @@
 // All reads/writes are wrapped so a blocked or full storage never crashes the app.
 
 export const KEYS = {
+  opening: 'estellatrack.opening.v1', // 'pending' while viewing the opening; 'done' after choosing a route
   local: 'estellatrack.v1',            // v1 data from before accounts existed (moved into the first account that signs in)
   lang: 'estellatrack.lang',           // 'es' | 'en'
   localMode: 'estellatrack.localmode', // '1' when using the app without an account
