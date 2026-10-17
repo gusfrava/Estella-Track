@@ -64,6 +64,12 @@ test('new record detection from exercise history', () => {
   assert.deepStrictEqual(r.newRecord({ points: [p('2026-10-01', 50)] }, { points: [p('2026-10-01', 50), p('2026-10-13', 55)] }), { date: '2026-10-13' });
   assert.strictEqual(r.newRecord({ points: [p('2026-10-01', 50)] }, { points: [p('2026-10-01', 50), p('2026-10-13', 45)] }), null);
   assert.deepStrictEqual(r.newRecord({ points: [p('2026-10-01', 50)] }, { points: [p('2026-10-01', 50), p('2026-10-13', 50, 9)] }), { date: '2026-10-13' });
+  // reps logged without weight on a weighted lift: never a record, and the first weighted log after them is a first log
+  const reps = (d, n) => p(d, 0, n);
+  assert.strictEqual(r.newRecord({ points: [p('2026-10-01', 50)] }, { points: [p('2026-10-01', 50), reps('2026-10-13', 30)] }), null);
+  assert.strictEqual(r.newRecord({ points: [reps('2026-10-01', 10)] }, { points: [reps('2026-10-01', 10), p('2026-10-13', 20)] }), null);
+  assert.deepStrictEqual(r.newRecord({ points: [reps('2026-10-01', 10), p('2026-10-05', 20)] }, { points: [reps('2026-10-01', 10), p('2026-10-05', 20), p('2026-10-13', 22.5)] }), { date: '2026-10-13' });
+  assert.deepStrictEqual(r.newRecord(null, { points: [reps('2026-10-01', 10), reps('2026-10-13', 12)] }), { date: '2026-10-13' });   // all reps-only: a reps exercise
 });
 
 test('server streak matches the app rules (comodín saves a short week)', () => {

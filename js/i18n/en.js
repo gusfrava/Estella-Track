@@ -133,9 +133,16 @@ export default {
   },
   feelSound:'Sounds', feelSoundHint:'Soft sounds when you check sets, finish and earn badges', feelHaptics:'Vibration', feelHapticsHint:'A short buzz when you tap and complete things',
   tabsLabel:'Sections', tabRoutines:'Routines', tabProgress:'Progress',
-  progressTitle:'Progress', recordsSub:'Your personal records: the best you’ve done on each exercise.',
+  progressTitle:'Progress', recordsTitle:'Personal bests', firstLog:'First log', recordsSub:'Your personal records: the best you’ve done on each exercise.',
   noRecordsTitle:'No records yet', noRecordsBody:'Finish exercises in your routines and your best for each one shows up here.',
   recordsThisMonth:n=>n===1?'1 new record this month. Keep it up!':`${n} new records this month. Keep it up!`,
+  ov:{
+    title:'Your training', label:'Overall stats', monthWorkouts:n=>n===1?'workout this month':'workouts this month', goalWeeks:n=>n===1?'week you hit your goal':'weeks you hit your goal',
+    time:'trained in total', volume:'lifted in total',
+    like:(n,id)=>{ const [one,many]=({ car:['a car','cars'], elephant:['an African elephant','African elephants'], bus:['a city bus','city buses'], whale:['a blue whale','blue whales'],
+      liberty:['the Statue of Liberty','Statues of Liberty'], eiffel:['the Eiffel Tower','Eiffel Towers'], empire:['the Empire State Building','Empire State Buildings'] })[id];
+      return `That’s like lifting ${n<1?`${Math.round(n*100)}% of ${one}`:n===1?one:`${n} ${many}`}`; },
+  },
   newRecord:'New', newRecordToast:'New record!', repU:'rep',
   streakZero:'Start your streak', streakLabel:'Streak', streakWeeks:n=>n===1?'1 week in a row':`${n} weeks in a row`,
   streakKept:'This week already counts. Keep it up!', streakKeepIt:'Train this week to keep it',
