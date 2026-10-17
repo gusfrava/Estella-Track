@@ -85,7 +85,7 @@ function BadgePoints({ value, earned, label }) {
 // The full badge list (the website's "Your badges" sheet).
 export function BadgesScreen() {
   const { L } = useApp(), P = L.pts, badges = badgeList(), [how,setHow] = useState(false);
-  return <RouteSheet title={P.allTitle}><Txt muted style={{ marginTop: -16 }}>{P.earned(earnedCount(),badges.length)} · {P.points(points())}</Txt>
+  return <RouteSheet title={P.allTitle} sub={`${P.earned(earnedCount(),badges.length)} · ${P.points(points())}`}>
     <View style={{ gap: 12 }}>{badges.map(b => <View key={b.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}><Icon name={'badge-'+b.id} size={72} locked={!b.earned} />
       <View style={{ flex: 1, gap: 2 }}><Row style={{ justifyContent: 'flex-start', alignItems: 'flex-start', gap: 8 }}><Txt bold size={17} style={{ flexShrink: 1, color: b.earned ? colors.ink : colors.muted }}>{P.names[b.id] || b.id}</Txt><BadgePoints value={TIER_POINTS[b.tier]} earned={!!b.earned} label={P.gained} /></Row><Txt muted size={14.4}>{(P.desc[b.counter] || (() => ''))(b.at)}</Txt>
         {b.earned ? <Txt muted size={13.6}>{P.earnedOn(fmtDay(new Date(b.earned)))}</Txt> : <><View style={{ height: 8, marginTop: 4, borderRadius: 99, backgroundColor: hairline, overflow: 'hidden' }}><View style={{ width: `${Math.round(b.progress * 100)}%`, height: '100%', backgroundColor: colors.orange }} /></View><Txt muted size={13.6}>{Math.min(b.count, b.at)}/{b.at}</Txt></>}</View></View>)}</View>

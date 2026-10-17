@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, Share, TextInput, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
-import { Bust, Button, Icon, Page, Row, Sheet, Title, Txt, s as ui, toast } from '@/components/native-ui';
+import { Bust, Button, Icon, initialLine, Page, Row, Sheet, Title, Txt, s as ui, toast } from '@/components/native-ui';
 import { useApp } from '@/providers/AppProvider';
 import * as social from '@/core/state/social';
 import * as friends from '@/core/controllers/friends';
@@ -51,7 +51,7 @@ export default function Friends() {
   </Page>;
 }
 
-const Avatar = ({ p, big = false }) => <View style={[s.avatar, big && { width: 76, height: 76, borderRadius: 38 }]}><Txt bold size={big ? 32 : 18.4} style={{ lineHeight: big ? 36 : 22 }}>{([...(text(p.displayName) || text(p.username))][0] || '?').toUpperCase()}</Txt></View>;
+const Avatar = ({ p, big = false }) => <View style={[s.avatar, big && { width: 76, height: 76, borderRadius: 38 }]}><Txt bold size={big ? 32 : 18.4} style={{ lineHeight: initialLine(big ? 32 : 18.4) }}>{([...(text(p.displayName) || text(p.username))][0] || '?').toUpperCase()}</Txt></View>;
 const PersonText = ({ p }) => <View style={{ flex: 1, minWidth: 0 }}><Txt bold size={16.3} numberOfLines={1}>{personName(p)}</Txt>{!!p.displayName && <Txt muted size={14} numberOfLines={1}>@{p.username}</Txt>}</View>;
 
 // "2/3 days · streak 4 wk." under their name; '' while loading or when there's nothing to show.

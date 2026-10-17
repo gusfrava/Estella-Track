@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { AccessibilityInfo, Animated, KeyboardAvoidingView, Modal, PanResponder, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { SvgXml } from 'react-native-svg';
@@ -17,6 +17,7 @@ import { getWallet, points } from '@/core/state/rewards';
 import { fmtNum } from '@/core/utils/format';
 import { pendingIncoming, unseenCheers } from '@/core/state/social';
 import { cheersSeenAt } from '@/core/controllers/friends';
+import { avatarById, avatarPath } from '@/core/data/avatars';
 
 // Names like "Piernas+Quads" have no spaces, so Android would split them anywhere ("Piernas+Qua / ds").
 // A zero-width space after + / & between letters lets the line break there instead.
@@ -59,19 +60,44 @@ export function Field({ label, value, onChangeText, number = false, trailing, st
 export function Tabs({ items, value, onChange, compact = false, style }) { return <View accessibilityRole="tablist" style={[s.segments, compact ? { alignSelf: 'flex-start' } : { alignSelf: 'stretch' }, style]}>{items.map(([key, text]) => <Pressable key={key} accessibilityRole="tab" accessibilityState={{ selected: value === key }} aria-selected={value === key} onPress={withFeel(() => onChange(key), value === key ? 'tap' : 'select')} style={[compact ? { paddingVertical: 6, paddingHorizontal: 12 } : { flex: 1, paddingVertical: 12, paddingHorizontal: 8 }, { alignItems: 'center', backgroundColor: value === key ? c.ink : 'transparent' }]}><Txt bold size={compact ? 13.5 : 17} style={{ color: value === key ? c.background : c.ink }}>{text}</Txt></Pressable>)}</View>; }
 export function Check({ selected, onPress, label }) { return <Pressable accessibilityRole="checkbox" accessibilityLabel={label} accessibilityState={{ checked: selected }} aria-checked={selected} onPress={withFeel(onPress)} style={[s.check, { backgroundColor: selected ? c.teal : c.card }]}><Txt bold>{selected ? '✓' : ''}</Txt></Pressable>; }
 export function Progress({ value, max = 100, mini = false }) { return <View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max, now: value }} style={[s.progress, mini && s.mini]}><View style={{ height: '100%', width: `${max ? Math.min(100, value / max * 100) : 0}%`, backgroundColor: c.orange }} /></View>; }
-// Website appHeader: brand, points (once the wallet has loaded) and the account initial ("·" in local mode).
+// A single letter in a round avatar: Baloo is centered only at its natural line height (1.6x, the website's line-height:
+// normal); the tighter default makes iOS draw it high.
+export const initialLine = size => Math.round(size * 1.6);
+// Website ui/avatar.js accountAvatarHTML: the chosen account avatar if it's free or owned, otherwise the initial.
+export function AccountAvatar({ initial, size = 40 }) {
+  const wallet = getWallet(), avatar = avatarById(wallet?.avatarId);
+  if (avatar && (!avatar.price || wallet?.avatars?.[avatar.id])) return <Image source={avatarPath(avatar.id)} style={{ width: '100%', height: '100%', borderRadius: size / 2 }} />;
+  return <Txt bold size={size * .44} style={{ lineHeight: initialLine(size * .44) }}>{initial}</Txt>;
+}
+// Website appHeader: brand, points (once the wallet has loaded) and the account avatar ("·" in local mode).
 export function Header() {
   const { L, state, session } = useApp(), wallet = getWallet() !== undefined, n = points();
   const initial = session.localMode ? '·' : ((state.profile?.displayName || session.user?.displayName || state.profile?.username || session.user?.email || '?').trim()[0] || '?').toUpperCase();
-  return <Row><Row style={{ gap: 8 }}><Icon name="star" /><Txt bold size={17.5}>Estella</Txt></Row><Row>{wallet && <Pressable accessibilityRole="button" accessibilityLabel={`${L.pts.points(n)} · ${L.pts.title}`} onPress={() => router.push('/badges')} style={s.points}><Icon name="ui-star" size={19} /><Txt size={13}><Txt bold size={13}>{fmtNum(n)}</Txt> {L.pts.pointsWord(n)}</Txt></Pressable>}<Pressable accessibilityRole="button" accessibilityLabel={L.account} onPress={() => router.push('/account')} style={s.avatar}><Txt bold size={17.5} style={{ lineHeight: 20 }}>{initial}</Txt></Pressable></Row></Row>;
+  return <Row><Row style={{ gap: 8 }}><Icon name="star" /><Txt bold size={17.5}>Estella</Txt></Row><Row>{wallet && <Pressable accessibilityRole="button" accessibilityLabel={`${L.pts.points(n)} · ${L.pts.title}`} onPress={() => router.push('/badges')} style={s.points}><Icon name="ui-star" size={19} /><Txt size={13}><Txt bold size={13}>{fmtNum(n)}</Txt> {L.pts.pointsWord(n)}</Txt></Pressable>}<Pressable accessibilityRole="button" accessibilityLabel={L.account} onPress={() => router.push('/account')} style={[s.avatar, { overflow: 'hidden' }]}>{session.localMode ? <Txt bold size={17.5} style={{ lineHeight: initialLine(17.5) }}>{initial}</Txt> : <AccountAvatar initial={initial} />}</Pressable></Row></Row>;
 }
 export function Page({ children, tab, header = true, back = false, footer, fab }) { const { L, error, clearError } = useApp(); return <SafeAreaView style={s.safe}><KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[s.page, tab && { paddingBottom: fab ? 190 : 110 }, footer && { paddingBottom: 8 }]}>{header && <Header />}{back && <Button small secondary title={'‹ ' + L.back} onPress={() => router.canGoBack() ? router.back() : router.replace('/')} />}{!!error && <Pressable accessibilityRole="button" onPress={clearError}><Txt style={{ color: '#C8371F' }}>{error}</Txt></Pressable>}{children}</ScrollView>{footer && <View style={s.footer}>{footer}</View>}</KeyboardAvoidingView>{fab && <Pressable accessibilityRole="button" accessibilityLabel={fab.label} onPress={fab.onPress} style={({ pressed }) => [s.fab, pressed && s.pressed]}><Icon name="ui-plus" size={32} /></Pressable>}{tab && <View style={s.tabs}>{[['home','/', 'ui-dumbbellTab',L.tabRoutines], ['progress','/progress','ui-trophy',L.tabProgress],['friends','/friends','ui-users',L.tabFriends]].map(([key,url,icon,label]) => <Pressable key={key} accessibilityRole="tab" accessibilityState={{ selected: tab === key }} onPress={() => router.replace(url)} style={({ pressed }) => [{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2 }, pressed && { transform: [{ scale: .92 }] }]}><View style={tab === key ? s.tabOn : { padding: 4 }}><Icon name={icon} size={26} /></View><Txt bold size={13.5} style={{ color: tab === key ? c.ink : c.muted }}>{label}</Txt>{key === 'friends' && <TabBadge active={tab === 'friends'} />}</Pressable>)}</View>}</SafeAreaView>; }
 // Friend requests to answer + cheers not seen yet (not while on Friends), as on the website's tab bar.
 function TabBadge({ active }) { const { L, session } = useApp(); if (session.localMode || !session.user) return null; const n = pendingIncoming().length + (active ? 0 : unseenCheers(cheersSeenAt())); return n ? <View accessibilityLabel={L.fr.badgeLabel(n)} style={s.tabBadge}><Txt bold size={12} style={{ color: c.card, lineHeight: 14 }}>{n}</Txt></View> : null; }
 // Website .sheet: grab bar, round close button, title, scrolling body. Sheet opens over the screen; RouteSheet is a whole route (account, badges).
-function SheetPanel({ title, children, onClose }) { const { L } = useApp(), insets = useSafeAreaInsets(); return <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[s.sheet, { paddingBottom: 24 + insets.bottom }]}><View style={s.sheetTop}><View style={s.grab} /><Pressable accessibilityRole="button" accessibilityLabel={L.close} onPress={onClose} style={s.sheetX}><Txt bold size={22} style={{ lineHeight: 26 }}>×</Txt></Pressable></View>{!!title && <Txt bold size={26.4} style={{ lineHeight: 30, paddingRight: 40, marginBottom: 18 }}>{title}</Txt>}<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 20, paddingBottom: 12, paddingRight: 5 }}>{children}</ScrollView></KeyboardAvoidingView>; }
-export function Sheet({ title, children, onClose }) { const { L } = useApp(); return <Modal transparent animationType="slide" onRequestClose={onClose}><View style={s.shade}><Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel={L.close} /><SheetPanel title={title} onClose={onClose}>{children}</SheetPanel><ToastHost /></View></Modal>; }
-export function RouteSheet({ title, children }) { const { L } = useApp(), close = () => router.canGoBack() ? router.back() : router.replace('/'); return <View style={s.shade}><Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel={L.close} /><SheetPanel title={title} onClose={close}>{children}</SheetPanel></View>; }
+// The subtitle sits outside the scroll area so it can't be clipped. Dragging the header (grab bar and title) down
+// closes the sheet, like a native one; a short drag springs back.
+const AnimatedKAV = Animated.createAnimatedComponent(KeyboardAvoidingView);
+function useSwipeClose(onClose) {
+  const [y] = useState(() => new Animated.Value(0));
+  const pan = useMemo(() => PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 6 && Math.abs(g.dy) > Math.abs(g.dx),
+    onPanResponderMove: (_, g) => y.setValue(Math.max(0, g.dy)),
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 110 || g.vy > 0.9) Animated.timing(y, { toValue: 900, duration: 180, useNativeDriver: true }).start(() => onClose());
+      else Animated.spring(y, { toValue: 0, bounciness: 4, useNativeDriver: true }).start();
+    },
+    onPanResponderTerminate: () => Animated.spring(y, { toValue: 0, useNativeDriver: true }).start(),
+  }), [y, onClose]);
+  return [y, pan.panHandlers];
+}
+function SheetPanel({ title, sub, children, onClose }) { const { L } = useApp(), insets = useSafeAreaInsets(), [y, drag] = useSwipeClose(onClose); return <AnimatedKAV behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[s.sheet, { paddingBottom: 24 + insets.bottom, transform: [{ translateY: y }] }]}><View {...drag}><View style={s.sheetTop}><View style={s.grab} /><Pressable accessibilityRole="button" accessibilityLabel={L.close} onPress={onClose} style={s.sheetX}><Txt bold size={22} style={{ lineHeight: 26 }}>×</Txt></Pressable></View>{!!title && <Txt bold size={26.4} style={{ lineHeight: 30, paddingRight: 40, marginBottom: sub ? 4 : 18 }}>{title}</Txt>}{!!sub && <Txt muted style={{ marginBottom: 18 }}>{sub}</Txt>}</View><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 20, paddingBottom: 12, paddingRight: 5 }}>{children}</ScrollView></AnimatedKAV>; }
+export function Sheet({ title, sub, children, onClose }) { const { L } = useApp(); return <Modal transparent animationType="slide" onRequestClose={onClose}><View style={s.shade}><Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel={L.close} /><SheetPanel title={title} sub={sub} onClose={onClose}>{children}</SheetPanel><ToastHost /></View></Modal>; }
+export function RouteSheet({ title, sub, children }) { const { L } = useApp(), close = () => router.canGoBack() ? router.back() : router.replace('/'); return <View style={s.shade}><Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel={L.close} /><SheetPanel title={title} sub={sub} onClose={close}>{children}</SheetPanel></View>; }
 function useReduceMotion() {
   const [reduce, setReduce] = useState(true);
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(setReduce); const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduce); return () => sub.remove(); }, []);
