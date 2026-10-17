@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, KeyboardAvoidingView, Modal, PanResponder, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { AccessibilityInfo, Animated, BackHandler, KeyboardAvoidingView, Modal, PanResponder, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { SvgXml } from 'react-native-svg';
@@ -95,8 +95,16 @@ function useSwipeClose(onClose) {
   }), [y, onClose]);
   return [y, pan.panHandlers];
 }
-function SheetPanel({ title, sub, children, onClose }) { const { L } = useApp(), insets = useSafeAreaInsets(), [y, drag] = useSwipeClose(onClose); return <AnimatedKAV behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[s.sheet, { paddingBottom: 24 + insets.bottom, transform: [{ translateY: y }] }]}><View {...drag}><View style={s.sheetTop}><View style={s.grab} /><Pressable accessibilityRole="button" accessibilityLabel={L.close} onPress={onClose} style={s.sheetX}><Txt bold size={22} style={{ lineHeight: 26 }}>×</Txt></Pressable></View>{!!title && <Txt bold size={26.4} style={{ lineHeight: 30, paddingRight: 40, marginBottom: sub ? 4 : 18 }}>{title}</Txt>}{!!sub && <Txt muted style={{ marginBottom: 18 }}>{sub}</Txt>}</View><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 20, paddingBottom: 12, paddingRight: 5 }}>{children}</ScrollView></AnimatedKAV>; }
-export function Sheet({ title, sub, children, onClose }) { const { L } = useApp(); return <Modal transparent animationType="slide" onRequestClose={onClose}><View style={s.shade}><Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel={L.close} /><SheetPanel title={title} sub={sub} onClose={onClose}>{children}</SheetPanel><ToastHost /></View></Modal>; }
+function SheetPanel({ title, sub, children, onClose }) { const { L } = useApp(), insets = useSafeAreaInsets(), [y, drag] = useSwipeClose(onClose); return <AnimatedKAV behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[s.sheet, { paddingBottom: 24 + insets.bottom, transform: [{ translateY: y }] }]}><View {...drag}><View style={s.sheetTop}><View style={s.grab} /><Pressable accessibilityRole="button" accessibilityLabel={L.close} onPress={onClose} style={s.sheetX}><Icon name="ui-close" size={20} /></Pressable></View>{!!title && <Txt bold size={26.4} style={{ lineHeight: 30, paddingRight: 40, marginBottom: sub ? 4 : 18 }}>{title}</Txt>}{!!sub && <Txt muted style={{ marginBottom: 18 }}>{sub}</Txt>}</View><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 20, paddingBottom: 12, paddingRight: 5 }}>{children}</ScrollView></AnimatedKAV>; }
+// Website ui/sheet.js shows one sheet at a time: a sheet opened from a route sheet (Account's avatar, profile…) takes
+// its place instead of stacking on it; closing it (×, swipe, back button) goes back to the route sheet.
+const InPlace = createContext(false);
+export const InPlaceSheets = ({ children }) => <InPlace.Provider value>{children}</InPlace.Provider>;
+export function Sheet({ title, sub, children, onClose }) {
+  const { L } = useApp(), inPlace = useContext(InPlace);
+  useEffect(() => { if (!inPlace) return; const back = BackHandler.addEventListener('hardwareBackPress', () => { onClose(); return true; }); return () => back.remove(); }, [inPlace, onClose]);
+  if (inPlace) return <View style={s.shade}><Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel={L.close} /><SheetPanel title={title} sub={sub} onClose={onClose}>{children}</SheetPanel></View>;
+  return <Modal transparent animationType="slide" onRequestClose={onClose}><View style={s.shade}><Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel={L.close} /><SheetPanel title={title} sub={sub} onClose={onClose}>{children}</SheetPanel><ToastHost /></View></Modal>; }
 export function RouteSheet({ title, sub, children }) { const { L } = useApp(), close = () => router.canGoBack() ? router.back() : router.replace('/'); return <View style={s.shade}><Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel={L.close} /><SheetPanel title={title} sub={sub} onClose={close}>{children}</SheetPanel></View>; }
 function useReduceMotion() {
   const [reduce, setReduce] = useState(true);
