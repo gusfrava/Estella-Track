@@ -15,7 +15,7 @@ import { colors } from '@/theme/tokens';
 import { googleSignInAvailable } from '@/services/google-sign-in';
 import { RevenueCatStatus } from '@/components/RevenueCatStatus';
 import { canVibrate, feel, feelPrefs, setFeelPref } from '@/services/feel';
-const SITE = 'https://gusfrava.github.io/Estella-Track/';
+const SITE = 'https://estellatrack.app/';
 const danger = '#C8371F';
 
 // Website sheets/account.js: who you are, language, profile and privacy, your data, sign out and delete.

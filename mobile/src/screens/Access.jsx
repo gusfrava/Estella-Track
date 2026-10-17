@@ -10,7 +10,7 @@ import { LEGAL } from '@/core/config';
 import { cleanUsername, usernameProblem } from '@/core/utils/username';
 import * as onboarding from '@/core/controllers/onboarding';
 import Onboarding from './Onboarding';
-const legalUrl = file => `https://gusfrava.github.io/Estella-Track/legal/${file}.html`;
+const legalUrl = file => `https://estellatrack.app/legal/${file}.html`;
 // Translations carry links as <a href="…">text</a>: show them as tappable text.
 const withLinks = html => html.split(/(<a href="[^"]*"[^>]*>.*?<\/a>)/).map((part, i) => { const m = part.match(/<a href="([^"]*)"[^>]*>(.*?)<\/a>/); return m ? <Txt key={i} size={13.6} style={{ color: colors.tealInk, fontWeight: '600' }} onPress={() => Linking.openURL(m[1])}>{m[2]}</Txt> : part; });
 export function Consent({ onAccept }) {

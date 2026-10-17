@@ -98,10 +98,12 @@ export async function remove(uid) {
 }
 
 // ---------- invite link ----------
-// https://…/?add=username — opens Estella and shows that person with an "Añadir" button.
+// https://estellatrack.app/invite?add=username — phones with the app open it there and show that person with an
+// "Añadir" button; everyone else lands on the website's invite page. The app also accepts the older ?add= links.
+export const INVITE_URL = 'https://estellatrack.app/invite';
 export function inviteLink() {
   const u = (me() || {}).username;
-  return u ? `${location.origin}${location.pathname}?add=${encodeURIComponent(u)}` : '';
+  return u ? `${INVITE_URL}?add=${encodeURIComponent(u)}` : '';
 }
 
 // The ?add= of the link the app was opened with (read once, then removed from the address bar).
