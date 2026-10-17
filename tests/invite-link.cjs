@@ -6,6 +6,7 @@ const assert = require('node:assert/strict');
   assert.equal(inviteFrom('https://gusfrava.github.io/Estella-Track/?add=leo_trains'), 'leo_trains');
   assert.equal(inviteFrom('https://estellatrack.app/?add=sofi%2Emoves#top'), 'sofi.moves');
   assert.equal(inviteFrom('/friends?tab=1&add=sam'), 'sam');
+  assert.equal(inviteFrom('https://estellatrack.app/invite?add=maya.lifts'), 'maya.lifts');   // the link Invite friends shares
   // Not an invite.
   for (const link of ['/', '/?foo=1', '/routine/abc', 'estellatrack://', '', null, undefined, '?adder=x', '#?add=x']) assert.equal(inviteFrom(link), '', String(link));
   // Cleaned like the website's findByUsername; broken encodings are ignored.

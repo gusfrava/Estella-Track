@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.gusfrava.estellatrack",
-      "googleServicesFile": "./config/firebase/GoogleService-Info.plist"
+      "googleServicesFile": "./config/firebase/GoogleService-Info.plist",
+      "associatedDomains": ["applinks:estellatrack.app"]
     },
     "android": {
       "package": "com.gusfrava.estellatrack",
@@ -19,7 +20,15 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "googleServicesFile": "./config/firebase/google-services.json"
+      "googleServicesFile": "./config/firebase/google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [{ "scheme": "https", "host": "estellatrack.app", "pathPrefix": "/invite" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "output": "single",
