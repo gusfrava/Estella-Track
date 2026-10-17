@@ -1,4 +1,4 @@
-import { openSheet, replaceSheet, onSheetClose } from '../ui/sheet.js';
+import { openSheet, onSheetClose } from '../ui/sheet.js';
 import { getLang } from '../i18n/index.js';
 import { esc } from '../utils/format.js';
 import { AVATARS, avatarPath } from '../data/avatars.js';
@@ -38,23 +38,50 @@ export function openAvatarsSheet() {
     const wallet = getWallet(), loaded = wallet !== undefined;
     const balance = Number(wallet?.points) || 0;
     const selected = wallet?.avatarId || 'initial';
+    // Keep image nodes, focus and scroll position throughout save/snapshot updates.
+    if (!first) {
+      if (!active || !currentSheet?.isConnected) return;
+      currentSheet.querySelector('[data-avatar-balance]').textContent = loaded ? `${L.balance}: ${balance} ${L.points}` : L.loading;
+      currentSheet.querySelector('[data-avatar-status]').textContent = busy ? L.saving : message;
+      for (const a of AVATARS) {
+        const button = currentSheet.querySelector(`[data-avatar="${a.id}"]`);
+        const locked = a.price > 0 && !wallet?.avatars?.[a.id];
+        button.disabled = busy || !loaded || (locked && balance < a.price);
+        button.classList.toggle('is-locked', locked);
+        button.setAttribute('aria-pressed', String(selected === a.id));
+        button.querySelector('[data-avatar-label]').textContent = selected === a.id ? L.selected : locked ? `🔒 ${a.price} ${L.points}` : a.price ? L.owned : L.free;
+        button.querySelector('small').textContent = locked && loaded && balance < a.price ? L.missing(a.price - balance) : '';
+      }
+      currentSheet.querySelector('[data-initial]').disabled = busy || !loaded;
+      const host = currentSheet.querySelector('[data-avatar-confirm]');
+      if (host.dataset.avatarConfirm !== (confirm || '')) {
+        host.dataset.avatarConfirm = confirm || '';
+        host.innerHTML = confirm ? `<div class="avatar-confirm"><img src="${avatarPath(confirm)}" width="112" height="112" alt=""><p>${L.confirm}</p>
+          <button class="btn" data-buy>${L.buy}</button><button class="textbtn" data-cancel>${L.cancel}</button></div>` : '';
+        if (confirm) {
+          host.querySelector('[data-buy]').onclick = () => save(confirm, true);
+          host.querySelector('[data-cancel]').onclick = () => { confirm = null; render(); };
+        }
+      }
+      host.querySelectorAll('button').forEach(button => { button.disabled = busy; });
+      return;
+    }
     const group = premium => AVATARS.filter(a => !!a.price === premium).map(a => {
       const locked = a.price > 0 && !wallet?.avatars?.[a.id];
       const disabled = busy || !loaded || (locked && balance < a.price);
       const status = selected === a.id ? L.selected : locked ? `🔒 ${a.price} ${L.points}` : a.price ? L.owned : L.free;
       return `<button class="avatar-choice ${locked ? 'is-locked' : ''}" data-avatar="${a.id}" aria-pressed="${selected === a.id}" ${disabled ? 'disabled' : ''}>
-        <img src="${avatarPath(a.id)}" alt="" width="128" height="128"><b>${a.name}</b><span>${status}</span>
-        ${locked && loaded && balance < a.price ? `<small>${L.missing(a.price - balance)}</small>` : ''}</button>`;
+        <img src="${avatarPath(a.id)}" alt="" width="128" height="128"><b>${a.name}</b><span data-avatar-label>${status}</span>
+        <small>${locked && loaded && balance < a.price ? L.missing(a.price - balance) : ''}</small></button>`;
     }).join('');
     const html = `<h2>${L.title}</h2><p>${L.intro}</p>
-      <p class="avatar-balance">${loaded ? `${L.balance}: <b>${balance} ${L.points}</b>` : L.loading}</p>
-      <div role="status" aria-live="polite">${esc(busy ? L.saving : message)}</div>
-      ${confirm ? `<div class="avatar-confirm"><img src="${avatarPath(confirm)}" width="112" height="112" alt=""><p>${L.confirm}</p>
-        <button class="btn" data-buy ${busy ? 'disabled' : ''}>${L.buy}</button><button class="textbtn" data-cancel ${busy ? 'disabled' : ''}>${L.cancel}</button></div>` : ''}
+      <p class="avatar-balance" data-avatar-balance>${loaded ? `${L.balance}: ${balance} ${L.points}` : L.loading}</p>
+      <div class="avatar-status" data-avatar-status role="status" aria-live="polite">${esc(busy ? L.saving : message)}</div>
+      <div data-avatar-confirm=""></div>
       <h3>${L.release}</h3><div class="avatar-grid">${group(false)}</div>
       <h3>${L.halloween}</h3><div class="avatar-grid">${group(true)}</div>
       <button class="btn secondary" data-initial ${busy || !loaded ? 'disabled' : ''}>${L.initial}</button>`;
-    currentSheet = (first ? openSheet : replaceSheet)(html, sheet => {
+    currentSheet = openSheet(html, sheet => {
       sheet.querySelectorAll('[data-avatar]').forEach(button => { button.onclick = () => {
         const id = button.dataset.avatar, avatar = AVATARS.find(a => a.id === id);
         if (avatar.price && !getWallet()?.avatars?.[id]) { confirm = id; message = ''; render(); }
@@ -69,6 +96,7 @@ export function openAvatarsSheet() {
   };
   const save = async (id, purchase) => {
     if (busy) return;
+    if (!purchase && (getWallet()?.avatarId || 'initial') === id) return;
     if (!navigator.onLine) { message = L.offline; render(); return; }
     busy = true; message = ''; render();
     try { await chooseAvatar(id, purchase); confirm = null; message = L.success; }

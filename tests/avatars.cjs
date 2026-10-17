@@ -4,7 +4,12 @@ const fs = require('node:fs');
  const { AVATARS } = await import('../js/data/avatars.js');
  const { PRICES } = require('../functions/avatars');
  const { setWallet } = await import('../js/state/rewards.js');
- const { accountAvatarHTML } = await import('../js/ui/avatar.js');
+ const { accountAvatarHTML, isAvatarOnlyWalletChange } = await import('../js/ui/avatar.js');
+ const before = {points:100,avatarId:'release-estella',updatedAt:1,badges:{}};
+ assert.equal(isAvatarOnlyWalletChange({...before,avatarId:'release-diego',updatedAt:2},before),true);
+ assert.equal(isAvatarOnlyWalletChange({...before,points:0},before),false);
+ assert.equal(isAvatarOnlyWalletChange({...before,badges:{w1:123}},before),false);
+ assert.equal(isAvatarOnlyWalletChange(before,undefined),false);
  for (const avatar of AVATARS) {
   assert.equal(avatar.price, PRICES[avatar.id]);
   assert(fs.statSync(`icons/avatars/${avatar.id}.webp`).size > 1000);
