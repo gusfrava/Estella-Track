@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const mobile = path.resolve(__dirname, '..');
 const root = path.dirname(mobile);
 const target = path.join(mobile, 'src/core');
-const files = ['billing-config.js', 'services/billing-session.js', 'config.js', 'state/model.js', 'state/store.js', 'state/selectors.js', 'state/session.js', 'state/social.js', 'state/rewards.js', 'state/recap.js', 'utils/data.js', 'utils/dates.js', 'utils/format.js', 'utils/log.js', 'utils/youtube.js', 'utils/username.js', 'i18n/index.js', 'i18n/en.js', 'i18n/es.js', 'data/badges.js', 'data/badge-art.js', 'services/starter-plan.js', 'controllers/onboarding.js', 'controllers/friends.js'];
+const files = ['billing-config.js', 'services/billing-session.js', 'config.js', 'state/model.js', 'state/store.js', 'state/selectors.js', 'state/session.js', 'state/social.js', 'state/rewards.js', 'state/recap.js', 'state/progress.js', 'utils/data.js', 'utils/dates.js', 'utils/format.js', 'utils/log.js', 'utils/youtube.js', 'utils/username.js', 'i18n/index.js', 'i18n/en.js', 'i18n/es.js', 'data/badges.js', 'data/badge-art.js', 'services/starter-plan.js', 'controllers/onboarding.js', 'controllers/friends.js'];
 for (const file of files) {
   const output = path.join(target, file);
   fs.mkdirSync(path.dirname(output), { recursive: true });

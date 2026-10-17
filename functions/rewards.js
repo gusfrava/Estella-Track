@@ -108,6 +108,7 @@ function pointScore(p, type) {
   if (type === 'time') return p.t != null ? [Number(p.t)] : null;
   if (p.t != null) return null;
   if (type === 'reps') return [Number(p.r)];
+  if (!(Number(p.w) > 0)) return null;   // reps logged without a weight on a weighted lift: never a record
   return [p.u === 'lb' ? Number(p.w) * LB : Number(p.w), Number(p.r)];
 }
 const beats = (a, b) => { for (let i = 0; i < a.length; i++) { if (a[i] !== b[i]) return a[i] > b[i]; } return false; };
@@ -115,7 +116,8 @@ function typeOf(points) {
   if (points.some(p => p && p.t != null)) return 'time';
   return points.some(p => p && Number(p.w) > 0) ? 'weight_reps' : 'reps';
 }
-// The best point (first day it was reached) and whether there was an earlier best (a first-ever entry isn't a record).
+// The best point (first day it was reached) and whether there was an earlier best (a first-ever entry isn't a record;
+// on a weighted lift, reps-only entries don't count as earlier bests, so the first weighted log isn't one either).
 function bestOf(points, type) {
   let best = null, hadPrev = false;
   for (const p of points || []) {

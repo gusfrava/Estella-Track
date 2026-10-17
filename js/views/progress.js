@@ -1,13 +1,15 @@
-// Progress tab: personal records — the best you've ever done on each exercise, grouped by routine.
+// Progress tab: overall stats (free, from state/progress.js), then personal records — the best you've ever done
+// on each exercise, grouped by routine.
 // Records come from the history points in exerciseStats (see selectors.personalRecord).
 import { rewardsBlock } from './badges.js';
 import { weekRecap, hasRecap } from '../state/recap.js';
 import { ICONS } from '../ui/icons.js';
 import { t, routineName } from '../i18n/index.js';
 import { exerciseName } from '../services/library.js';
-import { esc, fmtDay, fmtNum, fmtClock } from '../utils/format.js';
+import { esc, fmtDay, fmtNum, fmtClock, fmtDuration } from '../utils/format.js';
 import { parseYmd, daysAgo } from '../utils/dates.js';
-import { recordsByRoutine, weeklyStreak, weekGoalProgress } from '../state/selectors.js';
+import { recordsByRoutine, weeklyStreak, weekGoalProgress, lastUsedUnit } from '../state/selectors.js';
+import { overallStats, liftObject, fromKg } from '../state/progress.js';
 import { tabBar } from './partials.js';
 import { appHeader } from './home.js';
 
@@ -26,6 +28,7 @@ export function progressView(state, opts) {
 
   let h = `${appHeader(state, opts)}
   <h1>${L.progressTitle}</h1>
+  ${overallBlock(state)}
   <p class="sub">${L.recordsSub}</p>
   ${streakCard(weeklyStreak(state), weekGoalProgress(state))}
   ${rewardsBlock()}
@@ -42,6 +45,23 @@ export function progressView(state, opts) {
   }
   h += tabBar('progress');
   return h;
+}
+
+// Overall stats: workouts this month, weeks the goal was met, time and weight lifted in total (+ "that's like
+// lifting 2 elephants"). The streak is the card right below.
+function overallBlock(state) {
+  const L = t(), o = overallStats(state), unit = lastUsedUnit(state);
+  const lift = liftObject(o.total.volumeKg, { lifetime: true });
+  const tiles = [
+    [fmtNum(o.month.workouts), L.ov.monthWorkouts(o.month.workouts)],
+    [fmtNum(o.goalWeeks), L.ov.goalWeeks(o.goalWeeks)],
+    [fmtDuration(o.total.minutes), L.ov.time],
+    [`${fmtNum(Math.round(fromKg(o.total.volumeKg, unit)))} ${unit}`, L.ov.volume],
+  ];
+  return `<section class="overall" aria-label="${esc(L.ov.label)}">
+    <ul class="recap-stats">${tiles.map(([v, l]) => `<li><b class="num">${esc(v)}</b><span>${esc(l)}</span></li>`).join('')}</ul>
+    ${lift ? `<p class="overall-like">${esc(L.ov.like(lift.count, lift.id))} ${lift.emoji}</p>` : ''}
+  </section>`;
 }
 
 // "5 semanas seguidas" + the last 8 weeks as dots. s = selectors.weeklyStreak().

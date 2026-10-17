@@ -117,6 +117,7 @@ function pointScore(p, type) {
   if (type === 'time') return p.t != null ? [p.t] : null;
   if (p.t != null) return null;
   if (type === 'reps') return [p.r];
+  if (!(p.w > 0)) return null;   // reps logged without a weight on a weighted lift: not comparable, never a record
   return [p.u === 'lb' ? p.w * LB : p.w, p.r];
 }
 const beats = (a, b) => { for (let i = 0; i < a.length; i++) { if (a[i] !== b[i]) return a[i] > b[i]; } return false; };
@@ -268,6 +269,9 @@ export function trainedToday(state) {
 }
 
 // What happened to the streak in week `wk`: 'met' | 'saved' (a comodín kept it) | 'missed' | 'pending' (this week).
+// Every week so far, oldest first: [{ key, status, days, goal }] (statuses as above).
+export const weekStatuses = state => weekHistory(trainedDays(state), goalHistory(state)).list;
+
 export function weekStatusOf(state, wk) {
   const w = weekHistory(trainedDays(state), goalHistory(state)).list.find(x => x.key === wk);
   return w ? w.status : 'missed';

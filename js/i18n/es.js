@@ -136,6 +136,13 @@ export default {
   progressTitle:'Progreso', recordsSub:'Tus récords personales: lo mejor que has hecho en cada ejercicio.',
   noRecordsTitle:'Aún no hay récords', noRecordsBody:'Completa ejercicios en tus rutinas y aquí verás lo mejor que has hecho en cada uno.',
   recordsThisMonth:n=>n===1?'1 récord nuevo este mes. ¡Sigue así!':`${n} récords nuevos este mes. ¡Sigue así!`,
+  ov:{
+    title:'Tu entrenamiento', label:'Estadísticas generales', monthWorkouts:n=>n===1?'entreno este mes':'entrenos este mes', goalWeeks:n=>n===1?'semana con tu meta cumplida':'semanas con tu meta cumplida',
+    time:'entrenado en total', volume:'levantado en total',
+    like:(n,id)=>{ const [one,many]=({ car:['un coche','coches'], elephant:['un elefante africano','elefantes africanos'], bus:['un autobús','autobuses'], whale:['una ballena azul','ballenas azules'],
+      liberty:['la Estatua de la Libertad','Estatuas de la Libertad'], eiffel:['la Torre Eiffel','Torres Eiffel'], empire:['el Empire State','Empire States'] })[id];
+      return `Es como levantar ${n<1?`un ${Math.round(n*100)}% de ${one}`:n===1?one:`${n} ${many}`}`; },
+  },
   newRecord:'Nuevo', newRecordToast:'¡Nuevo récord!', repU:'rep',
   streakZero:'Empieza tu racha', streakLabel:'Racha', streakWeeks:n=>n===1?'1 semana seguida':`${n} semanas seguidas`,
   streakKept:'Esta semana ya cuenta. ¡Sigue así!', streakKeepIt:'Entrena esta semana para mantenerla',

@@ -1,5 +1,23 @@
 // Spanish strings (default language). Keys must match en.js.
 export default {
+  opening: {
+    "sample": "Vista de ejemplo",
+    "routineLabel": "Tu rutina",
+    "routineName": "Cuerpo completo · A",
+    "setLabel": "Una serie a la vez",
+    "setName": "8 repeticiones listas",
+    "weekLabel": "Cada entrenamiento cuenta",
+    "weekName": "Tu meta semanal",
+    "titleRoutine": "Crea tu rutina.",
+    "titleProgress": "Mira tu progreso.",
+    "body": "Registra tus entrenamientos, retoma donde lo dejaste y sigue adelante con Estella.",
+    "start": "Vamos a empezar",
+    "signin": "Ya tengo una cuenta",
+    "local": "Pruébala en este dispositivo. Crea tu cuenta después.",
+    "invitation": "¡Gracias por estar aquí! ¿Te hago unas preguntas para preparar una rutina inicial según tus objetivos y tu horario?",
+    "accept": "Sí, vamos",
+    "ownRoutine": "Prefiero crear mi propia rutina"
+},
   language:'Idioma',
   yourRoutines:'Tus rutinas',
   weekOf:(a,b)=>`Semana del ${a} al ${b}`,
@@ -118,6 +136,13 @@ export default {
   progressTitle:'Progreso', recordsSub:'Tus récords personales: lo mejor que has hecho en cada ejercicio.',
   noRecordsTitle:'Aún no hay récords', noRecordsBody:'Completa ejercicios en tus rutinas y aquí verás lo mejor que has hecho en cada uno.',
   recordsThisMonth:n=>n===1?'1 récord nuevo este mes. ¡Sigue así!':`${n} récords nuevos este mes. ¡Sigue así!`,
+  ov:{
+    title:'Tu entrenamiento', label:'Estadísticas generales', monthWorkouts:n=>n===1?'entreno este mes':'entrenos este mes', goalWeeks:n=>n===1?'semana con tu meta cumplida':'semanas con tu meta cumplida',
+    time:'entrenado en total', volume:'levantado en total',
+    like:(n,id)=>{ const [one,many]=({ car:['un coche','coches'], elephant:['un elefante africano','elefantes africanos'], bus:['un autobús','autobuses'], whale:['una ballena azul','ballenas azules'],
+      liberty:['la Estatua de la Libertad','Estatuas de la Libertad'], eiffel:['la Torre Eiffel','Torres Eiffel'], empire:['el Empire State','Empire States'] })[id];
+      return `Es como levantar ${n<1?`un ${Math.round(n*100)}% de ${one}`:n===1?one:`${n} ${many}`}`; },
+  },
   newRecord:'Nuevo', newRecordToast:'¡Nuevo récord!', repU:'rep',
   streakZero:'Empieza tu racha', streakLabel:'Racha', streakWeeks:n=>n===1?'1 semana seguida':`${n} semanas seguidas`,
   streakKept:'Esta semana ya cuenta. ¡Sigue así!', streakKeepIt:'Entrena esta semana para mantenerla',
